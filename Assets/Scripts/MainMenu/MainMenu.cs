@@ -3,6 +3,8 @@ using FishNet.Managing;
 using FishNet.Managing.Scened;
 using FishNet.Object;
 using FishNet.Transporting.Tugboat;
+using System;
+using TMPro;
 using UnityEngine;
 
 public class MainMenu : MonoBehaviour
@@ -26,32 +28,55 @@ public class MainMenu : MonoBehaviour
     private Transform LoadingScreen;
     [SerializeField]
     private Transform TestServerSolutionButn;
+    [SerializeField]
+    private Transform DedicatedServerScreen;
+
+    private void Awake()
+    {
+        string[] args = System.Environment.GetCommandLineArgs();
+
+        foreach (var arg in args)
+        {
+            if(arg.Length == 4)
+            {
+                serverHostPort = Convert.ToUInt16(arg);
+            }
+        }
+
+        if (serverHostPort == 0)
+        {
+            serverHostPort = FindObjectOfType<MainMenu>().GetComponent<Tugboat>().GetPort();
+        }
+        if (clientConnectPort == 0)
+        {
+            clientConnectPort = FindObjectOfType<MainMenu>().GetComponent<Tugboat>().GetPort();
+        }
+        if (ip == "")
+        {
+            ip = FindObjectOfType<MainMenu>().GetComponent<Tugboat>().GetClientAddress();
+        }
+        Debug.Log("serverHostPort = " + serverHostPort);
+        Debug.Log("clientConnectPort = " + clientConnectPort);
+        Debug.Log("Server Ip = " + ip);
+
+        foreach (var arg in args)
+        {
+            if(arg == "-launchAsServer")
+            {
+                StartServer(serverHostPort);
+            }
+        }
+    }
 
     private void Start()
     {
-        _networkManager = FindObjectOfType<NetworkManager>();
         playerControlls = new PlayerControlls();
         playerControlls.Enable();
 
         InstanceFinder.SceneManager.OnLoadEnd += OnSceneLoaded;
+        _networkManager = FindObjectOfType<NetworkManager>();
 
         DontDestroyOnLoad(gameObject);
-
-        if (serverHostPort == 0)
-        {
-            serverHostPort = _networkManager.ServerManager.GetComponent<Tugboat>().GetPort();
-            Debug.Log("serverHostPort = " + serverHostPort);
-        }
-        if (clientConnectPort == 0)
-        {
-            clientConnectPort = _networkManager.ServerManager.GetComponent<Tugboat>().GetPort();
-            Debug.Log("clientConnectPort = " + clientConnectPort);
-        }
-        if (ip == "")
-        {
-            ip = _networkManager.ServerManager.GetComponent<Tugboat>().GetClientAddress();
-            Debug.Log("Server Ip = " + ip);
-        }
     }
 
     private void Update()
@@ -99,11 +124,11 @@ public class MainMenu : MonoBehaviour
         {
             case 1:
                 ConnectClient(ip, 7770);
-                Debug.Log("Connecting with: " + ip + "7770");
+                Debug.Log("Connecting with: " + ip + ":7770");
                 break;
             case 2:
                 ConnectClient(ip, 7771);
-                Debug.Log("Connecting with: " + ip + "7771");
+                Debug.Log("Connecting with: " + ip + ":7771");
                 break;
             default:
                 Debug.Log("Server Doesn't Exist");
@@ -126,11 +151,17 @@ public class MainMenu : MonoBehaviour
 
     public void StartServer(ushort _port)
     {
-        _networkManager.ServerManager.StartConnection(_port);
+        HomeScreen.gameObject.SetActive(false);
+        TestServerSolutionButn.gameObject.SetActive(false);
+        DedicatedServerScreen.gameObject.SetActive(true);
+
+        InstanceFinder.ServerManager.StartConnection(_port);
+
+        DedicatedServerScreen.transform.Find("ip + port").GetComponent<TMP_Text>().text = ip + ":" + _port;
     }
 
     public void TestServerSolution()
     {
-        _networkManager.ServerManager.StartConnection(7770);
+        StartServer(serverHostPort);
     }
 }
