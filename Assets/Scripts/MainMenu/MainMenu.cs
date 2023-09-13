@@ -12,9 +12,9 @@ public class MainMenu : MonoBehaviour
     NetworkManager _networkManager;
     PlayerControlls playerControlls;
 
-    public string ip;
-    public ushort serverHostPort;
-    public ushort clientConnectPort;
+    public string ip = "";
+    public ushort serverHostPort = 0;
+    public ushort clientConnectPort = 0;
 
     private string layer = "home";
 
@@ -45,16 +45,19 @@ public class MainMenu : MonoBehaviour
 
         if (serverHostPort == 0)
         {
-            serverHostPort = FindObjectOfType<MainMenu>().GetComponent<Tugboat>().GetPort();
+            serverHostPort = 7778;
         }
         if (clientConnectPort == 0)
         {
-            clientConnectPort = FindObjectOfType<MainMenu>().GetComponent<Tugboat>().GetPort();
+            clientConnectPort = 7778;
         }
-        if (ip == "")
-        {
-            ip = FindObjectOfType<MainMenu>().GetComponent<Tugboat>().GetClientAddress();
-        }
+        //local play
+        //ip = "192.168.2.86";
+
+        //online play
+        ip = "86.83.234.112";
+
+
         Debug.Log("serverHostPort = " + serverHostPort);
         Debug.Log("clientConnectPort = " + clientConnectPort);
         Debug.Log("Server Ip = " + ip);
@@ -123,12 +126,12 @@ public class MainMenu : MonoBehaviour
         switch (_serverId)
         {
             case 1:
-                ConnectClient(ip, 7770);
-                Debug.Log("Connecting with: " + ip + ":7770");
+                ConnectClient(ip, 7778);
+                Debug.Log("Connecting with: " + ip + ":7778");
                 break;
             case 2:
-                ConnectClient(ip, 7771);
-                Debug.Log("Connecting with: " + ip + ":7771");
+                ConnectClient(ip, 7779);
+                Debug.Log("Connecting with: " + ip + ":7779");
                 break;
             default:
                 Debug.Log("Server Doesn't Exist");
