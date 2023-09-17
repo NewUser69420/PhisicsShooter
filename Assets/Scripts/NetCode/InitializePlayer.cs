@@ -1,4 +1,5 @@
 using FishNet;
+using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Object;
 using UnityEngine;
@@ -8,6 +9,8 @@ public class InitializePlayer : NetworkBehaviour
     public Vector3 spawnPos;
 
     public GameObject MainMenuUI;
+
+    public GameObject CamPrefab;
 
     private void Start()
     {
@@ -27,7 +30,6 @@ public class InitializePlayer : NetworkBehaviour
         if(base.IsClient)
         {
             transform.Find("Character/Body").gameObject.layer = LayerMask.NameToLayer("Character");
-            transform.Find("CMCam").gameObject.SetActive(true);
         }
     }
 
@@ -38,15 +40,17 @@ public class InitializePlayer : NetworkBehaviour
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
         {
             if (!base.IsOwner) return;
-            InitializePlayerServer(obj);
+            InitializePlayerServer(obj, base.LocalConnection);
         }
+
+        GameObject Cam = Instantiate(CamPrefab);
     }
 
     [ServerRpc]
-    private void InitializePlayerServer(GameObject _obj)
+    private void InitializePlayerServer(GameObject _player, NetworkConnection _conn)
     {
-        _obj.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        _obj.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-        _obj.transform.position = spawnPos;
+        _player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        _player.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        _player.transform.position = spawnPos;
     }
 }

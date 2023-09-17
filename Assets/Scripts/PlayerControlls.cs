@@ -58,7 +58,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
                     ""name"": ""Look"",
                     ""type"": ""Value"",
                     ""id"": ""a2d1c823-19f4-4c1d-aaa1-b41dbf92f180"",
-                    ""expectedControlType"": ""Delta"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
