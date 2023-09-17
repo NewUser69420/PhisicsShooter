@@ -1,4 +1,3 @@
-using FishNet.Managing.Logging;
 using LiteNetLib;
 using LiteNetLib.Layers;
 using System;
@@ -11,6 +10,11 @@ namespace FishNet.Transporting.Tugboat.Client
 {
     public class ClientSocket : CommonSocket
     {
+
+        public GameObject LoadingScreen;
+        public GameObject HomeScreen;
+        public GameObject BackGround;
+        
         ~ClientSocket()
         {
             StopConnection();
@@ -63,6 +67,8 @@ namespace FishNet.Transporting.Tugboat.Client
         private readonly object _stopLock = new object();
         #endregion
 
+        
+
         /// <summary>
         /// Initializes this for use.
         /// </summary>
@@ -72,6 +78,10 @@ namespace FishNet.Transporting.Tugboat.Client
             base.Transport = t;
             _mtu = unreliableMTU;
             _packetLayer = packetLayer;
+
+            LoadingScreen = FindGameObjectByNameInMainMenuUi("LoadingScreen");
+            HomeScreen = FindGameObjectByNameInMainMenuUi("HomeScreen");
+            BackGround = FindGameObjectByNameInMainMenuUi("Background");
         }
 
         /// <summary>
@@ -101,6 +111,16 @@ namespace FishNet.Transporting.Tugboat.Client
             _localConnectionStates.Enqueue(LocalConnectionState.Starting);
             _client.Start();
             _client.Connect(_address, _port, string.Empty);
+        }
+
+        public GameObject FindGameObjectByNameInMainMenuUi(string name)
+        {
+            GameObject ThingToReturn = null;
+            foreach(Transform obj in GameObject.Find("MainMenuUI").GetComponentInChildren<Transform>())
+            {
+                if (obj.gameObject.name == name) ThingToReturn = obj.gameObject;
+            }
+            return ThingToReturn;
         }
 
 
@@ -185,6 +205,11 @@ namespace FishNet.Transporting.Tugboat.Client
         private void Listener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             StopConnection(disconnectInfo);
+
+            LoadingScreen.SetActive(false);
+            HomeScreen.SetActive(true);
+            BackGround.SetActive(true);
+            Debug.Log($"Going Back To Main Menu");
         }
 
         /// <summary>

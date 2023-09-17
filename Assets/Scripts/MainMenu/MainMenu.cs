@@ -3,7 +3,9 @@ using FishNet.Managing;
 using FishNet.Managing.Scened;
 using FishNet.Object;
 using FishNet.Transporting.Tugboat;
+using LiteNetLib;
 using System;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -17,22 +19,23 @@ public class MainMenu : MonoBehaviour
     public ushort clientConnectPort = 0;
 
     private string layer = "home";
+    int connectedPlayers;
 
     [SerializeField]
-    private Transform HomeScreen;
+    public Transform HomeScreen;
     [SerializeField]
     private Transform ServerSelectionScreen;
     [SerializeField]
     private Transform Background;
     [SerializeField]
-    private Transform LoadingScreen;
-    [SerializeField]
-    private Transform TestServerSolutionButn;
+    public Transform LoadingScreen;
     [SerializeField]
     private Transform DedicatedServerScreen;
 
     private void Awake()
     {
+        if (FindObjectsByType<MainMenu>(FindObjectsSortMode.None).Count() > 1) Destroy(gameObject);
+
         string[] args = System.Environment.GetCommandLineArgs();
 
         foreach (var arg in args)
@@ -45,17 +48,17 @@ public class MainMenu : MonoBehaviour
 
         if (serverHostPort == 0)
         {
-            serverHostPort = 7778;
+            serverHostPort = 7777;
         }
         if (clientConnectPort == 0)
         {
-            clientConnectPort = 7778;
+            clientConnectPort = 7777;
         }
         //local play
-        //ip = "192.168.2.86";
+        ip = "localhost";
 
         //online play
-        ip = "86.83.234.112";
+        //ip = "86.83.234.112";
 
 
         Debug.Log("serverHostPort = " + serverHostPort);
@@ -113,30 +116,23 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void ServerClick(int _serverId)
+    public void Server1Click()
     {
         //activate loading screen
         ServerSelectionScreen.gameObject.SetActive(false);
         LoadingScreen.gameObject.SetActive(true);
 
-        //set ip
-        //ip = "...."; 
+        ConnectClient(ip, 7777);
+        Debug.Log("Connecting with: " + ip + ":7777");
+    }
+    public void Server2Click()
+    {
+        //activate loading screen
+        ServerSelectionScreen.gameObject.SetActive(false);
+        LoadingScreen.gameObject.SetActive(true);
 
-        //Connect To Server
-        switch (_serverId)
-        {
-            case 1:
-                ConnectClient(ip, 7778);
-                Debug.Log("Connecting with: " + ip + ":7778");
-                break;
-            case 2:
-                ConnectClient(ip, 7779);
-                Debug.Log("Connecting with: " + ip + ":7779");
-                break;
-            default:
-                Debug.Log("Server Doesn't Exist");
-                break;
-        }
+        ConnectClient(ip, 7778);
+        Debug.Log("Connecting with: " + ip + ":7778");
     }
 
     public void OnSceneLoaded(SceneLoadEndEventArgs obj)
@@ -144,7 +140,6 @@ public class MainMenu : MonoBehaviour
         //deactive loading screen
         Background.gameObject.SetActive(false);
         LoadingScreen.gameObject.SetActive(false);
-        TestServerSolutionButn.gameObject.SetActive(false);
     }
 
     public void ConnectClient(string _ip, ushort _port)
@@ -155,7 +150,6 @@ public class MainMenu : MonoBehaviour
     public void StartServer(ushort _port)
     {
         HomeScreen.gameObject.SetActive(false);
-        TestServerSolutionButn.gameObject.SetActive(false);
         DedicatedServerScreen.gameObject.SetActive(true);
 
         InstanceFinder.ServerManager.StartConnection(_port);

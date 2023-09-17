@@ -1,10 +1,7 @@
 using FishNet;
-using FishNet.Example.Scened;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
-using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 
 public class TempPredictedPlayerController : NetworkBehaviour
@@ -18,6 +15,24 @@ public class TempPredictedPlayerController : NetworkBehaviour
         public MoveData(float horizontal, float vertical, bool jump)
         {
             Jump = jump;
+            Horizontal = horizontal;
+            Vertical = vertical;
+            _tick = 0;
+        }
+
+        private uint _tick;
+        public void Dispose() { }
+        public uint GetTick() => _tick;
+        public void SetTick(uint value) => _tick = value;
+    }
+
+    public struct LookData : IReplicateData
+    {
+        public float Horizontal;
+        public float Vertical;
+
+        public LookData(float horizontal, float vertical)
+        {
             Horizontal = horizontal;
             Vertical = vertical;
             _tick = 0;
@@ -56,6 +71,11 @@ public class TempPredictedPlayerController : NetworkBehaviour
     [SerializeField]
     private float _jumpForce;
     private float _nextJumpTime;
+    [SerializeField]
+    private float sensitivity;
+
+    private float xRotation;
+    private float yRotation;
     
     private bool _jump;
     private bool _subscribed = false;
@@ -125,11 +145,14 @@ public class TempPredictedPlayerController : NetworkBehaviour
             Reconciliation(default, false);
             BuildMoveData(out MoveData md);
             Move(md, false);
+            BuildLookData(out LookData ld);
+            Look(ld, false);
         }
 
         if(base.IsServer)
         {
             Move(default, true);
+            Look(default, true);
         }
 
         AddGravity();
@@ -148,13 +171,25 @@ public class TempPredictedPlayerController : NetworkBehaviour
     {
         md = default;
 
-        float horizontal = playerControlls.OnFoot.Movement.ReadValue<Vector2>().y;
-        float vertical = playerControlls.OnFoot.Movement.ReadValue<Vector2>().x;
+        float vertical = playerControlls.OnFoot.Movement.ReadValue<Vector2>().y;
+        float horizontal = playerControlls.OnFoot.Movement.ReadValue<Vector2>().x;
 
         if (horizontal == 0f && vertical == 0f && !_jump) return;
 
         md = new MoveData(vertical, horizontal, _jump);
         _jump = false;
+    }
+
+    private void BuildLookData(out LookData ld)
+    {
+        ld = default;
+
+        float horizontal = playerControlls.OnFoot.Look.ReadValue<Vector2>().y;
+        float vertical = playerControlls.OnFoot.Look.ReadValue<Vector2>().x;
+
+        if(horizontal == 0f && vertical == 0f) return;
+
+        ld = new LookData(vertical, horizontal);
     }
 
     private void AddGravity()
@@ -167,14 +202,30 @@ public class TempPredictedPlayerController : NetworkBehaviour
     private void Move(MoveData md, bool asServer, Channel channel = Channel.Unreliable, bool replaying = false)
     {
         if(!activated) return;
-        
-        Vector3 direction = new Vector3(md.Horizontal, 0f, md.Vertical) * _speed;
-        _rb.AddForce(direction);
+
+        Vector2 directionForward = md.Vertical * transform.forward;
+        Vector2 directionRight = md.Horizontal * transform.right;
+        Vector3 direction = directionRight + directionForward;
+        _rb.AddRelativeForce(new Vector3(direction.x, 0, direction.y) * _speed);
 
         if(md.Jump)
         {
             _rb.AddForce(new Vector3(0f, _jumpForce, 0f), ForceMode.Impulse);
         }
+    }
+
+    private void Look(LookData ld, bool asServer, Channel channel = Channel.Unreliable, bool replaying = false)
+    {
+        if (!activated) return;
+
+        float mouseX = ld.Horizontal;
+        float mouseY = ld.Vertical;
+
+        xRotation -= -1 * (mouseY * sensitivity);
+        xRotation = Mathf.Clamp(xRotation, -70, 70);
+        yRotation -= (mouseX * sensitivity);
+
+        transform.rotation = Quaternion.Euler(0, yRotation * -1, 0);
     }
 
     [Reconcile]

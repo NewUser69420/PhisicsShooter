@@ -5,24 +5,29 @@ using FishNet.Managing.Scened;
 using System.Collections.Generic;
 using System;
 using FishNet.Connection;
+using FishNet.Transporting;
 
 public class MainMenuSceneChanger : NetworkBehaviour
 {
     private List<NetworkObject> objToKeep = new List<NetworkObject>();
     private NetworkConnection conn;
 
-    //change scene when connected to server
-    public override void OnStartNetwork()
+    private void Awake()
     {
-        base.OnStartNetwork();
-        if (base.IsServer) return;
+        if (base.IsClient) return;
+        InstanceFinder.ServerManager.OnRemoteConnectionState += OnClientConnect;
+    }
+
+    //change scene when connected to server    
+    public void OnClientConnect(NetworkConnection connection, RemoteConnectionStateArgs args)
+    {
+        if (base.IsClient) return;
         
         GetReferanceToPlayers();
-        GetReferanceToLocalPlayer();
+        conn = connection;
         ChangeScenes(objToKeep.ToArray(), conn);
     }
 
-    [ServerRpc(RequireOwnership = false)]
     private void ChangeScenes(NetworkObject[] _objs, NetworkConnection _conn)
     {
         SceneLoadData sld = new SceneLoadData("SampleScene");
@@ -37,10 +42,5 @@ public class MainMenuSceneChanger : NetworkBehaviour
         {
             objToKeep.Add(obj.GetComponent<NetworkObject>());
         }
-    }
-
-    private void GetReferanceToLocalPlayer()
-    {
-        conn = InstanceFinder.NetworkManager.ClientManager.Connection;
     }
 }
