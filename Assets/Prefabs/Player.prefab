@@ -7684,7 +7684,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4266674162621430887}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7764,7 +7764,7 @@ MonoBehaviour:
   _teleportThreshold: 1
   _ownerSmoothPosition: 1
   _ownerSmoothRotation: 1
-  _ownerInterpolation: 1
+  _ownerInterpolation: 2
   _predictionType: 1
   _rigidbody: {fileID: 8047909599503651054}
   _rigidbody2d: {fileID: 0}
@@ -7808,7 +7808,7 @@ MonoBehaviour:
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Rotation: {x: -0, y: -0, z: -0, w: 1}
     LocalScale: {x: 1, y: 1, z: 1}
   _isNetworked: 1
   _isGlobal: 0
@@ -7856,8 +7856,8 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 1866983901336284639}
   _speed: 500
   _jumpForce: 250
-  sensitivity: 0.6
   activated: 0
+  cam: {fileID: 0}
 --- !u!1 &4266674164107154660
 GameObject:
   m_ObjectHideFlags: 0

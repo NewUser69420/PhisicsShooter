@@ -1,7 +1,9 @@
 using FishNet;
 using FishNet.Connection;
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class InitializePlayer : NetworkBehaviour
@@ -12,20 +14,15 @@ public class InitializePlayer : NetworkBehaviour
 
     public GameObject CamPrefab;
 
-    private void Start()
+    private NetworkConnection conn;
+    private GameObject obj;
+
+    private void Awake()
     {
         InstanceFinder.SceneManager.OnLoadEnd += OnSceneLoaded;
-        GetComponent<TempPredictedPlayerController>().activated = true;
         MainMenuUI = GameObject.Find("MainMenuUI");
 
-        //if (InstanceFinder.ServerManager.Clients.Count >= 3)
-        //{
-        //    if (InstanceFinder.IsServer) return;
-        //    InstanceFinder.ServerManager.StopConnection(true);
-        //    Debug.Log("Too Many Players");
-        //    MainMenuUI.GetComponent<MainMenu>().LoadingScreen.gameObject.SetActive(false);
-        //    MainMenuUI.GetComponent<MainMenu>().HomeScreen.gameObject.SetActive(true);
-        //}
+        Cursor.lockState = CursorLockMode.Locked;
 
         if(base.IsClient)
         {
@@ -33,24 +30,38 @@ public class InitializePlayer : NetworkBehaviour
         }
     }
 
-    private void OnSceneLoaded(SceneLoadEndEventArgs objj)
+    private void OnSceneLoaded(SceneLoadEndEventArgs arg)
     {
-        if (!base.IsClient) return;
-
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
-        {
-            if (!base.IsOwner) return;
-            InitializePlayerServer(obj, base.LocalConnection);
-        }
-
-        GameObject Cam = Instantiate(CamPrefab);
+        InitializePlayerServerRpc();
     }
 
     [ServerRpc]
-    private void InitializePlayerServer(GameObject _player, NetworkConnection _conn)
+
+    private void InitializePlayerServerRpc()
     {
-        _player.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        _player.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-        _player.transform.position = spawnPos;
+        foreach (var conn in InstanceFinder.ServerManager.Clients.Values)
+        {
+            foreach (var objj in conn.Objects)
+            {
+                if (objj.gameObject.tag == "Player") obj = objj.gameObject;
+            }
+
+            GameObject Cam = Instantiate(CamPrefab);
+            base.Spawn(Cam, conn);
+
+            obj.GetComponent<PredictedPlayerMover>().activated = true;
+            obj.GetComponent<PredictedPlayerMover>()._cam = Cam;
+
+            obj.transform.position = spawnPos;
+
+            InitializePlayerClientRpc(conn, obj, Cam);
+        }
+    }
+
+    [TargetRpc]
+    private void InitializePlayerClientRpc(NetworkConnection _conn, GameObject _player, GameObject _Cam)
+    {
+        _player.GetComponent<PredictedPlayerMover>().activated = true;
+        _player.GetComponent<PredictedPlayerMover>()._cam = _Cam;
     }
 }

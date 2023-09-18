@@ -3,24 +3,23 @@ using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class TempPredictedPlayerController : NetworkBehaviour
+public class PredictedPlayerMover : NetworkBehaviour
 {
     public struct MoveData : IReplicateData
     {
         public bool Jump;
         public float Horizontal;
         public float Vertical;
-        public float LookHorizontal;
-        public float LookVertical;
+        public Quaternion LookData;
 
-        public MoveData(float horizontal, float vertical, float lookHorizontal, float lookVertical, bool jump)
+        public MoveData(float horizontal, float vertical, bool jump, Quaternion lookData)
         {
             Jump = jump;
             Horizontal = horizontal;
             Vertical = vertical;
-            LookHorizontal = lookHorizontal;
-            LookVertical = lookVertical;
+            LookData = lookData;
             _tick = 0;
         }
 
@@ -57,16 +56,13 @@ public class TempPredictedPlayerController : NetworkBehaviour
     [SerializeField]
     private float _jumpForce;
     private float _nextJumpTime;
-    public float sensitivity;
-
-    private float xRotation;
-    private float yRotation;
     
     private bool _jump;
     private bool _subscribed = false;
     public bool activated = false;
 
     private Rigidbody _rb;
+    public GameObject _cam;
 
     PlayerControlls playerControlls;
 
@@ -155,12 +151,20 @@ public class TempPredictedPlayerController : NetworkBehaviour
 
         float vertical = playerControlls.OnFoot.Movement.ReadValue<Vector2>().y;
         float horizontal = playerControlls.OnFoot.Movement.ReadValue<Vector2>().x;
-        float lookHorizontal = playerControlls.OnFoot.Look.ReadValue<Vector2>().y;
-        float lookVertical = playerControlls.OnFoot.Look.ReadValue<Vector2>().x;
+        Quaternion lookData;
+        if (_cam != null)
+        {
+            lookData = _cam.transform.rotation;
+        }
+        else
+        {
+            lookData = Quaternion.identity;
+        }
+        
 
-        if (horizontal == 0f && vertical == 0f && lookHorizontal == 0f && lookVertical == 0f && !_jump) return;
+        if (horizontal == 0f && vertical == 0f && lookData == null && !_jump) return;
 
-        md = new MoveData(vertical, horizontal, lookVertical, lookHorizontal, _jump);
+        md = new MoveData(vertical, horizontal, _jump, lookData);
         _jump = false;
     }
 
@@ -172,21 +176,17 @@ public class TempPredictedPlayerController : NetworkBehaviour
     [Replicate]
     private void Move(MoveData md, bool asServer, Channel channel = Channel.Unreliable, bool replaying = false)
     {
-        if(!activated) return;
+        if (!activated) return;
 
-        Vector2 directionForward = md.Vertical * transform.forward;
-        Vector2 directionRight = md.Horizontal * transform.right;
-        Vector3 direction = directionRight + directionForward;
-        _rb.AddRelativeForce(new Vector3(direction.x, 0, direction.y) * _speed);
-
-        float mouseX = md.LookHorizontal;
-        yRotation -= (mouseX * sensitivity);
-        transform.rotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(0, yRotation * -1, 0), 1);
+        Vector3 direction = (Vector3)(md.Vertical * transform.right + md.Horizontal * transform.forward); 
+        _rb.AddForce(direction * _speed);
 
         if (md.Jump)
         {
             _rb.AddForce(new Vector3(0f, _jumpForce, 0f), ForceMode.Impulse);
         }
+
+        transform.rotation = md.LookData;
     }
 
     [Reconcile]
