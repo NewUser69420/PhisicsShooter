@@ -2,6 +2,7 @@ using FishNet;
 using FishNet.Managing;
 using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
+using FishNet.Object;
 using System;
 using System.Linq;
 using TMPro;
@@ -21,6 +22,8 @@ public class MainMenu : MonoBehaviour
 
     [SerializeField]
     public Transform HomeScreen;
+    [SerializeField]
+    private GameObject Cam;
     [SerializeField]
     private Transform ServerSelectionScreen;
     [SerializeField]
@@ -89,6 +92,18 @@ public class MainMenu : MonoBehaviour
     private void Update()
     {
         if (playerControlls.MainMenu.GoBackOne.WasPressedThisFrame()) GoBackOne(layer);
+
+        foreach(NetworkObject obj in InstanceFinder.ClientManager.Objects.Spawned.Values)
+        {
+            if(obj.gameObject.tag == "Player")
+            {
+                Cam.SetActive(false);
+            }
+            else
+            {
+                Cam.SetActive(true);
+            }
+        }
     }
 
     public void Play()

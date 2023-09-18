@@ -46,9 +46,9 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""ResetMovement"",
+                    ""name"": ""Dash"",
                     ""type"": ""Button"",
-                    ""id"": ""3b5741a0-5dee-4a31-a649-148d02713950"",
+                    ""id"": ""8f2759f1-0bad-4d40-bf14-5367db71ebaa"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -133,23 +133,23 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""6b75873d-0e64-46f8-a9c0-80f868233e96"",
-                    ""path"": ""<Keyboard>/leftAlt"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ResetMovement"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""e2261025-2a79-4da3-8821-bb6a035aa416"",
                     ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aef8b097-50e3-4446-a580-434de9769abc"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dash"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -190,7 +190,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
         m_OnFoot = asset.FindActionMap("OnFoot", throwIfNotFound: true);
         m_OnFoot_Movement = m_OnFoot.FindAction("Movement", throwIfNotFound: true);
         m_OnFoot_Jump = m_OnFoot.FindAction("Jump", throwIfNotFound: true);
-        m_OnFoot_ResetMovement = m_OnFoot.FindAction("ResetMovement", throwIfNotFound: true);
+        m_OnFoot_Dash = m_OnFoot.FindAction("Dash", throwIfNotFound: true);
         m_OnFoot_Look = m_OnFoot.FindAction("Look", throwIfNotFound: true);
         // MainMenu
         m_MainMenu = asset.FindActionMap("MainMenu", throwIfNotFound: true);
@@ -258,7 +258,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
     private List<IOnFootActions> m_OnFootActionsCallbackInterfaces = new List<IOnFootActions>();
     private readonly InputAction m_OnFoot_Movement;
     private readonly InputAction m_OnFoot_Jump;
-    private readonly InputAction m_OnFoot_ResetMovement;
+    private readonly InputAction m_OnFoot_Dash;
     private readonly InputAction m_OnFoot_Look;
     public struct OnFootActions
     {
@@ -266,7 +266,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
         public OnFootActions(@PlayerControlls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_OnFoot_Movement;
         public InputAction @Jump => m_Wrapper.m_OnFoot_Jump;
-        public InputAction @ResetMovement => m_Wrapper.m_OnFoot_ResetMovement;
+        public InputAction @Dash => m_Wrapper.m_OnFoot_Dash;
         public InputAction @Look => m_Wrapper.m_OnFoot_Look;
         public InputActionMap Get() { return m_Wrapper.m_OnFoot; }
         public void Enable() { Get().Enable(); }
@@ -283,9 +283,9 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
-            @ResetMovement.started += instance.OnResetMovement;
-            @ResetMovement.performed += instance.OnResetMovement;
-            @ResetMovement.canceled += instance.OnResetMovement;
+            @Dash.started += instance.OnDash;
+            @Dash.performed += instance.OnDash;
+            @Dash.canceled += instance.OnDash;
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
@@ -299,9 +299,9 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
-            @ResetMovement.started -= instance.OnResetMovement;
-            @ResetMovement.performed -= instance.OnResetMovement;
-            @ResetMovement.canceled -= instance.OnResetMovement;
+            @Dash.started -= instance.OnDash;
+            @Dash.performed -= instance.OnDash;
+            @Dash.canceled -= instance.OnDash;
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
@@ -372,7 +372,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
-        void OnResetMovement(InputAction.CallbackContext context);
+        void OnDash(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
     }
     public interface IMainMenuActions

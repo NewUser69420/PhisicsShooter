@@ -13,6 +13,7 @@ public class CameraWorker : NetworkBehaviour
     public override void OnStartNetwork()
     {
         if (base.IsServer) return;
+        if (!base.Owner.IsLocalClient) return;
         transform.Find("Cam").gameObject.SetActive(true);
 
         playerControlls = new PlayerControlls();
@@ -23,6 +24,8 @@ public class CameraWorker : NetworkBehaviour
 
     private void Update()
     {
+        if (base.IsServer) return;
+        if (!base.Owner.IsLocalClient) return;
         if (!initialized) return;
         
         //look
@@ -33,7 +36,6 @@ public class CameraWorker : NetworkBehaviour
         xRotation = Mathf.Clamp(xRotation, -70, 70);
         yRotation -= (mouseX * sensitivity);
 
-        Debug.Log($"{xRotation} + {yRotation}");
         transform.Find("Cam").transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         Player.rotation = Quaternion.Euler(0f, yRotation * -1, 0f);
 

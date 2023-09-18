@@ -7804,8 +7804,8 @@ GameObject:
   - component: {fileID: 8047909599503651054}
   - component: {fileID: 8493029229925738328}
   - component: {fileID: 1866983901336284639}
-  - component: {fileID: 7850414259707371282}
   - component: {fileID: 6187275009774067414}
+  - component: {fileID: 7850414259707371282}
   - component: {fileID: 8085059715665855612}
   - component: {fileID: -4210208256836070211}
   m_Layer: 7
@@ -7853,9 +7853,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 1.8568194
+  m_Height: 1.8758333
   m_Direction: 1
-  m_Center: {x: 0, y: 0.92355406, z: 0}
+  m_Center: {x: 0, y: 0.9140471, z: 0}
 --- !u!54 &8047909599503651054
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7942,6 +7942,7 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   _networkBehaviours:
   - {fileID: 8493029229925738328}
+  - {fileID: 6187275009774067414}
   - {fileID: 7850414259707371282}
   - {fileID: 8085059715665855612}
   - {fileID: -4210208256836070211}
@@ -7962,25 +7963,6 @@ MonoBehaviour:
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 7807759643866311769
---- !u!114 &7850414259707371282
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4266674162621430887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f76ee5ec61e1e84f84fe330cca6c22c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _componentIndexCache: 1
-  _addedNetworkObject: {fileID: 1866983901336284639}
-  _networkObjectCache: {fileID: 1866983901336284639}
-  spawnPos: {x: 0, y: 5, z: 0}
-  MainMenuUI: {fileID: 0}
-  CamPrefab: {fileID: 3064194211474367820, guid: 5b1c72e03131946479fcf13c9df860c0,
-    type: 3}
 --- !u!114 &6187275009774067414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7993,9 +7975,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3edef80abf0607b419f8fcad3bbc5999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whatIsGround:
-    serializedVersion: 2
-    m_Bits: 1280
+  _componentIndexCache: 1
+  _addedNetworkObject: {fileID: 1866983901336284639}
+  _networkObjectCache: {fileID: 1866983901336284639}
+--- !u!114 &7850414259707371282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4266674162621430887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f76ee5ec61e1e84f84fe330cca6c22c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 2
+  _addedNetworkObject: {fileID: 1866983901336284639}
+  _networkObjectCache: {fileID: 1866983901336284639}
+  spawnPos: {x: 0, y: 5, z: 0}
+  MainMenuUI: {fileID: 0}
 --- !u!114 &8085059715665855612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8008,12 +8007,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41a4ab79633b15c4487bd4deaebd6971, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 2
+  _componentIndexCache: 3
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   _speed: 600
   _jumpForce: 300
   _jumpReset: 0.3
+  _dashForce: 700
+  _dashReset: 0.8
+  _groundedTimerMax: 0.5
+  _whatIsGround:
+    serializedVersion: 2
+    m_Bits: 1280
 --- !u!114 &-4210208256836070211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8026,7 +8031,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4de281accf728554da19a39bbd0e9900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 3
+  _componentIndexCache: 4
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   sensitivity: 0.2
@@ -8100,7 +8105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8cac635f24954048aad3a6ff9110beb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 4
+  _componentIndexCache: 5
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   IgnoredParameters: []

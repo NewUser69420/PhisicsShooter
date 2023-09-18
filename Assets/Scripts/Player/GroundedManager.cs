@@ -1,22 +1,29 @@
+using FishNet.Connection;
+using FishNet.Object;
 using UnityEngine;
 
-public class GroundedManager : MonoBehaviour
+public class GroundedManager : NetworkBehaviour
 {
-    private PredictedPlayerMover playerScript;
-    public LayerMask whatIsGround;
+    private PredictedPlayerController playerScript;
 
     private void Awake()
     {
-        playerScript = GetComponent<PredictedPlayerMover>();
+        playerScript = GetComponent<PredictedPlayerController>();
     }
 
     private void OnCollisionStay(Collision collision)
     {
-        if(collision.gameObject.layer == whatIsGround) playerScript.serverGrounded = true;
+        if(collision.gameObject.layer == 8 || collision.gameObject.layer == 10)
+        {
+            playerScript._grounded = true;
+        }
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision.gameObject.layer == whatIsGround) playerScript.serverGrounded = false;
+        if (collision.gameObject.layer == 8 || collision.gameObject.layer == 10)
+        {
+            playerScript._grounded = false;
+        }
     }
 }

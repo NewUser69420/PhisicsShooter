@@ -11,34 +11,49 @@ public class PredictedPlayerController : NetworkBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _jumpReset;
+    [SerializeField] private float _dashForce;
+    [SerializeField] private float _dashReset;
+    [SerializeField] private float _groundedTimerMax;
+    [SerializeField] private LayerMask _whatIsGround;
+
+
+    [System.NonSerialized] public bool _grounded;
+    [System.NonSerialized] public bool _activated;
 
     private PlayerControlls _playerControlls;
     private Rigidbody _rb;
     private Animator _animator;
     private NetworkAnimator _netAnimator;
-    private LayerMask _whatIsGround;
+    private Vector3 _dashDirection;
     private float _nextJumpTime;
+    private float _nextDashTime;
     private bool _jump;
-    private bool _grounded;
+    private bool _dash;
+    private bool _allowDash = true;
     private bool _wasGrounded;
-
-    [System.NonSerialized] public bool _activated;
+    private float _groundedTimer;
+    
+    
 
     public struct MoveData : IReplicateData
     {
         public bool Jump;
+        public bool Dash;
         public bool Grounded;
         public bool WasGrounded;
         public float MoveHorizontal;
         public float MoveVertical;
+        public Vector3 DashDirection;
 
-        public MoveData(bool jump, bool grounded, bool wasGrounded, float moveHorizontal, float moveVertical)
+        public MoveData(bool jump, bool dash, bool grounded, bool wasGrounded, float moveHorizontal, float moveVertical, Vector3 dashDirection)
         {
             Jump = jump;
+            Dash = dash;
             Grounded = grounded;
             WasGrounded = wasGrounded;
             MoveHorizontal = moveHorizontal;
             MoveVertical = moveVertical;
+            DashDirection = dashDirection;
 
             _tick = 0;
         }
@@ -119,6 +134,27 @@ public class PredictedPlayerController : NetworkBehaviour
                 _jump = true;
             }
 
+            //prepare dash
+            if(_playerControlls.OnFoot.Dash.WasPressedThisFrame() && Time.time > _nextDashTime && _allowDash)
+            {
+                _nextDashTime = Time.time + _dashReset;
+                _dash = true;
+            }
+            _dashDirection = transform.Find("Cam").forward;
+
+            //grounded timer
+            if (_groundedTimer > 0)
+            {
+                _groundedTimer -= Time.time;
+                _wasGrounded = true;
+            }
+            else
+            {
+                _wasGrounded = false;
+            }
+
+            if (_grounded) _groundedTimer = _groundedTimerMax;
+
             HandleAnimations();
         }
     }
@@ -153,9 +189,11 @@ public class PredictedPlayerController : NetworkBehaviour
 
         float moveHorizontal = _playerControlls.OnFoot.Movement.ReadValue<Vector2>().x;
         float moveVertical = _playerControlls.OnFoot.Movement.ReadValue<Vector2>().y;
+        Vector3 dashDirection = _dashDirection;
 
-        md = new MoveData(_jump, _grounded, _wasGrounded, moveHorizontal, moveVertical);
+        md = new MoveData(_jump, _dash, _grounded, _wasGrounded, moveHorizontal, moveVertical, dashDirection);
         _jump = false;
+        _dash = false;
     }
 
     private void AddGravity()
@@ -181,9 +219,16 @@ public class PredictedPlayerController : NetworkBehaviour
         _rb.AddForce(direction * _speed);
 
         //jump
-        if(md.Jump)
+        if(md.Jump && (md.Grounded || md.WasGrounded))
         {
             _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
+        }
+
+        //dash
+        if(md.Dash)
+        {
+            _rb.AddForce(md.DashDirection * _dashForce, ForceMode.Impulse);
+            _allowDash = false;
         }
     }
 
@@ -199,7 +244,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private void HandleAnimations()
     {
         Vector2 inputRaw = _playerControlls.OnFoot.Movement.ReadValue<Vector2>();
-        if (_rb.velocity.magnitude > 0.3f)
+        if (_rb.velocity.magnitude > 0.5f)
         {
             _animator.SetBool("isWalking", true);
             _animator.SetFloat("xMovement", inputRaw.x);
@@ -211,6 +256,14 @@ public class PredictedPlayerController : NetworkBehaviour
         }
 
         if (_jump) _netAnimator.SetTrigger("jump");
-        if (Physics.Raycast(transform.position, transform.up * -1, 1f, _whatIsGround)) _netAnimator.SetTrigger("hitGround");
+        if (Physics.Raycast(transform.position, transform.up * -1, 0.6f, _whatIsGround)) _netAnimator.SetTrigger("hitGround");
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if(collision.gameObject.layer == 7 || collision.gameObject.layer == 8 ||  collision.gameObject.layer == 9 || collision.gameObject.layer == 10)
+        {
+            _allowDash = true;
+        }
     }
 }

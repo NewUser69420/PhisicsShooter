@@ -24,9 +24,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "ResetMovement",
+                    "name": "Dash",
                     "type": "Button",
-                    "id": "3b5741a0-5dee-4a31-a649-148d02713950",
+                    "id": "8f2759f1-0bad-4d40-bf14-5367db71ebaa",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -111,23 +111,23 @@
                 },
                 {
                     "name": "",
-                    "id": "6b75873d-0e64-46f8-a9c0-80f868233e96",
-                    "path": "<Keyboard>/leftAlt",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ResetMovement",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "e2261025-2a79-4da3-8821-bb6a035aa416",
                     "path": "<Mouse>/delta",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Look",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "aef8b097-50e3-4446-a580-434de9769abc",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
