@@ -26,9 +26,23 @@ public class InitializePlayer : NetworkBehaviour
 
         if(base.IsClient)
         {
-            transform.Find("Character/Body").gameObject.layer = LayerMask.NameToLayer("Character");
+            SetGameLayerRecursive(this.gameObject, 6);
         }
     }
+
+    private void SetGameLayerRecursive(GameObject _go, int _layer)
+    {
+        _go.layer = _layer;
+        foreach (Transform child in _go.transform)
+        {
+            child.gameObject.layer = _layer;
+
+            Transform _HasChildren = child.GetComponentInChildren<Transform>();
+            if (_HasChildren != null)
+                SetGameLayerRecursive(child.gameObject, _layer);
+        }
+    }
+
 
     private void OnSceneLoaded(SceneLoadEndEventArgs arg)
     {
