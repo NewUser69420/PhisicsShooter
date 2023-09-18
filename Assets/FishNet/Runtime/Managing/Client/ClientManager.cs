@@ -131,6 +131,11 @@ namespace FishNet.Managing.Client
 #endif
         #endregion
 
+        private int connectionTries;
+        public ushort _port;
+        private GameObject LoadingScreen;
+        private GameObject HomeScreen;
+
         private void OnDestroy()
         {
             Objects?.SubscribeToSceneLoaded(false);
@@ -153,6 +158,9 @@ namespace FishNet.Managing.Client
             //Listen for client connections from server.
             RegisterBroadcast<ClientConnectionChangeBroadcast>(OnClientConnectionBroadcast);
             RegisterBroadcast<ConnectedClientsBroadcast>(OnConnectedClientsBroadcast);
+
+            LoadingScreen = GameObject.Find("MainMenuUI").transform.Find("LoadingScreen").gameObject;
+            HomeScreen = GameObject.Find("MainMenuUI").transform.Find("HomeScreen").gameObject;
         }
 
 
@@ -311,6 +319,24 @@ namespace FishNet.Managing.Client
 
             NetworkManager.UpdateFramerate();
             OnClientConnectionState?.Invoke(args);
+
+            if (state == LocalConnectionState.Stopped)
+            {
+                connectionTries++;
+
+                if(connectionTries == 1)
+                {
+                    Debug.Log($"Trying again with: 86.83.234.112:" + _port);
+                    StartConnection("86.83.234.112", _port);
+                }
+                else if(connectionTries > 1)
+                {
+                    Debug.Log("Back To MainMenu");
+                    HomeScreen.SetActive(true);
+                    LoadingScreen.SetActive(false);
+                    connectionTries = 0;
+                }
+            }
         }
 
         /// <summary>

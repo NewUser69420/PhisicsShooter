@@ -1,9 +1,7 @@
 using FishNet;
 using FishNet.Managing;
+using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
-using FishNet.Object;
-using FishNet.Transporting.Tugboat;
-using LiteNetLib;
 using System;
 using System.Linq;
 using TMPro;
@@ -44,6 +42,11 @@ public class MainMenu : MonoBehaviour
             {
                 serverHostPort = Convert.ToUInt16(arg);
             }
+
+            if(arg == "-dediServ")
+            {
+                ip = "86.83.234.112";
+            }
         }
 
         if (serverHostPort == 0)
@@ -54,12 +57,10 @@ public class MainMenu : MonoBehaviour
         {
             clientConnectPort = 7777;
         }
-        //local play
-        ip = "localhost";
-
-        //online play
-        //ip = "86.83.234.112";
-
+        if(ip == "" || ip == null || ip == "-hubSessionId")
+        {
+            ip = "localhost";
+        }
 
         Debug.Log("serverHostPort = " + serverHostPort);
         Debug.Log("clientConnectPort = " + clientConnectPort);
@@ -121,6 +122,7 @@ public class MainMenu : MonoBehaviour
         //activate loading screen
         ServerSelectionScreen.gameObject.SetActive(false);
         LoadingScreen.gameObject.SetActive(true);
+        FindObjectOfType<ClientManager>()._port = 7777;
 
         ConnectClient(ip, 7777);
         Debug.Log("Connecting with: " + ip + ":7777");
@@ -130,9 +132,10 @@ public class MainMenu : MonoBehaviour
         //activate loading screen
         ServerSelectionScreen.gameObject.SetActive(false);
         LoadingScreen.gameObject.SetActive(true);
+        FindObjectOfType<ClientManager>()._port = 7779;
 
-        ConnectClient(ip, 7778);
-        Debug.Log("Connecting with: " + ip + ":7778");
+        ConnectClient(ip, 7779);
+        Debug.Log("Connecting with: " + ip + ":7779");
     }
 
     public void OnSceneLoaded(SceneLoadEndEventArgs obj)

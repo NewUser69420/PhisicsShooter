@@ -104,6 +104,7 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 6879514763868302885}
   - {fileID: 4429376636988222801}
+  - {fileID: 45970168456011250}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
@@ -115,7 +116,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 6
+  <PrefabId>k__BackingField: 7
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
@@ -179,7 +180,15 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 4044049003392145762}
   _speed: 100
   _jumpForce: 25
+  jumpSpeedMod: 0
+  groundedOffset: 0
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  groundedTimerMax: 0
+  serverGrounded: 0
   activated: 0
+  _cam: {fileID: 0}
 --- !u!114 &45970168456011250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,11 +201,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f76ee5ec61e1e84f84fe330cca6c22c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
+  _componentIndexCache: 2
   _addedNetworkObject: {fileID: 4044049003392145762}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 4044049003392145762}
   spawnPos: {x: 0, y: 5, z: 0}
   MainMenuUI: {fileID: 0}
+  CamPrefab: {fileID: 0}
 --- !u!1 &8712541453067026100
 GameObject:
   m_ObjectHideFlags: 0
