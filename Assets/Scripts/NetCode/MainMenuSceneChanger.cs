@@ -3,29 +3,17 @@ using FishNet.Object;
 using UnityEngine;
 using FishNet.Managing.Scened;
 using System.Collections.Generic;
-using System;
 using FishNet.Connection;
-using FishNet.Transporting;
 
 public class MainMenuSceneChanger : NetworkBehaviour
 {
     private List<NetworkObject> objToKeep = new List<NetworkObject>();
     private NetworkConnection conn;
 
-    private void Awake()
+    public void IWantToChangeScenesNow(NetworkConnection connection)
     {
-        if (base.IsClient) return;
-        InstanceFinder.ServerManager.OnRemoteConnectionState += OnClientConnect;
-    }
-
-    //change scene when connected to server    
-    public void OnClientConnect(NetworkConnection connection, RemoteConnectionStateArgs args)
-    {
-        if (base.IsClient) return;
-        
-        GetReferanceToPlayers();
         conn = connection;
-        ChangeScenes(objToKeep.ToArray(), conn);
+        ChangeScenes(GetReferanceToPlayers(), conn);
     }
 
     private void ChangeScenes(NetworkObject[] _objs, NetworkConnection _conn)
@@ -36,11 +24,14 @@ public class MainMenuSceneChanger : NetworkBehaviour
         InstanceFinder.SceneManager.LoadConnectionScenes(_conn, sld);
     }
 
-    private void GetReferanceToPlayers()
+    private NetworkObject[] GetReferanceToPlayers()
     {
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
         {
             objToKeep.Add(obj.GetComponent<NetworkObject>());
+            return objToKeep.ToArray();
         }
+        Debug.Log($"Can't find players to take to new scene");
+        return null;
     }
 }

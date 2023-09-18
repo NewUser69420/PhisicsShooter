@@ -3,8 +3,9 @@ using FishNet.Component.Animating;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
+using System.Data;
+using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PredictedPlayerMover : NetworkBehaviour
 {
@@ -13,16 +14,18 @@ public class PredictedPlayerMover : NetworkBehaviour
         public bool Jump;
         public float Horizontal;
         public float Vertical;
-        public Quaternion LookData;
+        public float LookHorizontal;
+        public float LookVertical;
         public bool Grounded;
         public bool WasGrounded;
 
-        public MoveData(float horizontal, float vertical, bool jump, Quaternion lookData, bool grounded, bool wasGrounded)
+        public MoveData(float horizontal, float vertical, bool jump, float lookHorizontal, float lookVertical, bool grounded, bool wasGrounded)
         {
             Jump = jump;
             Horizontal = horizontal;
             Vertical = vertical;
-            LookData = lookData;
+            LookHorizontal = lookHorizontal;
+            LookVertical = lookVertical;
             Grounded = grounded;
             WasGrounded = wasGrounded;
             _tick = 0;
@@ -60,26 +63,30 @@ public class PredictedPlayerMover : NetworkBehaviour
     private float _speed;
     [SerializeField]
     private float _jumpForce;
+    [SerializeField]
+    private float _sensitivity;
     private float _nextJumpTime;
     [SerializeField]
     private float jumpSpeedMod;
     [SerializeField]
     private float groundedOffset;
     [SerializeField]
-    private LayerMask layerMask;
+    private LayerMask whatIsGround;
     private float groundedTimer;
     [SerializeField]
     private float groundedTimerMax;
     public bool serverGrounded;
     private bool serverWasGrounded;
     private float serverGroundedTimer;
+
+    private float xRotation;
+    private float yRotation;
     
     private bool _jump;
     private bool _subscribed = false;
     public bool activated = false;
 
     private Rigidbody _rb;
-    public GameObject _cam;
     private Animator _animator;
     private NetworkAnimator _netAnimator;
 
@@ -189,18 +196,10 @@ public class PredictedPlayerMover : NetworkBehaviour
 
         float vertical = playerControlls.OnFoot.Movement.ReadValue<Vector2>().y;
         float horizontal = playerControlls.OnFoot.Movement.ReadValue<Vector2>().x;
-        Quaternion lookData;
+        float lookHorizontal = playerControlls.OnFoot.Look.ReadValue<Vector2>().x;
+        float lookVertical = playerControlls.OnFoot.Look.ReadValue<Vector2>().y;
         bool grounded = serverGrounded;
         bool wasGrounded;
-        if (_cam != null)
-        {
-            lookData = _cam.transform.rotation;
-        }
-        else
-        {
-            lookData = Quaternion.identity;
-        }
-
         if (grounded) groundedTimer = groundedTimerMax;
         if (groundedTimer > 0)
         {
@@ -212,9 +211,9 @@ public class PredictedPlayerMover : NetworkBehaviour
             wasGrounded = false;
         }
 
-        if (horizontal == 0f && vertical == 0f && lookData == null && !_jump) return;
+        if (horizontal == 0f && vertical == 0f && lookHorizontal == 0f && lookVertical == 0f && !_jump) return;
 
-        md = new MoveData(vertical, horizontal, _jump, lookData, grounded, wasGrounded);
+        md = new MoveData(vertical, horizontal, _jump, lookVertical, lookHorizontal, grounded, wasGrounded);
         _jump = false;
     }
 
@@ -228,7 +227,6 @@ public class PredictedPlayerMover : NetworkBehaviour
         {
             _rb.AddForce(Physics.gravity * 50);
         }
-        Debug.Log($"{_grounded} + {_wasGrounded}");
     }
 
     [Replicate]
@@ -236,15 +234,30 @@ public class PredictedPlayerMover : NetworkBehaviour
     {
         if (!activated) return;
 
+        //moving
         Vector3 direction = (Vector3)(md.Vertical * transform.right + md.Horizontal * transform.forward); 
         _rb.AddForce(direction * _speed);
 
+        //jumping
         if (md.Jump && (md.Grounded || md.WasGrounded))
         {
             _rb.AddForce(new Vector3(0f, _jumpForce, 0f), ForceMode.Impulse);
         }
 
-        transform.rotation = md.LookData;
+        //looking
+        float mouseX = md.LookHorizontal;
+        float mouseY = md.LookVertical;
+
+        xRotation -= (mouseY * _sensitivity);
+        xRotation = Mathf.Clamp(xRotation, -70, 70);
+        yRotation -= (mouseX * _sensitivity);
+
+        transform.Find("Camera/CMCam").transform.rotation = Quaternion.Euler(xRotation, yRotation, 0f);
+
+        //rotate player
+        transform.rotation = Quaternion.Euler(Quaternion.identity.x, xRotation, Quaternion.identity.z);
+
+        Debug.Log($"{md.Jump} + {md.Grounded} + {md.WasGrounded}");
     }
 
     [Reconcile]
@@ -271,6 +284,6 @@ public class PredictedPlayerMover : NetworkBehaviour
         }
 
         if (_jump) _netAnimator.SetTrigger("jump");
-        if (Physics.Raycast(transform.position, transform.up * -1, 1f, layerMask)) _netAnimator.SetTrigger("hitGround");
+        if (Physics.Raycast(transform.position, transform.up * -1, 1f, whatIsGround)) _netAnimator.SetTrigger("hitGround");
     }
 }

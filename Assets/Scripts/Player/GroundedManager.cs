@@ -3,6 +3,7 @@ using UnityEngine;
 public class GroundedManager : MonoBehaviour
 {
     private PredictedPlayerMover playerScript;
+    public LayerMask whatIsGround;
 
     private void Awake()
     {
@@ -11,11 +12,11 @@ public class GroundedManager : MonoBehaviour
 
     private void OnCollisionStay(Collision collision)
     {
-        playerScript.serverGrounded = true;
+        if(collision.gameObject.layer == whatIsGround) playerScript.serverGrounded = true;
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        playerScript.serverGrounded = false;
+        if (collision.gameObject.layer == whatIsGround) playerScript.serverGrounded = false;
     }
 }

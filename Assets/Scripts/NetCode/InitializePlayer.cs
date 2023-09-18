@@ -1,9 +1,7 @@
 using FishNet;
 using FishNet.Connection;
-using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing.Scened;
 using FishNet.Object;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class InitializePlayer : NetworkBehaviour
@@ -17,17 +15,23 @@ public class InitializePlayer : NetworkBehaviour
     private NetworkConnection conn;
     private GameObject obj;
 
-    private void Awake()
+    public override void OnStartNetwork()
     {
         InstanceFinder.SceneManager.OnLoadEnd += OnSceneLoaded;
+        
         MainMenuUI = GameObject.Find("MainMenuUI");
-
-        Cursor.lockState = CursorLockMode.Locked;
 
         if(base.IsClient)
         {
             SetGameLayerRecursive(this.gameObject, 6);
+            ChangeScenesServerRpc(base.ClientManager.Connection);
         }
+    }
+
+    [ServerRpc]
+    private void ChangeScenesServerRpc(NetworkConnection _conn)
+    {
+        GameObject.Find("NetcodeLogics").GetComponent<MainMenuSceneChanger>().IWantToChangeScenesNow(_conn);
     }
 
     private void SetGameLayerRecursive(GameObject _go, int _layer)
@@ -46,36 +50,32 @@ public class InitializePlayer : NetworkBehaviour
 
     private void OnSceneLoaded(SceneLoadEndEventArgs arg)
     {
+        //Invoke(nameof(InitializePlayerServerRpc), 1f);
         InitializePlayerServerRpc();
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     [ServerRpc]
-
     private void InitializePlayerServerRpc()
     {
-        foreach (var conn in InstanceFinder.ServerManager.Clients.Values)
+        foreach (var conn in base.ServerManager.Clients.Values)
         {
             foreach (var objj in conn.Objects)
             {
                 if (objj.gameObject.tag == "Player") obj = objj.gameObject;
             }
 
-            GameObject Cam = Instantiate(CamPrefab);
-            base.Spawn(Cam, conn);
-
-            obj.GetComponent<PredictedPlayerMover>().activated = true;
-            obj.GetComponent<PredictedPlayerMover>()._cam = Cam;
+            obj.GetComponent<PredictedPlayerController>()._activated = true;
 
             obj.transform.position = spawnPos;
 
-            InitializePlayerClientRpc(conn, obj, Cam);
+            InitializePlayerClientRpc(conn, obj);
         }
     }
 
     [TargetRpc]
-    private void InitializePlayerClientRpc(NetworkConnection _conn, GameObject _player, GameObject _Cam)
+    private void InitializePlayerClientRpc(NetworkConnection _conn, GameObject _player)
     {
-        _player.GetComponent<PredictedPlayerMover>().activated = true;
-        _player.GetComponent<PredictedPlayerMover>()._cam = _Cam;
+        _player.GetComponent<PredictedPlayerController>()._activated = true;
     }
 }

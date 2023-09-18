@@ -182,7 +182,7 @@ MonoBehaviour:
   _jumpForce: 25
   jumpSpeedMod: 0
   groundedOffset: 0
-  layerMask:
+  whatIsGround:
     serializedVersion: 2
     m_Bits: 0
   groundedTimerMax: 0
