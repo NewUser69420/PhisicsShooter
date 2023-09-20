@@ -1,59 +1,74 @@
 using FishNet;
 using FishNet.Component.Animating;
-using FishNet.Example.Scened;
+using FishNet.Connection;
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
+using UnityEngine.InputSystem.HID;
+using static PlayerState;
 
 public class PredictedPlayerController : NetworkBehaviour
 {
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
+    [SerializeField] private float _grappleSpeed;
     [SerializeField] private float _jumpReset;
     [SerializeField] private float _dashForce;
     [SerializeField] private float _dashReset;
-    [SerializeField] private float _groundedTimerMax;
+    [SerializeField] private float _speedLimit;
     [SerializeField] private LayerMask _whatIsGround;
+    [SerializeField] private float _wallJumpForce;
+    [SerializeField] private float _wallJumpUp;
+    [SerializeField] private float _wallJumpForward;
 
-
-    [System.NonSerialized] public bool _grounded;
     [System.NonSerialized] public bool _activated;
+    [System.NonSerialized] public bool _didWallJump;
+    [System.NonSerialized] public bool canDashOnWallJump;
 
     private PlayerControlls _playerControlls;
     private Rigidbody _rb;
+    private PlayerState _playerState;
     private Animator _animator;
     private NetworkAnimator _netAnimator;
+    private WallRunning _wallRunner;
     private Vector3 _dashDirection;
+    private Vector3 _velocityToSet;
+    private Vector3 _wallNormal;
+    private Vector3 _wallForward;
     private float _nextJumpTime;
     private float _nextDashTime;
-    private bool _jump;
-    private bool _dash;
     private bool _allowDash = true;
-    private bool _wasGrounded;
-    private float _groundedTimer;
-    
-    
+    private bool _wallLeft;
 
     public struct MoveData : IReplicateData
     {
-        public bool Jump;
-        public bool Dash;
-        public bool Grounded;
-        public bool WasGrounded;
+        public ActionState aState;
+        public GroundedState gState;
         public float MoveHorizontal;
         public float MoveVertical;
         public Vector3 DashDirection;
+        public Vector3 GrappleVelocity;
+        public Vector3 WallNormal;
+        public Vector3 WallForward;
+        public bool WallLeft;
+        public bool WallJump;
 
-        public MoveData(bool jump, bool dash, bool grounded, bool wasGrounded, float moveHorizontal, float moveVertical, Vector3 dashDirection)
+        public MoveData(ActionState astate, GroundedState gstate, float moveHorizontal, float moveVertical, Vector3 dashDirection, Vector3 grappleVelocity, Vector3 wallNormal, Vector3 wallForward, bool wallLeft, bool wallJump)
         {
-            Jump = jump;
-            Dash = dash;
-            Grounded = grounded;
-            WasGrounded = wasGrounded;
+            aState = astate;
+            gState = gstate;
             MoveHorizontal = moveHorizontal;
             MoveVertical = moveVertical;
             DashDirection = dashDirection;
+            GrappleVelocity = grappleVelocity;
+            WallNormal = wallNormal;
+            WallForward = wallForward;
+            WallLeft = wallLeft;
+            WallJump = wallJump;
+
 
             _tick = 0;
         }
@@ -91,6 +106,8 @@ public class PredictedPlayerController : NetworkBehaviour
         _rb = GetComponent<Rigidbody>();
         _animator = GetComponentInChildren<Animator>();
         _netAnimator = GetComponentInChildren<NetworkAnimator>();
+        _playerState =GetComponent<PlayerState>();
+        _wallRunner = GetComponent<WallRunning>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
@@ -125,37 +142,50 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void Update()
     {
-        if (base.IsOwner)
-        {
+        //prepare wallrun
+        _wallNormal = _wallRunner.wallRight ? _wallRunner.rightWallhit.normal : _wallRunner.leftWallhit.normal;
+        _wallForward = Vector3.Cross(_wallNormal, transform.up);
+        if (!(_wallRunner.wallLeft && _wallRunner.verticalInput > 0) && !(_wallRunner.wallRight && _wallRunner.horizontalInput < 0)) _wallLeft = true;
+        else _wallLeft = false;
             //prepare Jump
-            if (_playerControlls.OnFoot.Jump.WasPressedThisFrame() && Time.time > _nextJumpTime)
+            if (_playerControlls.OnFoot.Jump.WasPressedThisFrame() && Time.time > _nextJumpTime && (_playerState.aState != ActionState.Dashing || _playerState.aState != ActionState.Grappling || _playerState.aState != ActionState.WallRunning))
             {
                 _nextJumpTime = Time.time + _jumpReset;
-                _jump = true;
+                _playerState.aState = ActionState.Jumping;
+            }
+
+            //prepare walljump
+            if(_playerControlls.OnFoot.Jump.WasPressedThisFrame() && _playerState.gState != GroundedState.Grounded)
+            {
+                _didWallJump = true;
             }
 
             //prepare dash
             if(_playerControlls.OnFoot.Dash.WasPressedThisFrame() && Time.time > _nextDashTime && _allowDash)
             {
                 _nextDashTime = Time.time + _dashReset;
-                _dash = true;
+                _playerState.aState = ActionState.Dashing;
             }
             _dashDirection = transform.Find("Cam").forward;
 
-            //grounded timer
-            if (_groundedTimer > 0)
-            {
-                _groundedTimer -= Time.time;
-                _wasGrounded = true;
-            }
-            else
-            {
-                _wasGrounded = false;
-            }
-
-            if (_grounded) _groundedTimer = _groundedTimerMax;
-
+        if(base.IsOwner)
+        {
             HandleAnimations();
+        }
+
+        SyncDataServerRpc(base.ClientManager.Connection ,_playerState.aState, _playerState.gState);
+    }
+
+    [ServerRpc]
+    private void SyncDataServerRpc(NetworkConnection conn, ActionState aState, GroundedState Gstate)
+    {
+        foreach(NetworkObject obj in  conn.Objects)
+        {
+            if(obj.gameObject.tag == "Player")
+            {
+                GetComponent<PlayerState>().aState = aState;
+                GetComponent<PlayerState>().gState = Gstate;
+            }
         }
     }
 
@@ -190,15 +220,18 @@ public class PredictedPlayerController : NetworkBehaviour
         float moveHorizontal = _playerControlls.OnFoot.Movement.ReadValue<Vector2>().x;
         float moveVertical = _playerControlls.OnFoot.Movement.ReadValue<Vector2>().y;
         Vector3 dashDirection = _dashDirection;
+        Vector3 grappleVelocity = _velocityToSet;
+        Vector3 wallNormal = _wallNormal;
+        Vector3 wallForward = _wallForward;
 
-        md = new MoveData(_jump, _dash, _grounded, _wasGrounded, moveHorizontal, moveVertical, dashDirection);
-        _jump = false;
-        _dash = false;
+        md = new MoveData(_playerState.aState, _playerState.gState, moveHorizontal, moveVertical, dashDirection, grappleVelocity, wallNormal, wallForward, _wallLeft, _didWallJump);
+        if(_playerState.aState == ActionState.Jumping || _playerState.aState == ActionState.Dashing) _playerState.aState = ActionState.Passive;
+        _didWallJump = false;
     }
 
     private void AddGravity()
     {
-        if(_grounded || _wasGrounded)
+        if(_playerState.gState == GroundedState.Grounded)
         {
             _rb.AddForce(Physics.gravity * 2f);
         }
@@ -209,7 +242,6 @@ public class PredictedPlayerController : NetworkBehaviour
     }
 
     [Replicate]
-
     private void Move(MoveData md, bool asServer, Channel channel = Channel.Unreliable, bool replaying = false)
     {
         if (!_activated) return;
@@ -219,16 +251,60 @@ public class PredictedPlayerController : NetworkBehaviour
         _rb.AddForce(direction * _speed);
 
         //jump
-        if(md.Jump && (md.Grounded || md.WasGrounded))
+        if(md.aState == ActionState.Jumping && md.gState == GroundedState.Grounded)
         {
             _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
+            if(md.aState == ActionState.Jumping)
+            {
+                _playerState.aState = ActionState.Passive;
+            }
         }
 
         //dash
-        if(md.Dash)
+        if(md.aState == ActionState.Dashing && md.gState == GroundedState.InAir)
         {
             _rb.AddForce(md.DashDirection * _dashForce, ForceMode.Impulse);
             _allowDash = false;
+        }
+
+        //grapple
+        if(md.aState == ActionState.Grappling)
+        {
+            _rb.velocity = md.GrappleVelocity;
+
+        }
+
+        //wallrun
+        if(md.aState == ActionState.WallRunning)
+        {
+            _rb.useGravity = false;
+            _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
+
+            if ((transform.forward - md.WallForward).magnitude > (transform.forward - -md.WallForward).magnitude)
+            {
+                md.WallForward -= md.WallForward;
+            }
+
+            ////forward force
+            _rb.AddForce(md.WallForward * _wallRunner.wallRunForce, ForceMode.Force);
+
+            ////upward force
+            _rb.AddForce(Vector3.up * _wallRunner.upwardForce, ForceMode.Force);
+
+            ////push to wall force
+            if (md.WallLeft) _rb.AddForce(-_wallNormal * 100, ForceMode.Force);
+
+            ////wallrun jump
+            if (md.WallJump)
+            {
+                _rb.AddForce(transform.forward * _wallJumpForward, ForceMode.Impulse);
+                _rb.AddForce(transform.up * _wallJumpUp, ForceMode.Impulse);
+                _rb.AddForce(_wallNormal * _wallJumpForce , ForceMode.Impulse);
+                if (md.aState == ActionState.Jumping)
+                {
+                    _playerState.aState = ActionState.Passive;
+                }
+            }
         }
     }
 
@@ -255,8 +331,11 @@ public class PredictedPlayerController : NetworkBehaviour
             _animator.SetBool("isWalking", false);
         }
 
-        if (_jump) _netAnimator.SetTrigger("jump");
-        if (Physics.Raycast(transform.position, transform.up * -1, 0.6f, _whatIsGround)) _netAnimator.SetTrigger("hitGround");
+        if (_playerState.aState == ActionState.Jumping && _playerState.gState == GroundedState.Grounded) _netAnimator.SetTrigger("jump");
+        if (Physics.Raycast(transform.position, transform.up * -1, 0.4f, _whatIsGround)) _netAnimator.SetTrigger("hitGround");
+
+        if (_playerState.gState == GroundedState.InAir) _animator.SetBool("inAir", true);
+        else _animator.SetBool("inAir", false);
     }
 
     private void OnCollisionStay(Collision collision)
@@ -264,6 +343,42 @@ public class PredictedPlayerController : NetworkBehaviour
         if(collision.gameObject.layer == 7 || collision.gameObject.layer == 8 ||  collision.gameObject.layer == 9 || collision.gameObject.layer == 10)
         {
             _allowDash = true;
+        }
+    }
+
+    public void jumpToPosition(Vector3 targetPosition, float trajectoryHeight)
+    {
+        _velocityToSet = CalculateJumpVelocity(transform.position, targetPosition, trajectoryHeight);
+        Invoke(nameof(SetVelocity), 0.1f);
+    }
+
+    public Vector3 CalculateJumpVelocity(Vector3 startPoint, Vector3 endPoint, float trajectoryHeight)
+    {
+        float gravity = Physics.gravity.y;
+        float displacementY = endPoint.y - startPoint.y;
+        Vector3 displacementXZ = new Vector3(endPoint.x - startPoint.x, 0f, endPoint.z - startPoint.z);
+
+        Vector3 velocityY = Vector3.up * Mathf.Sqrt(-2 * gravity * trajectoryHeight);
+        Vector3 velocityXZ = (displacementXZ / (Mathf.Sqrt(-2 * trajectoryHeight / gravity)
+            + Mathf.Sqrt(2 * (displacementY - trajectoryHeight) / gravity))) * _grappleSpeed;
+
+        return velocityXZ + velocityY;
+    }
+
+    
+    private void SetVelocity()
+    {
+        _playerState.aState = ActionState.Grappling;
+    }
+
+    private void SpeedControll()
+    {
+        Vector3 flatVel = _rb.velocity;
+
+        if (flatVel.magnitude > _speedLimit)
+        {
+            Vector3 limitedVel = flatVel.normalized * _speedLimit;
+            _rb.velocity = flatVel;
         }
     }
 }
