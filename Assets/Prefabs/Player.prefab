@@ -2899,7 +2899,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 3968
+    m_Bits: 3976
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -2963,6 +2963,37 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
+--- !u!1 &1465334209086333056
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4965320605601151779}
+  m_Layer: 7
+  m_Name: RightEye
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4965320605601151779
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465334209086333056}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.1, y: 1.664, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4266674162621430886}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3811346891353028262
 GameObject:
   m_ObjectHideFlags: 0
@@ -7804,10 +7835,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e96c5e4261dc56d4dbd39734ba08c29d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 8
+  _componentIndexCache: 9
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   ps: {fileID: 1512912982445540452}
+--- !u!1 &4180881394200723329
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8971373072140826637}
+  m_Layer: 7
+  m_Name: LeftEye
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8971373072140826637
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4180881394200723329}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.1, y: 1.664, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4266674162621430886}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4266674162621430887
 GameObject:
   m_ObjectHideFlags: 0
@@ -7828,6 +7890,7 @@ GameObject:
   - component: {fileID: 4070201328074355821}
   - component: {fileID: 4009746763782404851}
   - component: {fileID: -7510990679045343504}
+  - component: {fileID: -4802719821691361813}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -7851,6 +7914,8 @@ Transform:
   - {fileID: 4266674164107154663}
   - {fileID: 3525130066058891284}
   - {fileID: 4969374493567585470}
+  - {fileID: 8971373072140826637}
+  - {fileID: 4965320605601151779}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &4735332290488561949
@@ -7968,6 +8033,7 @@ MonoBehaviour:
   - {fileID: -4210208256836070211}
   - {fileID: 4070201328074355821}
   - {fileID: 4009746763782404851}
+  - {fileID: -4802719821691361813}
   - {fileID: 8032723403008186688}
   - {fileID: 7468245027202887601}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
@@ -8133,6 +8199,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gState: 0
   aState: 0
+--- !u!114 &-4802719821691361813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4266674162621430887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 843eb13ada2fa14459efce7ffffd8c98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 7
+  _addedNetworkObject: {fileID: 1866983901336284639}
+  _networkObjectCache: {fileID: 1866983901336284639}
+  Cam: {fileID: 4969374493567585470}
+  LeftEye: {fileID: 8971373072140826637}
+  RightEye: {fileID: 4965320605601151779}
 --- !u!1 &4266674164107154660
 GameObject:
   m_ObjectHideFlags: 0
@@ -8202,7 +8286,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8cac635f24954048aad3a6ff9110beb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 7
+  _componentIndexCache: 8
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   IgnoredParameters: []

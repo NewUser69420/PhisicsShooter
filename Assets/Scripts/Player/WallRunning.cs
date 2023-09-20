@@ -110,7 +110,7 @@ public class WallRunning : NetworkBehaviour
 
         if (wallRight || wallLeft)
         {
-            pm.canDashOnWallJump = true;
+            pm._canDashOnWallJump = true;
         }
     }
 

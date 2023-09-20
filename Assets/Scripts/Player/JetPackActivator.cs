@@ -25,7 +25,7 @@ public class JetPackActivator : NetworkBehaviour
                 //nothing?
                 break;
             case ActionState.Jumping:
-                buffer += 0.4f;
+                buffer += 0.5f;
                 break;
             case ActionState.Dashing:
                 buffer += 0.7f;
@@ -51,7 +51,5 @@ public class JetPackActivator : NetworkBehaviour
         {
             em.enabled = false;
         }
-
-        Debug.Log(buffer);
     }
 }

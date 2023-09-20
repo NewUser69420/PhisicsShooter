@@ -26,7 +26,8 @@ public class PredictedPlayerController : NetworkBehaviour
 
     [System.NonSerialized] public bool _activated;
     [System.NonSerialized] public bool _didWallJump;
-    [System.NonSerialized] public bool canDashOnWallJump;
+    [System.NonSerialized] public bool _canDashOnWallJump;
+    [System.NonSerialized] public bool _shootLaser;
 
     private PlayerControlls _playerControlls;
     private Rigidbody _rb;
@@ -34,6 +35,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private Animator _animator;
     private NetworkAnimator _netAnimator;
     private WallRunning _wallRunner;
+    private LaserShooter _laserShooter;
     private Vector3 _dashDirection;
     private Vector3 _velocityToSet;
     private Vector3 _wallNormal;
@@ -42,6 +44,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private float _nextDashTime;
     private bool _allowDash = true;
     private bool _wallLeft;
+    
 
     public struct MoveData : IReplicateData
     {
@@ -108,6 +111,7 @@ public class PredictedPlayerController : NetworkBehaviour
         _netAnimator = GetComponentInChildren<NetworkAnimator>();
         _playerState =GetComponent<PlayerState>();
         _wallRunner = GetComponent<WallRunning>();
+        _laserShooter = GetComponent<LaserShooter>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
@@ -171,9 +175,8 @@ public class PredictedPlayerController : NetworkBehaviour
         if(base.IsOwner)
         {
             HandleAnimations();
+            SyncDataServerRpc(base.ClientManager.Connection, _playerState.aState, _playerState.gState);
         }
-
-        SyncDataServerRpc(base.ClientManager.Connection ,_playerState.aState, _playerState.gState);
     }
 
     [ServerRpc]
@@ -196,6 +199,8 @@ public class PredictedPlayerController : NetworkBehaviour
             Reconciliation(default, false);
             BuildMoveData(out MoveData md);
             Move(md, false);
+
+            TrySpawnBullet();
         }
         if (base.IsServer)
         {
@@ -227,6 +232,30 @@ public class PredictedPlayerController : NetworkBehaviour
         md = new MoveData(_playerState.aState, _playerState.gState, moveHorizontal, moveVertical, dashDirection, grappleVelocity, wallNormal, wallForward, _wallLeft, _didWallJump);
         if(_playerState.aState == ActionState.Jumping || _playerState.aState == ActionState.Dashing) _playerState.aState = ActionState.Passive;
         _didWallJump = false;
+    }
+
+    private void TrySpawnBullet()
+    {
+        if(_shootLaser)
+        {
+            _shootLaser = false;
+
+            if (_laserShooter.LaserPrefab == null)
+            {
+                Debug.Log("Prefab is null");
+                return;
+            }
+            NetworkObject LeftBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.LeftEye.position + (_laserShooter.Cam.forward * 1f), transform.rotation);
+            NetworkObject RightBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.RightEye.position + (_laserShooter.Cam.forward * 1f), transform.rotation);
+
+            Laser_Bullet predictedBulletLeft = LeftBullet.GetComponent<Laser_Bullet>();
+            Laser_Bullet predictedBulletRight = RightBullet.GetComponent<Laser_Bullet>();
+            predictedBulletLeft.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+            predictedBulletRight.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+
+            base.Spawn(LeftBullet, base.Owner);
+            base.Spawn(RightBullet, base.Owner);
+        }
     }
 
     private void AddGravity()
