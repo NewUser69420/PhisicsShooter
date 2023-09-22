@@ -32,14 +32,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6994821930849859186}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.2, z: 0.1}
+  m_LocalScale: {x: 0.005, y: 0.15, z: 0.005}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3682022058638664526}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &8037818924964098908
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -168,15 +168,15 @@ MonoBehaviour:
   <ComponentIndex>k__BackingField: 0
   <PredictedSpawn>k__BackingField: {fileID: -866919528211901952}
   _networkBehaviours:
+  - {fileID: -866919528211901952}
   - {fileID: 9081940240629533867}
   - {fileID: 2266032076776741184}
-  - {fileID: -866919528211901952}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-    LocalScale: {x: 0.1, y: 0.2, z: 0.1}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    LocalScale: {x: 0.05, y: 0.15, z: 0.05}
   _isNetworked: 1
   _isGlobal: 0
   _initializeOrder: 0
@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2b597e1828355a4d994a69cbb11ef85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 2
+  _componentIndexCache: 0
   _addedNetworkObject: {fileID: 529274645029092721}
   _networkObjectCache: {fileID: 529274645029092721}
   _allowSpawning: 1
@@ -217,7 +217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 402926ef33e0a894d9fec352693988ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 0
+  _componentIndexCache: 1
   _addedNetworkObject: {fileID: 529274645029092721}
   _networkObjectCache: {fileID: 529274645029092721}
   _implementsPredictionMethods: 1
@@ -259,7 +259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d41ee39dcce173418b7bbda2a6f9bac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 1
+  _componentIndexCache: 2
   _addedNetworkObject: {fileID: 529274645029092721}
   _networkObjectCache: {fileID: 529274645029092721}
   _startingForce: {x: 0, y: 0, z: 0}

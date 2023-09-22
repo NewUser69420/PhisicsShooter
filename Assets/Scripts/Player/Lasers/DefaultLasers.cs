@@ -8,7 +8,7 @@ public class DefaultLasers : LaserShooter
     protected override void LaserType(){
         LaserPrefab = Resources.Load("LaserDefault", typeof(NetworkObject)) as NetworkObject;
 
-        resetTime = 0.3f;
+        resetTime = 0.05f;
         laserSpeed = 100;
     }
 }

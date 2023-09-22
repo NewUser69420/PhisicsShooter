@@ -13,14 +13,12 @@ public class Laser_Bullet : NetworkBehaviour
 
     private uint _stopTick = TimeManager.UNSET_TICK;
 
-    //private ServerHealthManager SHM;
+    private ServerHealthManager SHealth;
+
+    [System.NonSerialized] public GameObject lastHitObject;
 
     public int damage = 50;
     private bool canDoDamage = true;
-
-    void Awake(){
-        //SHM = FindObjectOfType<ServerHealthManager>();
-    }
     
     public override void OnStartNetwork(){
         StartCoroutine (Wait());
@@ -83,423 +81,115 @@ public class Laser_Bullet : NetworkBehaviour
         rb.velocity = value;
     }
 
-    void OnCollisionEnter(Collision collision){
-        if(!IsServer) return;
-        if(collision.gameObject.layer == LayerMask.NameToLayer("OtherCharacter") || collision.gameObject.layer == LayerMask.NameToLayer("Character")){
+    void OnTriggerEnter(Collider collider){
+        if (!IsServer) return;
+        if (collider.gameObject.layer == 12)
+        {
+
             if(!canDoDamage) return;
             canDoDamage = !canDoDamage;
 
-            string name = collision.gameObject.name;
-            // if(collision.gameObject.GetComponentInParent<NetworkObject>() == null) return;
-            var id = collision.gameObject.GetComponent<NetworkObject>().ClientManager.Connection;
-            //switch(id){
-            //    case 0 :
-            //        switch(name){
-            //            case "Hips" :
-            //                SHM.Player0[0] -= damage;
-            //                break;
-            //            case "Left Thigh" :
-            //                SHM.Player0[1] -= damage;
-            //                break;
-            //            case "Left Leg" :
-            //                SHM.Player0[2] -= damage;
-            //                break;
-            //            case "Left Foot" :
-            //                SHM.Player0[3] -= damage;
-            //                break;
-            //            case "Right Thigh" :
-            //                SHM.Player0[4] -= damage;
-            //                break;
-            //            case "Right Leg" :
-            //                SHM.Player0[5] -= damage;
-            //                break;
-            //            case "Right Foot" :
-            //                SHM.Player0[6] -= damage;
-            //                break;
-            //            case "Spine 1" :
-            //                SHM.Player0[7] -= damage;
-            //                break;
-            //            case "Spine 2" :
-            //                SHM.Player0[8] -= damage;
-            //                break;
-            //            case "Spine 3" :
-            //                SHM.Player0[9] -= damage;
-            //                break;
-            //            case "Left Shoulder" :
-            //                SHM.Player0[10] -= damage;
-            //                break;
-            //            case "Left Arm" :
-            //                SHM.Player0[11] -= damage;
-            //                break;
-            //            case "Left Forearm" :
-            //                SHM.Player0[12] -= damage;
-            //                break;
-            //            case "Left Hand" :
-            //                SHM.Player0[13] -= damage;
-            //                break;
-            //            case "Right Shoulder" :
-            //                SHM.Player0[14] -= damage;
-            //                break;
-            //            case "Right Arm" :
-            //                SHM.Player0[15] -= damage;
-            //                break;
-            //            case "Right Forearm" :
-            //                SHM.Player0[16] -= damage;
-            //                break;
-            //            case "Right Hand" :
-            //                SHM.Player0[17] -= damage;
-            //                break;
-            //            case "Neck" :
-            //                SHM.Player0[18] -= damage;
-            //                break;
-            //            case "Head" :
-            //                SHM.Player0[19] -= damage;
-            //                break;
-            //            default :
-            //                Debug.Log("hit non-damageble object");
-            //                break;
-            //        }       
-            //        break;
-            //    case 1 :
-            //        switch(name){
-            //            case "Hips" :
-            //                SHM.Player1[0] -= damage;
-            //                break;
-            //            case "Left Thigh" :
-            //                SHM.Player1[1] -= damage;
-            //                break;
-            //            case "Left Leg" :
-            //                SHM.Player1[2] -= damage;
-            //                break;
-            //            case "Left Foot" :
-            //                SHM.Player1[3] -= damage;
-            //                break;
-            //            case "Right Thigh" :
-            //                SHM.Player1[4] -= damage;
-            //                break;
-            //            case "Right Leg" :
-            //                SHM.Player1[5] -= damage;
-            //                break;
-            //            case "Right Foot" :
-            //                SHM.Player1[6] -= damage;
-            //                break;
-            //            case "Spine 1" :
-            //                SHM.Player1[7] -= damage;
-            //                break;
-            //            case "Spine 2" :
-            //                SHM.Player1[8] -= damage;
-            //                break;
-            //            case "Spine 3" :
-            //                SHM.Player1[9] -= damage;
-            //                break;
-            //            case "Left Shoulder" :
-            //                SHM.Player1[10] -= damage;
-            //                break;
-            //            case "Left Arm" :
-            //                SHM.Player1[11] -= damage;
-            //                break;
-            //            case "Left Forearm" :
-            //                SHM.Player1[12] -= damage;
-            //                break;
-            //            case "Left Hand" :
-            //                SHM.Player1[13] -= damage;
-            //                break;
-            //            case "Right Shoulder" :
-            //                SHM.Player1[14] -= damage;
-            //                break;
-            //            case "Right Arm" :
-            //                SHM.Player1[15] -= damage;
-            //                break;
-            //            case "Right Forearm" :
-            //                SHM.Player1[16] -= damage;
-            //                break;
-            //            case "Right Hand" :
-            //                SHM.Player1[17] -= damage;
-            //                break;
-            //            case "Neck" :
-            //                SHM.Player1[18] -= damage;
-            //                break;
-            //            case "Head" :
-            //                SHM.Player1[19] -= damage;
-            //                break;
-            //            default :
-            //                Debug.Log("hit non-damageble object");
-            //                break;
-            //        }       
-            //        break;
-            //    case 2 :
-            //        switch(name){
-            //            case "Hips" :
-            //                SHM.Player2[0] -= damage;
-            //                break;
-            //            case "Left Thigh" :
-            //                SHM.Player2[1] -= damage;
-            //                break;
-            //            case "Left Leg" :
-            //                SHM.Player2[2] -= damage;
-            //                break;
-            //            case "Left Foot" :
-            //                SHM.Player2[3] -= damage;
-            //                break;
-            //            case "Right Thigh" :
-            //                SHM.Player2[4] -= damage;
-            //                break;
-            //            case "Right Leg" :
-            //                SHM.Player2[5] -= damage;
-            //                break;
-            //            case "Right Foot" :
-            //                SHM.Player2[6] -= damage;
-            //                break;
-            //            case "Spine 1" :
-            //                SHM.Player2[7] -= damage;
-            //                break;
-            //            case "Spine 2" :
-            //                SHM.Player2[8] -= damage;
-            //                break;
-            //            case "Spine 3" :
-            //                SHM.Player2[9] -= damage;
-            //                break;
-            //            case "Left Shoulder" :
-            //                SHM.Player2[10] -= damage;
-            //                break;
-            //            case "Left Arm" :
-            //                SHM.Player2[11] -= damage;
-            //                break;
-            //            case "Left Forearm" :
-            //                SHM.Player2[12] -= damage;
-            //                break;
-            //            case "Left Hand" :
-            //                SHM.Player2[13] -= damage;
-            //                break;
-            //            case "Right Shoulder" :
-            //                SHM.Player2[14] -= damage;
-            //                break;
-            //            case "Right Arm" :
-            //                SHM.Player2[15] -= damage;
-            //                break;
-            //            case "Right Forearm" :
-            //                SHM.Player2[16] -= damage;
-            //                break;
-            //            case "Right Hand" :
-            //                SHM.Player2[17] -= damage;
-            //                break;
-            //            case "Neck" :
-            //                SHM.Player2[18] -= damage;
-            //                break;
-            //            case "Head" :
-            //                SHM.Player2[19] -= damage;
-            //                break;
-            //            default :
-            //                Debug.Log("hit non-damageble object");
-            //                break;
-            //        }       
-            //        break;
-            //    case 3 :
-            //        switch(name){
-            //            case "Hips" :
-            //                SHM.Player3[0] -= damage;
-            //                break;
-            //            case "Left Thigh" :
-            //                SHM.Player3[1] -= damage;
-            //                break;
-            //            case "Left Leg" :
-            //                SHM.Player3[2] -= damage;
-            //                break;
-            //            case "Left Foot" :
-            //                SHM.Player3[3] -= damage;
-            //                break;
-            //            case "Right Thigh" :
-            //                SHM.Player3[4] -= damage;
-            //                break;
-            //            case "Right Leg" :
-            //                SHM.Player3[5] -= damage;
-            //                break;
-            //            case "Right Foot" :
-            //                SHM.Player3[6] -= damage;
-            //                break;
-            //            case "Spine 1" :
-            //                SHM.Player3[7] -= damage;
-            //                break;
-            //            case "Spine 2" :
-            //                SHM.Player3[8] -= damage;
-            //                break;
-            //            case "Spine 3" :
-            //                SHM.Player3[9] -= damage;
-            //                break;
-            //            case "Left Shoulder" :
-            //                SHM.Player3[10] -= damage;
-            //                break;
-            //            case "Left Arm" :
-            //                SHM.Player3[11] -= damage;
-            //                break;
-            //            case "Left Forearm" :
-            //                SHM.Player3[12] -= damage;
-            //                break;
-            //            case "Left Hand" :
-            //                SHM.Player3[13] -= damage;
-            //                break;
-            //            case "Right Shoulder" :
-            //                SHM.Player3[14] -= damage;
-            //                break;
-            //            case "Right Arm" :
-            //                SHM.Player3[15] -= damage;
-            //                break;
-            //            case "Right Forearm" :
-            //                SHM.Player3[16] -= damage;
-            //                break;
-            //            case "Right Hand" :
-            //                SHM.Player3[17] -= damage;
-            //                break;
-            //            case "Neck" :
-            //                SHM.Player3[18] -= damage;
-            //                break;
-            //            case "Head" :
-            //                SHM.Player3[19] -= damage;
-            //                break;
-            //            default :
-            //                Debug.Log("hit non-damageble object");
-            //                break;
-            //        }       
-            //        break;
-            //    case 4 :
-            //        switch(name){
-            //            case "Hips" :
-            //                SHM.Player4[0] -= damage;
-            //                break;
-            //            case "Left Thigh" :
-            //                SHM.Player4[1] -= damage;
-            //                break;
-            //            case "Left Leg" :
-            //                SHM.Player4[2] -= damage;
-            //                break;
-            //            case "Left Foot" :
-            //                SHM.Player4[3] -= damage;
-            //                break;
-            //            case "Right Thigh" :
-            //                SHM.Player4[4] -= damage;
-            //                break;
-            //            case "Right Leg" :
-            //                SHM.Player4[5] -= damage;
-            //                break;
-            //            case "Right Foot" :
-            //                SHM.Player4[6] -= damage;
-            //                break;
-            //            case "Spine 1" :
-            //                SHM.Player4[7] -= damage;
-            //                break;
-            //            case "Spine 2" :
-            //                SHM.Player4[8] -= damage;
-            //                break;
-            //            case "Spine 3" :
-            //                SHM.Player4[9] -= damage;
-            //                break;
-            //            case "Left Shoulder" :
-            //                SHM.Player4[10] -= damage;
-            //                break;
-            //            case "Left Arm" :
-            //                SHM.Player4[11] -= damage;
-            //                break;
-            //            case "Left Forearm" :
-            //                SHM.Player4[12] -= damage;
-            //                break;
-            //            case "Left Hand" :
-            //                SHM.Player4[13] -= damage;
-            //                break;
-            //            case "Right Shoulder" :
-            //                SHM.Player4[14] -= damage;
-            //                break;
-            //            case "Right Arm" :
-            //                SHM.Player4[15] -= damage;
-            //                break;
-            //            case "Right Forearm" :
-            //                SHM.Player4[16] -= damage;
-            //                break;
-            //            case "Right Hand" :
-            //                SHM.Player4[17] -= damage;
-            //                break;
-            //            case "Neck" :
-            //                SHM.Player4[18] -= damage;
-            //                break;
-            //            case "Head" :
-            //                SHM.Player4[19] -= damage;
-            //                break;
-            //            default :
-            //                Debug.Log("hit non-damageble object");
-            //                break;
-            //        }       
-            //        break;
-            //    case 5 :
-            //        switch(name){
-            //            case "Hips" :
-            //                SHM.Player5[0] -= damage;
-            //                break;
-            //            case "Left Thigh" :
-            //                SHM.Player5[1] -= damage;
-            //                break;
-            //            case "Left Leg" :
-            //                SHM.Player5[2] -= damage;
-            //                break;
-            //            case "Left Foot" :
-            //                SHM.Player5[3] -= damage;
-            //                break;
-            //            case "Right Thigh" :
-            //                SHM.Player5[4] -= damage;
-            //                break;
-            //            case "Right Leg" :
-            //                SHM.Player5[5] -= damage;
-            //                break;
-            //            case "Right Foot" :
-            //                SHM.Player5[6] -= damage;
-            //                break;
-            //            case "Spine 1" :
-            //                SHM.Player5[7] -= damage;
-            //                break;
-            //            case "Spine 2" :
-            //                SHM.Player5[8] -= damage;
-            //                break;
-            //            case "Spine 3" :
-            //                SHM.Player5[9] -= damage;
-            //                break;
-            //            case "Left Shoulder" :
-            //                SHM.Player5[10] -= damage;
-            //                break;
-            //            case "Left Arm" :
-            //                SHM.Player5[11] -= damage;
-            //                break;
-            //            case "Left Forearm" :
-            //                SHM.Player5[12] -= damage;
-            //                break;
-            //            case "Left Hand" :
-            //                SHM.Player5[13] -= damage;
-            //                break;
-            //            case "Right Shoulder" :
-            //                SHM.Player5[14] -= damage;
-            //                break;
-            //            case "Right Arm" :
-            //                SHM.Player5[15] -= damage;
-            //                break;
-            //            case "Right Forearm" :
-            //                SHM.Player5[16] -= damage;
-            //                break;
-            //            case "Right Hand" :
-            //                SHM.Player5[17] -= damage;
-            //                break;
-            //            case "Neck" :
-            //                SHM.Player5[18] -= damage;
-            //                break;
-            //            case "Head" :
-            //                SHM.Player5[19] -= damage;
-            //                break;
-            //            default :
-            //                Debug.Log("hit non-damageble object");
-            //                break;
-            //        }       
-            //        break;
-            //}
-            if(this.IsSpawned) DespawnBullet();
+            string name = collider.gameObject.name;
+            var id = collider.gameObject.GetComponentInParent<NetworkObject>().ClientManager.Connection.ClientId;
+            lastHitObject = collider.gameObject;
+
+            SHealth = collider.GetComponentInParent<ServerHealthManager>(); 
+
+            //do damage
+            switch (name)
+            {
+                case "Hips":
+                    SHealth.OnHealthChange(0, SHealth.health[0] - damage, SHealth.health[0]);
+                    SHealth.health[0] -= damage;
+                    break;
+                case "Left Thigh":
+                    SHealth.OnHealthChange(1, SHealth.health[1] - damage, SHealth.health[1]);
+                    SHealth.health[1] -= damage;
+                    break;
+                case "Left Leg":
+                    SHealth.OnHealthChange(2, SHealth.health[2] - damage, SHealth.health[2]);
+                    SHealth.health[2] -= damage;
+                    break;
+                case "Left Foot":
+                    SHealth.OnHealthChange(3, SHealth.health[3] - damage, SHealth.health[3]);
+                    SHealth.health[3] -= damage;
+                    break;
+                case "Right Thigh":
+                    SHealth.OnHealthChange(4, SHealth.health[4] - damage, SHealth.health[4]);
+                    SHealth.health[4] -= damage;
+                    break;
+                case "Right Leg":
+                    SHealth.OnHealthChange(5, SHealth.health[5] - damage, SHealth.health[5]);
+                    SHealth.health[5] -= damage;
+                    break;
+                case "Right Foot":
+                    SHealth.OnHealthChange(6, SHealth.health[6] - damage, SHealth.health[6]);
+                    SHealth.health[6] -= damage;
+                    break;
+                case "Spine 1":
+                    SHealth.OnHealthChange(7, SHealth.health[7] - damage, SHealth.health[7]);
+                    SHealth.health[7] -= damage;
+                    break;
+                case "Spine 2":
+                    SHealth.OnHealthChange(8, SHealth.health[8] - damage, SHealth.health[8]);
+                    SHealth.health[8] -= damage;
+                    break;
+                case "Spine 3":
+                    SHealth.OnHealthChange(9, SHealth.health[9] - damage, SHealth.health[9]);
+                    SHealth.health[9] -= damage;
+                    break;
+                case "Left Shoulder":
+                    SHealth.OnHealthChange(10, SHealth.health[10] - damage, SHealth.health[10]);
+                    SHealth.health[10] -= damage;
+                    break;
+                case "Left Arm":
+                    SHealth.OnHealthChange(11, SHealth.health[11] - damage, SHealth.health[11]);
+                    SHealth.health[11] -= damage;
+                    break;
+                case "Left Forearm":
+                    SHealth.OnHealthChange(12, SHealth.health[12] - damage, SHealth.health[12]);
+                    SHealth.health[12] -= damage;
+                    break;
+                case "Left Hand":
+                    SHealth.OnHealthChange(13, SHealth.health[13] - damage, SHealth.health[13]);
+                    SHealth.health[13] -= damage;
+                    break;
+                case "Right Shoulder":
+                    SHealth.OnHealthChange(14, SHealth.health[14] - damage, SHealth.health[14]);
+                    SHealth.health[14] -= damage;
+                    break;
+                case "Right Arm":
+                    SHealth.OnHealthChange(15, SHealth.health[15] - damage, SHealth.health[15]);
+                    SHealth.health[15] -= damage;
+                    break;
+                case "Right Forearm":
+                    SHealth.OnHealthChange(16, SHealth.health[16] - damage, SHealth.health[16]);
+                    SHealth.health[16] -= damage;
+                    break;
+                case "Right Hand":
+                    SHealth.OnHealthChange(17, SHealth.health[17] - damage, SHealth.health[17]);
+                    SHealth.health[17] -= damage;
+                    break;
+                case "Neck":
+                    SHealth.OnHealthChange(18, SHealth.health[18] - damage, SHealth.health[18]);
+                    SHealth.health[18] -= damage;
+                    break;
+                case "Head":
+                    SHealth.OnHealthChange(19, SHealth.health[19] - damage, SHealth.health[19]);
+                    SHealth.health[19] -= damage;
+                    break;
+            }
+
+            if (this.IsSpawned) DespawnBullet();
         }
         
-        if(this.IsSpawned) {Invoke(nameof(DespawnBullet), 0.1f);}
+        
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!base.IsServer) return;
+        if (this.IsSpawned) { Invoke(nameof(DespawnBullet), 0.05f); }
     }
 
     private void DespawnBullet(){

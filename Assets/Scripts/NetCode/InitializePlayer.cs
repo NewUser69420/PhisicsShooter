@@ -10,6 +10,7 @@ public class InitializePlayer : NetworkBehaviour
     public Vector3 spawnPos;
 
     public GameObject MainMenuUI;
+    public Transform UI;
 
     private GameObject obj;
 
@@ -21,11 +22,15 @@ public class InitializePlayer : NetworkBehaviour
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
+            //SetGameLayerRecursive(transform.Find("Character/Armature/Hips").gameObject, 12);
+
             InitializePlayerServerRpc(base.LocalConnection);
             
             Cursor.lockState = CursorLockMode.Locked;
 
             GetComponent<PredictedPlayerController>()._activated = true;
+
+            UI.gameObject.SetActive(true);
         }
     }
 

@@ -5,16 +5,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FishNet.Connection;
+using Unity.VisualScripting;
 
 public class SceneManager : MonoBehaviour
 {
-    //public void ChangeScenes(NetworkObject[] _objs, NetworkConnection _conn)
-    //{
-    //    SceneLoadData sld = new SceneLoadData("SampleScene");
-    //    sld.MovedNetworkObjects = _objs;
-    //    sld.ReplaceScenes = ReplaceOption.All;
-    //    InstanceFinder.SceneManager.LoadConnectionScenes(_conn, sld);
-    //}
+    private List<NetworkObject> objsToKeep = new List<NetworkObject>(); 
 
     private void Awake()
     {
@@ -23,8 +18,18 @@ public class SceneManager : MonoBehaviour
 
     public void ChangeSceneForServer(NetworkConnection conn, bool bl)
     {
+        //GetObjsToKeep();
         SceneLoadData sld = new SceneLoadData("SampleScene");
+        sld.MovedNetworkObjects = objsToKeep.ToArray();
         sld.ReplaceScenes = ReplaceOption.All;
         InstanceFinder.SceneManager.LoadGlobalScenes(sld);
+    }
+
+    private void GetObjsToKeep()
+    {
+        foreach (NetworkObject obj in InstanceFinder.ServerManager.Objects.SceneObjects.Values)
+        {
+            //if (obj.gameObject.name == "ServerHealthManager") objsToKeep.Add(obj);
+        }
     }
 }

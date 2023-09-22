@@ -5,6 +5,7 @@ using FishNet.Demo.AdditiveScenes;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.InputSystem.HID;
@@ -17,8 +18,7 @@ public class PredictedPlayerController : NetworkBehaviour
     [SerializeField] private float _grappleSpeed;
     [SerializeField] private float _jumpReset;
     [SerializeField] private float _dashForce;
-    [SerializeField] private float _dashReset;
-    [SerializeField] private float _speedLimit;
+    [SerializeField] private float _speedLimitDef;
     [SerializeField] private LayerMask _whatIsGround;
     [SerializeField] private float _wallJumpForce;
     [SerializeField] private float _wallJumpUp;
@@ -28,23 +28,28 @@ public class PredictedPlayerController : NetworkBehaviour
     [System.NonSerialized] public bool _didWallJump;
     [System.NonSerialized] public bool _canDashOnWallJump;
     [System.NonSerialized] public bool _shootLaser;
+    [System.NonSerialized] public Rigidbody _rb;
 
     private PlayerControlls _playerControlls;
-    private Rigidbody _rb;
     private PlayerState _playerState;
     private Animator _animator;
     private NetworkAnimator _netAnimator;
     private WallRunning _wallRunner;
     private LaserShooter _laserShooter;
+    private MainMenu _mainMenu;
     private Vector3 _dashDirection;
     private Vector3 _velocityToSet;
     private Vector3 _wallNormal;
     private Vector3 _wallForward;
+    private float _speedLimit;
     private float _nextJumpTime;
     private float _nextDashTime;
     private bool _allowDash = true;
     private bool _wallLeft;
-    
+    private bool _speedLimitDisabled;
+
+    public float _dashReset;
+
 
     public struct MoveData : IReplicateData
     {
@@ -112,9 +117,12 @@ public class PredictedPlayerController : NetworkBehaviour
         _playerState =GetComponent<PlayerState>();
         _wallRunner = GetComponent<WallRunning>();
         _laserShooter = GetComponent<LaserShooter>();
+        _mainMenu = GameObject.Find("MainMenuUI").GetComponent<MainMenu>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
+
+        _speedLimit = _speedLimitDef;
 
         InstanceFinder.TimeManager.OnTick += TimeManager_OnTick;
         InstanceFinder.TimeManager.OnPostTick += TimeManager_OnPostTick;
@@ -176,7 +184,27 @@ public class PredictedPlayerController : NetworkBehaviour
         {
             HandleAnimations();
             SyncDataServerRpc(base.ClientManager.Connection, _playerState.aState, _playerState.gState);
+
+            if(_activated)
+            {
+                _mainMenu.gameObject.SetActive(false);
+            }
+            else
+            {
+                _mainMenu.gameObject.SetActive(true);
+            }
         }
+
+        //SpeedControll();
+
+        if(_playerState.aState != ActionState.Passive) { StartCoroutine(ResetSpeed()); }
+    }
+
+    IEnumerator ResetSpeed()
+    {
+        _speedLimitDisabled = true;
+        yield return new WaitForSeconds(1f);
+        _speedLimitDisabled = false;
     }
 
     [ServerRpc]
@@ -245,8 +273,8 @@ public class PredictedPlayerController : NetworkBehaviour
                 Debug.Log("Prefab is null");
                 return;
             }
-            NetworkObject LeftBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.LeftEye.position + (_laserShooter.Cam.forward * 1f), transform.rotation);
-            NetworkObject RightBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.RightEye.position + (_laserShooter.Cam.forward * 1f), transform.rotation);
+            NetworkObject LeftBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.LeftEye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
+            NetworkObject RightBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.RightEye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
 
             Laser_Bullet predictedBulletLeft = LeftBullet.GetComponent<Laser_Bullet>();
             Laser_Bullet predictedBulletRight = RightBullet.GetComponent<Laser_Bullet>();
@@ -402,12 +430,13 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void SpeedControll()
     {
+        if (_speedLimitDisabled) return;
         Vector3 flatVel = _rb.velocity;
 
         if (flatVel.magnitude > _speedLimit)
         {
             Vector3 limitedVel = flatVel.normalized * _speedLimit;
-            _rb.velocity = flatVel;
+            _rb.velocity = limitedVel;
         }
     }
 }
