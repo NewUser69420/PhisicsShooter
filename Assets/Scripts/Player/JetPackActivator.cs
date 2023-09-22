@@ -4,6 +4,7 @@ using FishNet.Object;
 using System;
 using System.Collections;
 using UnityEditor.Rendering;
+using FishNet.Connection;
 
 public class JetPackActivator : NetworkBehaviour
 {
@@ -19,37 +20,55 @@ public class JetPackActivator : NetworkBehaviour
 
     private void Update()
     {
-        switch(playerState.aState) 
+        if(base.IsServer || base.Owner.IsLocalClient)
         {
-            case ActionState.Passive:
-                //nothing?
-                break;
-            case ActionState.Jumping:
-                buffer += 0.5f;
-                break;
-            case ActionState.Dashing:
-                buffer += 0.7f;
-                break;
-            case ActionState.Grappling:
-                buffer += 0.1f;
-                break;
-            case ActionState.WallRunning:
-                //nothing?
-                break;
-        }
+            switch (playerState.aState)
+            {
+                case ActionState.Passive:
+                    //nothing?
+                    break;
+                case ActionState.Jumping:
+                    buffer += 0.5f;
+                    break;
+                case ActionState.Dashing:
+                    buffer += 0.7f;
+                    break;
+                case ActionState.Grappling:
+                    buffer += 0.1f;
+                    break;
+                case ActionState.WallRunning:
+                    //nothing?
+                    break;
+            }
 
-        if (buffer >= 1) buffer = 1f;
+            if (buffer >= 1) buffer = 1f;
 
-        var em = ps.emission;
+            var em = ps.emission;
 
-        if (buffer > 0)
-        {
-            buffer -= Time.deltaTime;
-            em.enabled = true;
+            if (buffer > 0)
+            {
+                buffer -= Time.deltaTime;
+                em.enabled = true;
+                if (base.IsClient) AskServerToDo(this.gameObject, true);
+            }
+            else
+            {
+                em.enabled = false;
+                if (base.IsClient) AskServerToDo(this.gameObject, false);
+            }
         }
-        else
-        {
-            em.enabled = false;
-        }
+    }
+
+    [ServerRpc]
+    private void AskServerToDo(GameObject _obj, bool _particlesOn)
+    {
+        SyncParticlesRpc(_obj, _particlesOn);
+    }
+    
+    [ObserversRpc]
+    private void SyncParticlesRpc(GameObject obj, bool particlesOn)
+    {
+        var em = obj.GetComponent<ParticleSystem>().emission;
+        em.enabled = particlesOn;
     }
 }

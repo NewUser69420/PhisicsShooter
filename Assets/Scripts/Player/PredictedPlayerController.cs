@@ -117,7 +117,7 @@ public class PredictedPlayerController : NetworkBehaviour
         _playerState =GetComponent<PlayerState>();
         _wallRunner = GetComponent<WallRunning>();
         _laserShooter = GetComponent<LaserShooter>();
-        _mainMenu = GameObject.Find("MainMenuUI").GetComponent<MainMenu>();
+        if(GameObject.Find("MainMenuUI") != null) _mainMenu = GameObject.Find("MainMenuUI").GetComponent<MainMenu>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
