@@ -4,6 +4,7 @@ using FishNet.Object.Synchronizing;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 public class ServerHealthManager : NetworkBehaviour
@@ -15,10 +16,8 @@ public class ServerHealthManager : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        if(!IsServer) { return; }
-        
-        //SendHealthDataToClientRpc(base.ClientManager.Connection, totalHealth, maxHealth);
-        
+        if (!IsServer) { return; }
+
         totalHealth = maxHealth;
 
         SetMaxHealth();
@@ -48,7 +47,7 @@ public class ServerHealthManager : NetworkBehaviour
         health.Insert(19, Mathf.RoundToInt((maxHealth * 0.0023f)));
     }
 
-    public void OnHealthChange(int index, float newItem, float oldItem)
+    public void OnHealthChange(int index, float newItem, float oldItem, GameObject shooter)
     {
         //check for below 0
         if (newItem < 0) health[index] = 0;
@@ -56,34 +55,23 @@ public class ServerHealthManager : NetworkBehaviour
         //calc total health
         totalHealth += (newItem - oldItem);
 
-        //send total health to client
-        //SendHealthDataToClientRpc(base.ClientManager.Connection, totalHealth, maxHealth);
-
         //check for death
-        //if (newItem <= 0 && (index == 0 || index == 7 || index == 8 || index == 9 || index == 18 || index == 19)) DoDeath(base.ClientManager.Connection, this.gameObject);
-        if (newItem <= 0) DoDeath(base.ClientManager.Connection, this.gameObject);
+        if (newItem <= 0) DoDeath(base.OwnerId, this.gameObject, shooter);
     }
 
-    private void DoDeath(NetworkConnection _conn, GameObject pobj)
+    private void DoDeath(int _id, GameObject pobj, GameObject _shooter)
     {
         //do death
-        Debug.Log($"{_conn.ClientId} + died");
-
         SetMaxHealth();
 
-        pobj.transform.position = new Vector3 (0, 5, 0);
-    }
+        pobj.transform.position = new Vector3(0, 5, 0);
 
-    [TargetRpc]
-    private void SendHealthDataToClientRpc(NetworkConnection _conn, float _totalHealth, float _maxHealth)
-    {
-        foreach(NetworkObject obj in  _conn.Objects)
-        {
-            if(obj.gameObject.tag == "Player")
-            {
-                obj.GetComponentInChildren<UI>().totalHealth = _totalHealth;
-                obj.GetComponentInChildren<UI>().maxHealth = _maxHealth;
-            }
-        }   
+        //add deathcounter on client
+        FindObjectOfType<Killer>().DoDeathCounterRpc(_id, pobj, _shooter.gameObject);
+
+        //add killcounter on client
+        NetworkConnection _conn = null;
+        _conn = _shooter.gameObject.GetComponent<NetworkObject>().LocalConnection;
+        FindObjectOfType<Killer>().DoKillCounterRpc(_conn);
     }
 }

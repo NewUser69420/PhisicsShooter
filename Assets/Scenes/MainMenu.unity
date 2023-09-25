@@ -692,15 +692,6 @@ MonoBehaviour:
     minVal: 0.8
     maxVal: 1.2
     source: {fileID: 0}
-  - name: DefaultLaser
-    clip: {fileID: 8300000, guid: ac6c14b95e599b547b8ae92beefb87dd, type: 3}
-    volume: 0.3
-    pitch: 1
-    loop: 0
-    randomisePitch: 1
-    minVal: 0.5
-    maxVal: 1.5
-    source: {fileID: 0}
   - name: FootStep
     clip: {fileID: 8300000, guid: 97e55c534f358cb4589928203c837ec3, type: 3}
     volume: 0.2
