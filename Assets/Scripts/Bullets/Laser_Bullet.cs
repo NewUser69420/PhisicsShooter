@@ -4,6 +4,8 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FishNet.Component.Prediction;
 using FishNet.Managing.Timing;
+using System.Linq;
+using FishNet.Connection;
 
 public class Laser_Bullet : NetworkBehaviour
 {
@@ -22,6 +24,9 @@ public class Laser_Bullet : NetworkBehaviour
     
     public override void OnStartNetwork(){
         StartCoroutine (Wait());
+
+        //Make sound
+        FindObjectOfType<AudioManger>().Play("DefaultLaser");
 
         uint timeToTicks = base.TimeManager.TimeToTicks(0.65f);
 
@@ -82,6 +87,12 @@ public class Laser_Bullet : NetworkBehaviour
     }
 
     void OnTriggerEnter(Collider collider){
+        if(base.IsOwner)
+        {
+            FindObjectOfType<AudioManger>().Play("HitMarker");
+            Debug.Log($"playing hitmarker");
+        }
+        
         if (!IsServer) return;
         if (collider.gameObject.layer == 12)
         {
@@ -93,7 +104,8 @@ public class Laser_Bullet : NetworkBehaviour
             var id = collider.gameObject.GetComponentInParent<NetworkObject>().ClientManager.Connection.ClientId;
             lastHitObject = collider.gameObject;
 
-            SHealth = collider.GetComponentInParent<ServerHealthManager>(); 
+            SHealth = collider.GetComponentInParent<ServerHealthManager>();
+
 
             //do damage
             switch (name)
@@ -188,13 +200,18 @@ public class Laser_Bullet : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!base.IsServer) return;
-        if (this.IsSpawned) { Invoke(nameof(DespawnBullet), 0.05f); }
+        if(base.IsServer) if (this.IsSpawned) { Invoke(nameof(DespawnBullet), 0.01f); }
+        if(base.IsClient) if (this.IsSpawned) { Invoke(nameof(TurnOffBullet), 0.01f); }
     }
 
     private void DespawnBullet(){
         if(!base.IsServer) return;
         this.GetComponent<NetworkObject>().Despawn();
         Destroy(this);
+    }
+
+    private void TurnOffBullet()
+    {
+        transform.Find("Capsule").gameObject.SetActive(false);
     }
 }

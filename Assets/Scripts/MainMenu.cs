@@ -1,4 +1,5 @@
 using FishNet;
+using FishNet.Connection;
 using FishNet.Managing;
 using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
@@ -16,6 +17,7 @@ public class MainMenu : MonoBehaviour
     public string ip = "";
     public ushort serverHostPort = 0;
     public ushort clientConnectPort = 0;
+    public string playerName;
 
     private string layer = "home";
     int connectedPlayers;
@@ -131,6 +133,11 @@ public class MainMenu : MonoBehaviour
                 break;
         }
     }
+
+    public void OnNameChange()
+    {
+        playerName = ServerSelectionScreen.transform.Find("InputNameValue/Text Area/Text").GetComponent<TMP_Text>().text;
+    }  
 
     public void Server1Click()
     {
