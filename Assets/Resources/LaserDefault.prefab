@@ -119,7 +119,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 7
+  <PrefabId>k__BackingField: 8
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
@@ -200,6 +200,8 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 529274645029092721}
   _networkObjectCache: {fileID: 529274645029092721}
   _startingForce: {x: 0, y: 0, z: 0}
+  SoundObjectPrefab: {fileID: 2429989336855710736, guid: c1ce1a7824fde7344badde88aec127e1,
+    type: 3}
   damage: 10
 --- !u!82 &-364116457485135915
 AudioSource:

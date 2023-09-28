@@ -21,6 +21,7 @@ public class Laser_Bullet : NetworkBehaviour
     [System.NonSerialized] public NetworkConnection PlayerConn;
 
     [System.NonSerialized] public GameObject lastHitObject;
+    public GameObject SoundObjectPrefab;
 
     public int damage = 50;
     private bool canDoDamage = true;
@@ -29,8 +30,8 @@ public class Laser_Bullet : NetworkBehaviour
         StartCoroutine (Wait());
 
         //Make sound
-        GetComponent<AudioSource>().pitch = Random.Range(0.5f, 1.5f);
-        GetComponent<AudioSource>().Play();
+        GameObject SoundObject = Instantiate(SoundObjectPrefab);
+        SoundObject.GetComponent<SoundObject>().TrackedObject = gameObject.transform;
 
         uint timeToTicks = base.TimeManager.TimeToTicks(0.65f);
 
