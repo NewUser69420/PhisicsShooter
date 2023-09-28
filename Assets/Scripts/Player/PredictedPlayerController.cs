@@ -305,17 +305,17 @@ public class PredictedPlayerController : NetworkBehaviour
             base.Spawn(LeftBullet, base.Owner);
             base.Spawn(RightBullet, base.Owner);
 
-            predictedBulletLeft.Player = gameObject;
-            predictedBulletRight.Player = gameObject;
-            SetPlayerBulletRpc(LeftBullet, RightBullet, gameObject);
+            predictedBulletLeft.PlayerConn = NetworkObject.LocalConnection;
+            predictedBulletRight.PlayerConn = NetworkObject.LocalConnection;
+            SetPlayerBulletRpc(LeftBullet, RightBullet, NetworkObject.LocalConnection);
         }
     }
 
     [ServerRpc]
-    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, GameObject player)
+    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn)
     {
-        obj1.GetComponent<Laser_Bullet>().Player = player;
-        obj2.GetComponent<Laser_Bullet>().Player = player;
+        obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
+        obj2.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
     }
 
     private void AddGravity()

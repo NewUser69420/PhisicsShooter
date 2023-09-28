@@ -8638,6 +8638,7 @@ GameObject:
   - component: {fileID: -4802719821691361813}
   - component: {fileID: 3972808476742583625}
   - component: {fileID: 7808944291681565396}
+  - component: {fileID: 1230127320852736275}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -8800,7 +8801,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 6
+  <PrefabId>k__BackingField: 7
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
@@ -9009,6 +9010,22 @@ MonoBehaviour:
   _componentIndexCache: 9
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
+--- !u!114 &1230127320852736275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4266674162621430887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c71fd7f855ec523429999fc4e14a1928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _overrideType: 1
+  _updateHostVisibility: 1
+  _observerConditions:
+  - {fileID: 11400000, guid: bfe3967c1219ad147b8151eedf88b991, type: 2}
 --- !u!1 &4266674164107154660
 GameObject:
   m_ObjectHideFlags: 0

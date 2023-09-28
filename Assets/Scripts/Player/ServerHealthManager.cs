@@ -14,13 +14,27 @@ public class ServerHealthManager : NetworkBehaviour
     public float totalHealth;
     public float maxHealth;
 
+    private NetworkConnection Conn;
+    private bool invinceble;
+
     public override void OnStartNetwork()
     {
+        if (base.IsClient)
+        {
+            GiveLocalConn(base.LocalConnection);
+        }
+        
         if (!IsServer) { return; }
 
         totalHealth = maxHealth;
 
         SetMaxHealth();
+    }
+
+    [ServerRpc]
+    private void GiveLocalConn(NetworkConnection _conn)
+    {
+        Conn = _conn;
     }
 
     private void SetMaxHealth()
@@ -47,7 +61,7 @@ public class ServerHealthManager : NetworkBehaviour
         health.Insert(19, Mathf.RoundToInt((maxHealth * 0.0023f)));
     }
 
-    public void OnHealthChange(int index, float newItem, float oldItem, GameObject shooter)
+    public void OnHealthChange(int index, float newItem, float oldItem, NetworkConnection shooter)
     {
         //check for below 0
         if (newItem < 0) health[index] = 0;
@@ -56,22 +70,34 @@ public class ServerHealthManager : NetworkBehaviour
         totalHealth += (newItem - oldItem);
 
         //check for death
-        if (newItem <= 0) DoDeath(base.OwnerId, this.gameObject, shooter);
+        if (newItem <= 0 && !invinceble) DoDeath(Conn, this.gameObject, shooter);
     }
 
-    private void DoDeath(int _id, GameObject pobj, GameObject _shooter)
+    private void DoDeath(NetworkConnection _killedCon, GameObject pobj, NetworkConnection _shooterConn)
     {
+        StartCoroutine(Wait());
+        
         //do death
         SetMaxHealth();
 
         pobj.transform.position = new Vector3(0, 5, 0);
 
         //add deathcounter on client
-        FindObjectOfType<Killer>().DoDeathCounterRpc(_id, pobj, _shooter.gameObject);
+        GameObject _shooterObj = null;
+        foreach (NetworkObject obj in _shooterConn.Objects)
+        {
+            if (obj.tag == "Player") _shooterObj = obj.gameObject;
+        }
+        FindObjectOfType<Killer>().DoDeathCounterRpc(_killedCon, pobj);
 
         //add killcounter on client
-        NetworkConnection _conn = null;
-        _conn = _shooter.gameObject.GetComponent<NetworkObject>().LocalConnection;
-        FindObjectOfType<Killer>().DoKillCounterRpc(_conn);
+        FindObjectOfType<Killer>().DoKillCounterRpc(_shooterConn, _shooterObj);
+    }
+
+    IEnumerator Wait()
+    {
+        invinceble = true;
+        yield return new WaitForSeconds(0.1f);
+        invinceble = false;
     }
 }

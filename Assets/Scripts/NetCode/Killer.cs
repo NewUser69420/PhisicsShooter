@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Killer : NetworkBehaviour
 {
-    [ObserversRpc]
-    public void DoDeathCounterRpc(int _id, GameObject _obj, GameObject __shooter)
+    [TargetRpc]
+    public void DoDeathCounterRpc(NetworkConnection conn, GameObject _obj)
     {
-        if (base.OwnerId == _id && base.IsOwner) _obj.GetComponentInChildren<UI>().deathCounterValue++;
+        _obj.GetComponentInChildren<UI>().deathCounterValue++;
     }
 
     [TargetRpc]
-    public void DoKillCounterRpc(NetworkConnection __conn)
+    public void DoKillCounterRpc(NetworkConnection conn, GameObject __shooter)
     {
-        Debug.Log($"urmom");
+        __shooter.GetComponentInChildren<UI>().killCounterValue++;
     }
 }
