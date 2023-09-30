@@ -76,6 +76,7 @@ public class WallRunning : NetworkBehaviour
     {
         wallRunTimer = wallRunTimerMax;
         pm._didWallJump = false;
+        canWallRun = true;
     }
 
     private void CheckForWall()

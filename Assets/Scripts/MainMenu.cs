@@ -113,12 +113,14 @@ public class MainMenu : MonoBehaviour
         HomeScreen.gameObject.SetActive(false);
         ServerSelectionScreen.gameObject.SetActive(true);
         layer = "serverSelection";
+        FindAnyObjectByType<AudioManger>().Play("click1");
     }
 
     public void Quit()
     {
         Debug.Log("Quiting...");
         Application.Quit();
+        FindAnyObjectByType<AudioManger>().Play("click3");
     }
 
     private void GoBackOne(string _layer)
@@ -132,6 +134,7 @@ public class MainMenu : MonoBehaviour
                 HomeScreen.gameObject.SetActive(true);
                 break;
         }
+        FindAnyObjectByType<AudioManger>().Play("click2");
     }
 
     public void OnNameChange()
@@ -148,6 +151,7 @@ public class MainMenu : MonoBehaviour
 
         ConnectClient(ip, 7777);
         Debug.Log("Connecting with: " + ip + ":7777");
+        FindAnyObjectByType<AudioManger>().Play("click1");
     }
     public void Server2Click()
     {
@@ -158,6 +162,7 @@ public class MainMenu : MonoBehaviour
 
         ConnectClient(ip, 7779);
         Debug.Log("Connecting with: " + ip + ":7779");
+        FindAnyObjectByType<AudioManger>().Play("click1");
     }
 
     public void OnSceneLoaded(SceneLoadEndEventArgs obj)

@@ -80,6 +80,15 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ScoreBoard"",
+                    ""type"": ""Button"",
+                    ""id"": ""7d0144fa-6ea8-47b9-925e-0a2640f745af"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -192,6 +201,17 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
                     ""action"": ""Fire"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1c54c9d4-70e3-4de3-a519-226cca78b274"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ScoreBoard"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -234,6 +254,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
         m_OnFoot_Dash = m_OnFoot.FindAction("Dash", throwIfNotFound: true);
         m_OnFoot_Grapple = m_OnFoot.FindAction("Grapple", throwIfNotFound: true);
         m_OnFoot_Fire = m_OnFoot.FindAction("Fire", throwIfNotFound: true);
+        m_OnFoot_ScoreBoard = m_OnFoot.FindAction("ScoreBoard", throwIfNotFound: true);
         // MainMenu
         m_MainMenu = asset.FindActionMap("MainMenu", throwIfNotFound: true);
         m_MainMenu_GoBackOne = m_MainMenu.FindAction("GoBackOne", throwIfNotFound: true);
@@ -304,6 +325,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
     private readonly InputAction m_OnFoot_Dash;
     private readonly InputAction m_OnFoot_Grapple;
     private readonly InputAction m_OnFoot_Fire;
+    private readonly InputAction m_OnFoot_ScoreBoard;
     public struct OnFootActions
     {
         private @PlayerControlls m_Wrapper;
@@ -314,6 +336,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
         public InputAction @Dash => m_Wrapper.m_OnFoot_Dash;
         public InputAction @Grapple => m_Wrapper.m_OnFoot_Grapple;
         public InputAction @Fire => m_Wrapper.m_OnFoot_Fire;
+        public InputAction @ScoreBoard => m_Wrapper.m_OnFoot_ScoreBoard;
         public InputActionMap Get() { return m_Wrapper.m_OnFoot; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -341,6 +364,9 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
             @Fire.started += instance.OnFire;
             @Fire.performed += instance.OnFire;
             @Fire.canceled += instance.OnFire;
+            @ScoreBoard.started += instance.OnScoreBoard;
+            @ScoreBoard.performed += instance.OnScoreBoard;
+            @ScoreBoard.canceled += instance.OnScoreBoard;
         }
 
         private void UnregisterCallbacks(IOnFootActions instance)
@@ -363,6 +389,9 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
             @Fire.started -= instance.OnFire;
             @Fire.performed -= instance.OnFire;
             @Fire.canceled -= instance.OnFire;
+            @ScoreBoard.started -= instance.OnScoreBoard;
+            @ScoreBoard.performed -= instance.OnScoreBoard;
+            @ScoreBoard.canceled -= instance.OnScoreBoard;
         }
 
         public void RemoveCallbacks(IOnFootActions instance)
@@ -434,6 +463,7 @@ public partial class @PlayerControlls: IInputActionCollection2, IDisposable
         void OnDash(InputAction.CallbackContext context);
         void OnGrapple(InputAction.CallbackContext context);
         void OnFire(InputAction.CallbackContext context);
+        void OnScoreBoard(InputAction.CallbackContext context);
     }
     public interface IMainMenuActions
     {

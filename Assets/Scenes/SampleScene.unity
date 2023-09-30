@@ -625,10 +625,10 @@ Transform:
   - {fileID: 575830521}
   - {fileID: 1981114897}
   - {fileID: 1634228398}
-  - {fileID: 1223641232}
-  - {fileID: 354150262}
   - {fileID: 249542812}
+  - {fileID: 354150262}
   - {fileID: 345502328}
+  - {fileID: 1223641232}
   m_Father: {fileID: 1038287790}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &354150261

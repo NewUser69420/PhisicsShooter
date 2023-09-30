@@ -9,6 +9,8 @@ public class SoundObject : MonoBehaviour
 
     private AudioSource Audio;
 
+    private float deathTimer = 5f;
+
     private void Start()
     {
         Audio = GetComponent<AudioSource>();
@@ -28,6 +30,16 @@ public class SoundObject : MonoBehaviour
         else
         {
             transform.position = TrackedObject.position;
+        }
+
+        if(deathTimer > 0)
+        {
+            deathTimer -= Time.deltaTime;
+        }
+        else
+        {
+            Destroy();
+
         }
     }
 

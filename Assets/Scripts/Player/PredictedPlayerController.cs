@@ -23,7 +23,6 @@ public class PredictedPlayerController : NetworkBehaviour
     [SerializeField] private float _wallJumpForce;
     [SerializeField] private float _wallJumpUp;
     [SerializeField] private float _wallJumpForward;
-    [SerializeField] private float _stepsTimerMax;
 
     [System.NonSerialized] public bool _activated;
     [System.NonSerialized] public bool _didWallJump;
@@ -38,7 +37,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private WallRunning _wallRunner;
     private LaserShooter _laserShooter;
     private MainMenu _mainMenu;
-    private SoundPlayer _soundPlayer;
+    private PlayerAudioManager _playerAudioManager;
     private Vector3 _dashDirection;
     private Vector3 _velocityToSet;
     private Vector3 _wallNormal;
@@ -46,9 +45,6 @@ public class PredictedPlayerController : NetworkBehaviour
     private float _speedLimit;
     private float _nextJumpTime;
     private float _nextDashTime;
-    private float _stepsTimer;
-    private int _steps;
-    private bool _canStep;
     private bool _allowDash = true;
     private bool _wallLeft;
     private bool _speedLimitDisabled;
@@ -122,14 +118,12 @@ public class PredictedPlayerController : NetworkBehaviour
         _playerState = GetComponent<PlayerState>();
         _wallRunner = GetComponent<WallRunning>();
         _laserShooter = GetComponent<LaserShooter>();
-        _soundPlayer = GetComponent<SoundPlayer>();
+        _playerAudioManager = GetComponent<PlayerAudioManager>();
         if (GameObject.Find("MainMenuUI") != null) _mainMenu = GameObject.Find("MainMenuUI").GetComponent<MainMenu>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
 
-        _speedLimit = _speedLimitDef;
-        _stepsTimer = _stepsTimerMax;
 
         InstanceFinder.TimeManager.OnTick += TimeManager_OnTick;
         InstanceFinder.TimeManager.OnPostTick += TimeManager_OnPostTick;
@@ -187,18 +181,6 @@ public class PredictedPlayerController : NetworkBehaviour
             _playerState.aState = ActionState.Dashing;
         }
         _dashDirection = transform.Find("Cam").forward;
-
-        //handle steps timer
-        if (_stepsTimer > 0 && _canStep)
-        {
-            _stepsTimer -= Time.deltaTime;
-        }
-        else if (_canStep)
-        {
-            _steps++;
-            _stepsTimer = _stepsTimerMax;
-        }
-        HandleStepSounds();
 
         HandleAnimations();
         
@@ -347,18 +329,18 @@ public class PredictedPlayerController : NetworkBehaviour
             {
                 _playerState.aState = ActionState.Passive;
             }
-            FindObjectOfType<AudioManger>().Play("JetpackBurst");
-            if (base.IsServer) SyncSoundRpc(_soundPlayer, "JetpackBurst");
+            _playerAudioManager.Play("JetpackBurst");
+            if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
         }
 
         //dash
         if(md.aState == ActionState.Dashing && md.gState == GroundedState.InAir)
         {
             _rb.AddForce(md.DashDirection * _dashForce, ForceMode.Impulse);
-            FindObjectOfType<AudioManger>().Play("DashWhoosh");
-            if (base.IsServer) SyncSoundRpc(_soundPlayer, "DashWhoosh");
-            FindObjectOfType<AudioManger>().Play("JetpackBurst");
-            if (base.IsServer) SyncSoundRpc(_soundPlayer, "JetpackBurst");
+            _playerAudioManager.Play("DashWhoosh");
+            if (base.IsServer) SyncSoundRpc(gameObject, "DashWhoosh");
+            _playerAudioManager.Play("JetpackBurst");
+            if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
             _allowDash = false;
         }
 
@@ -399,8 +381,8 @@ public class PredictedPlayerController : NetworkBehaviour
                 {
                     _playerState.aState = ActionState.Passive;
                 }
-                FindObjectOfType<AudioManger>().Play("JetpackBurst");
-                if (base.IsServer) SyncSoundRpc(_soundPlayer, "JetpackBurst");
+                _playerAudioManager.Play("JetpackBurst");
+                if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
             }
         }
     }
@@ -425,14 +407,10 @@ public class PredictedPlayerController : NetworkBehaviour
                 _animator.SetFloat("xMovement", inputRaw.x);
                 _animator.SetFloat("yMovement", inputRaw.y);
             }
-
-            _canStep = true;
-            
         }
         else
         {
             if(base.Owner.IsLocalClient) _animator.SetBool("isWalking", false);
-            _canStep = false;
         }
 
         if(base.Owner.IsLocalClient)
@@ -445,23 +423,10 @@ public class PredictedPlayerController : NetworkBehaviour
         }
     }
 
-    private void HandleStepSounds()
-    {
-        if(_canStep)
-        {
-            if(_steps > 0)
-            {
-                if(base.Owner.IsLocalClient) FindObjectOfType<AudioManger>().Play("FootStep");
-                if (base.IsServer) SyncSoundRpc(_soundPlayer, "FootStep");
-                _steps -= 1;
-            }
-        }
-    }
-
     [ObserversRpc]
-    private void SyncSoundRpc(SoundPlayer soundPlayer, string sound)
+    private void SyncSoundRpc(GameObject obj, string sound)
     {
-        if(!base.Owner.IsLocalClient) soundPlayer.PlaySound(sound);
+        obj.GetComponent<PlayerAudioManager>().Play(sound);
     }
 
     private void OnCollisionStay(Collision collision)

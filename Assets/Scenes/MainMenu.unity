@@ -182,8 +182,9 @@ MonoBehaviour:
       m_Calls: []
   m_text: Play
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: afcfd43c2e41c1b42b5b8d76f82e5dc0, type: 2}
+  m_sharedMaterial: {fileID: 2428380044219399251, guid: afcfd43c2e41c1b42b5b8d76f82e5dc0,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -683,55 +684,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sounds:
-  - name: DashWhoosh
-    clip: {fileID: 8300000, guid: ab49b6cdb2832b841b7a92a2339e69ce, type: 3}
-    volume: 0.5
-    pitch: 1
-    loop: 0
-    randomisePitch: 1
-    minVal: 0.8
-    maxVal: 1.2
-    source: {fileID: 0}
-  - name: FootStep
-    clip: {fileID: 8300000, guid: 97e55c534f358cb4589928203c837ec3, type: 3}
-    volume: 0.2
-    pitch: 1
-    loop: 0
-    randomisePitch: 1
-    minVal: 0.4
-    maxVal: 1.4
-    source: {fileID: 0}
-  - name: JetpackBurst
-    clip: {fileID: 8300000, guid: f0f798823dfa39c4185fc416790d71bd, type: 3}
-    volume: 0.3
-    pitch: 1
-    loop: 0
-    randomisePitch: 0
-    minVal: 1
-    maxVal: 1
-    source: {fileID: 0}
-  - name: WallRunning
-    clip: {fileID: 8300000, guid: 986f12b4704eea24386117975b1deb33, type: 3}
-    volume: 0.3
-    pitch: 1
-    loop: 1
-    randomisePitch: 0
-    minVal: 1
-    maxVal: 1
-    source: {fileID: 0}
-  - name: Grappling
-    clip: {fileID: 8300000, guid: 2091a5a3e34b8724dae2b5ae2bc5460f, type: 3}
-    volume: 0.3
-    pitch: 1
-    loop: 1
-    randomisePitch: 0
-    minVal: 1
-    maxVal: 1
-    source: {fileID: 0}
   - name: HitMarker
-    clip: {fileID: 8300000, guid: 674c2d0882cfecb4d886eba9fa86469b, type: 3}
+    clip: {fileID: 8300000, guid: 96cec29dbc1bf924e97ee969baeba52c, type: 3}
     volume: 0.25
     pitch: 1
+    space: 0
+    loop: 0
+    randomisePitch: 0
+    minVal: 1
+    maxVal: 1
+    source: {fileID: 0}
+  - name: click1
+    clip: {fileID: 8300000, guid: 0aa7a31271fe89b4d8c26a7d9cf07257, type: 3}
+    volume: 0.35
+    pitch: 1
+    space: 0
+    loop: 0
+    randomisePitch: 0
+    minVal: 1
+    maxVal: 1
+    source: {fileID: 0}
+  - name: click2
+    clip: {fileID: 8300000, guid: 0fee6555ab4fedf43a8059ea96275f6d, type: 3}
+    volume: 0.35
+    pitch: 1
+    space: 0
+    loop: 0
+    randomisePitch: 0
+    minVal: 1
+    maxVal: 1
+    source: {fileID: 0}
+  - name: click3
+    clip: {fileID: 8300000, guid: 984823eadf5d29349afc2df3bf4c62bf, type: 3}
+    volume: 0.35
+    pitch: 1
+    space: 0
     loop: 0
     randomisePitch: 0
     minVal: 1
@@ -1191,8 +1178,9 @@ MonoBehaviour:
       m_Calls: []
   m_text: Quit
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: afcfd43c2e41c1b42b5b8d76f82e5dc0, type: 2}
+  m_sharedMaterial: {fileID: 2428380044219399251, guid: afcfd43c2e41c1b42b5b8d76f82e5dc0,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2522,7 +2510,7 @@ GameObject:
   - component: {fileID: 1658850397}
   m_Layer: 5
   m_Name: MainMenuUI
-  m_TagString: Untagged
+  m_TagString: MainMenu
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -1,5 +1,6 @@
 using FishNet;
 using FishNet.Connection;
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
 using FishNet.Object;
@@ -7,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -20,6 +22,8 @@ public class InitializePlayer : NetworkBehaviour
     public GameObject MainMenuUI;
     public Transform UI;
     public Transform PlayerName;
+
+    public GameObject ScoreboardItemPrefab;
 
     private GameObject obj;
 
@@ -44,11 +48,53 @@ public class InitializePlayer : NetworkBehaviour
             GetComponent<PredictedPlayerController>()._activated = true;
 
             UI.gameObject.SetActive(true);
+
+            //make scoreboard item
+            foreach(NetworkConnection client in base.ClientManager.Clients.Values)
+            {   
+                SyncScoreboardServer(ScoreboardItemPrefab, client.ClientId, client);
+            }
         }
 
         if (base.IsServer)
         {
             StartCoroutine(Wait());
+        }
+    }
+
+    [ServerRpc]
+    private void SyncScoreboardServer(GameObject obj, int id, NetworkConnection conn)
+    {
+        string _playerName = "input name";
+        foreach(NetworkObject ___obj in conn.Objects)
+        {
+            if (___obj.tag == "Player") _playerName = ___obj.GetComponent<InitializePlayer>().playerName;
+        }
+        SyncScoreboardClient(obj , id, _playerName);
+    }
+
+    [ObserversRpc]
+    private void SyncScoreboardClient(GameObject _obj, int _id, string __playerName)
+    {
+        Debug.Log($"spawning scoreboardItem for id: {_id}, name: {__playerName} on client: {LocalConnection.ClientId}");
+        
+        foreach(var __obj in LocalConnection.Objects)
+        {
+            if(__obj.tag == "Player")
+            {
+                bool hasItem = false;
+                foreach(Transform child in __obj.transform.Find("UI/ScoreBoard/Holder"))
+                {
+                    if(child.GetComponent<ScoreBoardItemTracker>().id == _id) hasItem = true;
+                }
+                
+                if(!hasItem)
+                {
+                    GameObject objj = Instantiate(_obj, __obj.transform.Find("UI/ScoreBoard/Holder"));
+                    objj.GetComponent<ScoreBoardItemTracker>().id = _id;
+                    objj.GetComponent<ScoreBoardItemTracker>().nameValue = __playerName;
+                }
+            }
         }
     }
 

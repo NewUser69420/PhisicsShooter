@@ -7,12 +7,15 @@ using static PlayerState;
 public class SoundPlayer : NetworkBehaviour
 {
     private PlayerState playerState;
+    private PlayerAudioManager playerAudioManager;
     private bool isPlayingGrappling;
     private bool isPlayingWallrunning;
 
     public override void OnStartNetwork()
     {
         playerState = GetComponent<PlayerState>();
+        playerAudioManager = GetComponent<PlayerAudioManager>();
+
     }
 
     private void Update()
@@ -23,8 +26,8 @@ public class SoundPlayer : NetworkBehaviour
             {
                 case ActionState.Passive:
                     //reset grappling + wallrunning sounds
-                    FindObjectOfType<AudioManger>().Stop("Grappling");
-                    FindObjectOfType<AudioManger>().Stop("WallRunning");
+                    playerAudioManager.Stop("Grappling");
+                    playerAudioManager.Stop("WallRunning");
 
                     AskToStopRpc(this.gameObject, "Grappling");
                     AskToStopRpc(this.gameObject, "WallRunning");
@@ -36,7 +39,7 @@ public class SoundPlayer : NetworkBehaviour
                     //do grappling sounds
                     if(!isPlayingGrappling)
                     {
-                        FindObjectOfType<AudioManger>().Play("Grappling");
+                        playerAudioManager.Play("Grappling");
                         AskToStartRpc(this.gameObject, "Grappling");
 
                         isPlayingGrappling = true;
@@ -46,7 +49,7 @@ public class SoundPlayer : NetworkBehaviour
                     //do wallrunning sounds
                     if (!isPlayingWallrunning)
                     {
-                        FindObjectOfType<AudioManger>().Play("WallRunning");
+                        playerAudioManager.Play("WallRunning");
                         AskToStartRpc(this.gameObject, "WallRunning");
 
                         isPlayingWallrunning = true;
@@ -58,12 +61,12 @@ public class SoundPlayer : NetworkBehaviour
 
     public void PlaySound(String _sound)
     {
-        FindObjectOfType<AudioManger>().Play(_sound);
+        playerAudioManager.Play(_sound);
     }
 
     public void StopSound(String _sound)
     {
-        FindObjectOfType<AudioManger>().Stop(_sound);
+        playerAudioManager.Stop(_sound);
     }
 
     [ServerRpc]
