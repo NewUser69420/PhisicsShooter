@@ -686,7 +686,7 @@ MonoBehaviour:
   sounds:
   - name: HitMarker
     clip: {fileID: 8300000, guid: 96cec29dbc1bf924e97ee969baeba52c, type: 3}
-    volume: 0.25
+    volume: 1
     pitch: 1
     space: 0
     loop: 0

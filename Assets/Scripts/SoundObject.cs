@@ -1,3 +1,4 @@
+using FishNet;
 using System;
 using UnityEngine;
 
@@ -19,27 +20,26 @@ public class SoundObject : MonoBehaviour
 
     private void Update()
     {
-        if (!isActive) return;
+        if (deathTimer > 0)
+        {
+            deathTimer -= Time.fixedDeltaTime;
+        }
+        else
+        {
+            Kill();
+        }
+
+        //if (!isActive) return;
         
         if(TrackedObject == null)
         {
             transform.position = transform.position;
-            Invoke(nameof(Destroy), 1f);
+            Invoke(nameof(Kill), 1f);
             return;
         }
         else
         {
             transform.position = TrackedObject.position;
-        }
-
-        if(deathTimer > 0)
-        {
-            deathTimer -= Time.deltaTime;
-        }
-        else
-        {
-            Destroy();
-
         }
     }
 
@@ -48,7 +48,7 @@ public class SoundObject : MonoBehaviour
         Audio.Play();
     }
 
-    private void Destroy()
+    private void Kill()
     {
         Destroy(gameObject);
     }

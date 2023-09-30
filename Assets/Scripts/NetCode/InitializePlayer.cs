@@ -17,7 +17,7 @@ public class InitializePlayer : NetworkBehaviour
 {
     public Vector3 spawnPos;
 
-    public string playerName;
+    public string playerName = "playername not set";
 
     public GameObject MainMenuUI;
     public Transform UI;
@@ -45,15 +45,8 @@ public class InitializePlayer : NetworkBehaviour
             
             Cursor.lockState = CursorLockMode.Locked;
 
-            GetComponent<PredictedPlayerController>()._activated = true;
-
-            UI.gameObject.SetActive(true);
-
-            //make scoreboard item
-            foreach(NetworkConnection client in base.ClientManager.Clients.Values)
-            {   
-                SyncScoreboardServer(ScoreboardItemPrefab, client.ClientId, client);
-            }
+            //make scoreboard item and activate player
+            StartCoroutine(Wait2());
         }
 
         if (base.IsServer)
@@ -62,14 +55,29 @@ public class InitializePlayer : NetworkBehaviour
         }
     }
 
+    IEnumerator Wait2()
+    {
+        yield return new WaitForSeconds(1f);
+        
+        foreach (NetworkConnection client in base.ClientManager.Clients.Values)
+        {
+            SyncScoreboardServer(ScoreboardItemPrefab, client.ClientId, client);
+        }
+
+        //activate player
+        GetComponent<PredictedPlayerController>()._activated = true;
+        UI.gameObject.SetActive(true);
+    }
+
     [ServerRpc]
     private void SyncScoreboardServer(GameObject obj, int id, NetworkConnection conn)
     {
         string _playerName = "input name";
         foreach(NetworkObject ___obj in conn.Objects)
         {
-            if (___obj.tag == "Player") _playerName = ___obj.GetComponent<InitializePlayer>().playerName;
+            if (___obj.tag == "Player") _playerName = ___obj.transform.Find("NameCanvas/PlayerName").GetComponent<TMP_Text>().text;
         }
+        Debug.Log($"spawning scoreboardItem with name: {_playerName}");
         SyncScoreboardClient(obj , id, _playerName);
     }
 

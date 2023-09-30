@@ -39,6 +39,8 @@ public class ServerHealthManager : NetworkBehaviour
 
     private void SetMaxHealth()
     {
+        health.Clear();
+        
         health.Insert(0, Mathf.RoundToInt((maxHealth * 0.0469f)));
         health.Insert(1, Mathf.RoundToInt((maxHealth * 0.0587f)));
         health.Insert(2, Mathf.RoundToInt((maxHealth * 0.0646f)));
@@ -92,6 +94,48 @@ public class ServerHealthManager : NetworkBehaviour
 
         //add killcounter on client
         FindObjectOfType<Killer>().DoKillCounterRpc(_shooterConn, _shooterObj);
+
+        //add deathcounter on all instances of pobj's scoreboard
+        AddDeathCounterToScoreboard(pobj.GetComponent<NetworkObject>().OwnerId);
+
+        //add killcounter on all instances of shooter's scoreobard
+        AddKillCounterToScoreboard(_shooterObj.GetComponent<NetworkObject>().OwnerId);
+    }
+
+    [ObserversRpc]
+    private void AddDeathCounterToScoreboard(int id)
+    {
+        foreach (NetworkObject nobj in LocalConnection.Objects)
+        {
+            if(nobj.tag == "Player")
+            {
+                foreach(Transform item in nobj.transform.Find("UI/ScoreBoard/Holder"))
+                {
+                    if(item.GetComponent<ScoreBoardItemTracker>().id == id)
+                    {
+                        item.GetComponent<ScoreBoardItemTracker>().deaths++;
+                    }
+                }
+            }
+        }
+    }
+
+    [ObserversRpc]
+    private void AddKillCounterToScoreboard(int id)
+    {
+        foreach (NetworkObject nobj in LocalConnection.Objects)
+        {
+            if (nobj.tag == "Player")
+            {
+                foreach (Transform item in nobj.transform.Find("UI/ScoreBoard/Holder"))
+                {
+                    if (item.GetComponent<ScoreBoardItemTracker>().id == id)
+                    {
+                        item.GetComponent<ScoreBoardItemTracker>().kills++;
+                    }
+                }
+            }
+        }
     }
 
     IEnumerator Wait()

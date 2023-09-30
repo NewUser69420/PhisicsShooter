@@ -5,6 +5,8 @@ using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
 using FishNet.Object;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -168,6 +170,13 @@ public class MainMenu : MonoBehaviour
     public void OnSceneLoaded(SceneLoadEndEventArgs obj)
     {
         //deactive loading screen
+        StartCoroutine(Wait());
+    }
+
+    IEnumerator Wait()
+    {
+        yield return new WaitForSeconds(1f);
+
         Background.gameObject.SetActive(false);
         LoadingScreen.gameObject.SetActive(false);
     }
