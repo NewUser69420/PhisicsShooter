@@ -7177,7 +7177,7 @@ MonoBehaviour:
   _componentIndexCache: 1
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
-  groundedTimerMax: 0.2
+  groundedTimerMax: 0.15
 --- !u!114 &7850414259707371282
 MonoBehaviour:
   m_ObjectHideFlags: 0

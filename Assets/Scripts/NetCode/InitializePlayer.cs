@@ -73,16 +73,23 @@ public class InitializePlayer : NetworkBehaviour
     private void SyncScoreboardServer(GameObject obj, int id, NetworkConnection conn)
     {
         string _playerName = "input name";
+        int _kills = 0;
+        int _deaths = 0;
         foreach(NetworkObject ___obj in conn.Objects)
         {
-            if (___obj.tag == "Player") _playerName = ___obj.transform.Find("NameCanvas/PlayerName").GetComponent<TMP_Text>().text;
+            if (___obj.tag == "Player")
+            {
+                _playerName = ___obj.transform.Find("NameCanvas/PlayerName").GetComponent<TMP_Text>().text;
+                _kills = ___obj.GetComponent<ServerHealthManager>().kills;
+                _deaths = ___obj.GetComponent<ServerHealthManager>().deaths;
+            }
         }
-        Debug.Log($"spawning scoreboardItem with name: {_playerName}");
-        SyncScoreboardClient(obj , id, _playerName);
+        Debug.Log($"spawning scoreboardItem with name: {_playerName} and k/d: {_kills}/{_deaths}");
+        SyncScoreboardClient(obj , id, _playerName, _kills, _deaths);
     }
 
     [ObserversRpc]
-    private void SyncScoreboardClient(GameObject _obj, int _id, string __playerName)
+    private void SyncScoreboardClient(GameObject _obj, int _id, string __playerName, int __kills, int __deaths)
     {
         Debug.Log($"spawning scoreboardItem for id: {_id}, name: {__playerName} on client: {LocalConnection.ClientId}");
         
@@ -101,6 +108,8 @@ public class InitializePlayer : NetworkBehaviour
                     GameObject objj = Instantiate(_obj, __obj.transform.Find("UI/ScoreBoard/Holder"));
                     objj.GetComponent<ScoreBoardItemTracker>().id = _id;
                     objj.GetComponent<ScoreBoardItemTracker>().nameValue = __playerName;
+                    objj.GetComponent<ScoreBoardItemTracker>().kills = __kills;
+                    objj.GetComponent<ScoreBoardItemTracker>().deaths = __deaths;
                 }
             }
         }

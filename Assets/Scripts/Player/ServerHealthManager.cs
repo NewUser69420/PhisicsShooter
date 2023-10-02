@@ -17,6 +17,9 @@ public class ServerHealthManager : NetworkBehaviour
     private NetworkConnection Conn;
     private bool invinceble;
 
+    [System.NonSerialized] public int deaths;
+    [System.NonSerialized] public int kills;
+
     public override void OnStartNetwork()
     {
         if (base.IsClient)
@@ -100,6 +103,13 @@ public class ServerHealthManager : NetworkBehaviour
 
         //add killcounter on all instances of shooter's scoreobard
         AddKillCounterToScoreboard(_shooterObj.GetComponent<NetworkObject>().OwnerId);
+
+        //set kill/death counter on server
+        deaths++;
+        foreach(NetworkObject __obj in _shooterConn.Objects)
+        {
+            if (__obj.tag == "Player") __obj.GetComponent<ServerHealthManager>().kills++;
+        }
     }
 
     [ObserversRpc]

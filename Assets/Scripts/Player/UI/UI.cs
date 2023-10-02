@@ -19,8 +19,8 @@ public class UI : NetworkBehaviour
     [SerializeField] private Slider grappleSlider;
     [SerializeField] private GameObject ScoreBoard;
 
-    [System.NonSerialized] public float deathCounterValue = 0;
-    [System.NonSerialized] public float killCounterValue = 0;
+    [System.NonSerialized] public int deathCounterValue = 0;
+    [System.NonSerialized] public int killCounterValue = 0;
 
     private float dashTimer;
 
