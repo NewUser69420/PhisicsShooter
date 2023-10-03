@@ -13,6 +13,7 @@ using static PlayerState;
 
 public class PredictedPlayerController : NetworkBehaviour
 {
+    [SerializeField] Transform _Floaty;
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _grappleSpeed;
@@ -23,6 +24,8 @@ public class PredictedPlayerController : NetworkBehaviour
     [SerializeField] private float _wallJumpForce;
     [SerializeField] private float _wallJumpUp;
     [SerializeField] private float _wallJumpForward;
+    [SerializeField] private float _floatDistance;
+    [SerializeField] private float _floatForce;
 
     [System.NonSerialized] public bool _activated;
     [System.NonSerialized] public bool _didWallJump;
@@ -38,6 +41,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private LaserShooter _laserShooter;
     private MainMenu _mainMenu;
     private PlayerAudioManager _playerAudioManager;
+    private RaycastHit _hit;
     private Vector3 _dashDirection;
     private Vector3 _velocityToSet;
     private Vector3 _wallNormal;
@@ -48,6 +52,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private bool _allowDash = true;
     private bool _wallLeft;
     private bool _speedLimitDisabled;
+    private bool _float;
 
     public float _dashReset;
 
@@ -58,25 +63,29 @@ public class PredictedPlayerController : NetworkBehaviour
         public GroundedState gState;
         public float MoveHorizontal;
         public float MoveVertical;
+        public Vector3 GroundDist;
         public Vector3 DashDirection;
         public Vector3 GrappleVelocity;
         public Vector3 WallNormal;
         public Vector3 WallForward;
         public bool WallLeft;
         public bool WallJump;
+        public bool Floaty;
 
-        public MoveData(ActionState astate, GroundedState gstate, float moveHorizontal, float moveVertical, Vector3 dashDirection, Vector3 grappleVelocity, Vector3 wallNormal, Vector3 wallForward, bool wallLeft, bool wallJump)
+        public MoveData(ActionState astate, GroundedState gstate, float moveHorizontal, float moveVertical, Vector3 groundDist, Vector3 dashDirection, Vector3 grappleVelocity, Vector3 wallNormal, Vector3 wallForward, bool wallLeft, bool wallJump, bool floaty)
         {
             aState = astate;
             gState = gstate;
             MoveHorizontal = moveHorizontal;
             MoveVertical = moveVertical;
             DashDirection = dashDirection;
+            GroundDist = groundDist;
             GrappleVelocity = grappleVelocity;
             WallNormal = wallNormal;
             WallForward = wallForward;
             WallLeft = wallLeft;
             WallJump = wallJump;
+            Floaty = floaty;
 
 
             _tick = 0;
@@ -182,6 +191,11 @@ public class PredictedPlayerController : NetworkBehaviour
         }
         _dashDirection = transform.Find("Cam").forward;
 
+        //prepare floaty
+        if (Physics.Raycast(_Floaty.position, Vector3.down, out _hit, _floatDistance, _whatIsGround)) _float = true;
+        else _float = false;
+
+        //do anim
         HandleAnimations();
         
         if (base.IsOwner)
@@ -259,8 +273,9 @@ public class PredictedPlayerController : NetworkBehaviour
         Vector3 grappleVelocity = _velocityToSet;
         Vector3 wallNormal = _wallNormal;
         Vector3 wallForward = _wallForward;
+        Vector3 groundDist = _hit.point;
 
-        md = new MoveData(_playerState.aState, _playerState.gState, moveHorizontal, moveVertical, dashDirection, grappleVelocity, wallNormal, wallForward, _wallLeft, _didWallJump);
+        md = new MoveData(_playerState.aState, _playerState.gState, moveHorizontal, moveVertical, groundDist, dashDirection, grappleVelocity, wallNormal, wallForward, _wallLeft, _didWallJump, _float);
         if(_playerState.aState == ActionState.Jumping || _playerState.aState == ActionState.Dashing) _playerState.aState = ActionState.Passive;
         _didWallJump = false;
     }
@@ -385,6 +400,12 @@ public class PredictedPlayerController : NetworkBehaviour
                 if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
             }
         }
+
+        //float
+        if(md.Floaty)
+        {
+            _rb.AddForce(Vector3.up * _floatForce * Mathf.Abs(transform.position.y - md.GroundDist.y), ForceMode.Force);
+        }
     }
 
     [Reconcile]
@@ -398,25 +419,9 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void HandleAnimations()
     {
-        Vector2 inputRaw = _playerControlls.OnFoot.Movement.ReadValue<Vector2>();
-        if (_rb.velocity.magnitude > 0.5f && _playerState.gState != GroundedState.InAir)
-        {
-            if(base.Owner.IsLocalClient)
-            {
-                _animator.SetBool("isWalking", true);
-                _animator.SetFloat("xMovement", inputRaw.x);
-                _animator.SetFloat("yMovement", inputRaw.y);
-            }
-        }
-        else
-        {
-            if(base.Owner.IsLocalClient) _animator.SetBool("isWalking", false);
-        }
-
         if(base.Owner.IsLocalClient)
         {
             if (_playerState.aState == ActionState.Jumping && _playerState.gState == GroundedState.Grounded) _netAnimator.SetTrigger("jump");
-            if (Physics.Raycast(transform.position, transform.up * -1, 0.4f, _whatIsGround)) _netAnimator.SetTrigger("hitGround");
 
             if (_playerState.gState == GroundedState.InAir) _animator.SetBool("inAir", true);
             else _animator.SetBool("inAir", false);
