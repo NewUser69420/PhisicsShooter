@@ -5,7 +5,7 @@ using UnityEngine.Playables;
 public class feet : MonoBehaviour
 {
     private PlayerState state;
-    private float groundedTimer;
+    [System.NonSerialized] public float groundedTimer;
     [SerializeField] private float groundedTimerMax;
     [SerializeField] private feet otherFeet;
 

@@ -74,9 +74,9 @@ public class IK_foot : MonoBehaviour
         if (Physics.Raycast(directionPoint, Vector3.down, out hit, lookForGroundDistance, whatIsStepable))
         {
             Debug.DrawRay(directionPoint, Vector3.down, Color.red);
-            if (Vector3.Distance(hit.point, curFootPos) > 0.1f && lerp == 1f && canAnimate)
+            if (Vector3.Distance(hit.point, curFootPos) > 0.25f && lerp == 1f && canAnimate)
             {
-                newFootPos = hit.point;
+                newFootPos = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
                 lerp = 0f;
                 lerpp = 0f;
             }
