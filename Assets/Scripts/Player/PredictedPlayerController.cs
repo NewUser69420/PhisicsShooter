@@ -409,7 +409,7 @@ public class PredictedPlayerController : NetworkBehaviour
         if(base.Owner.IsLocalClient)
         {
             if (_playerState.aState == ActionState.Jumping && _playerState.gState == GroundedState.Grounded) _netAnimator.SetTrigger("jump");
-            if ((newVel.y - oldVel.y) > 2) _netAnimator.SetTrigger("land");
+            if ((newVel.y - oldVel.y) > 2) {_netAnimator.SetTrigger("land"); GetComponentInChildren<GunPositioner>().AnimateLand();}
 
             if (_playerState.gState == GroundedState.InAir) _animator.SetBool("inAir", true);
             else _animator.SetBool("inAir", false);
