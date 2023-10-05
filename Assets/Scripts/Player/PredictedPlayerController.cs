@@ -45,12 +45,17 @@ public class PredictedPlayerController : NetworkBehaviour
     private Vector3 _wallForward;
     private Vector3 oldVel = Vector3.zero;
     private Vector3 newVel = Vector3.zero;
+    private GroundedState newGState;
+    private GroundedState oldGState;
     private float _speedLimit;
     private float _nextJumpTime;
     private float _nextDashTime;
+    private float _velTimer;
+    private float _velTimerMax = 0.3f;
     private bool _allowDash = true;
     private bool _wallLeft;
     private bool _speedLimitDisabled;
+    private bool _impactDelay = true;
 
     public float _dashReset;
 
@@ -159,6 +164,7 @@ public class PredictedPlayerController : NetworkBehaviour
     private void Update()
     {
         newVel = _rb.velocity;
+        newGState = _playerState.gState;
         
         //prepare wallrun
         _wallNormal = _wallRunner.wallRight ? _wallRunner.rightWallhit.normal : _wallRunner.leftWallhit.normal;
@@ -204,11 +210,23 @@ public class PredictedPlayerController : NetworkBehaviour
             }
         }
 
+        //velocityCheck
+        if(_velTimer > 0)
+        {
+            _velTimer -= Time.deltaTime;
+        }
+        else
+        {
+            _velTimer = _velTimerMax;
+            oldVel = _rb.velocity;
+            _impactDelay = true;
+        }
+
         //SpeedControll();
 
         if(_playerState.aState != ActionState.Passive) { StartCoroutine(ResetSpeed()); }
 
-        oldVel = newVel;
+        oldGState = newGState;
     }
 
     IEnumerator ResetSpeed()
@@ -406,13 +424,21 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void HandleAnimations()
     {
-        if(base.Owner.IsLocalClient)
+        if (base.Owner.IsLocalClient)
         {
-            if (_playerState.aState == ActionState.Jumping && _playerState.gState == GroundedState.Grounded) _netAnimator.SetTrigger("jump");
-            if ((newVel.y - oldVel.y) > 2) {_netAnimator.SetTrigger("land"); GetComponentInChildren<GunPositioner>().AnimateLand();}
-
             if (_playerState.gState == GroundedState.InAir) _animator.SetBool("inAir", true);
             else _animator.SetBool("inAir", false);
+        }
+    }
+
+    //handle impact detection
+    private void OnCollisionEnter(Collision collision)
+    {
+        if ((collision.gameObject.layer == 8 || collision.gameObject.layer == 10) && oldVel.y < -5f && _impactDelay)
+        {
+            GetComponentInChildren<GunPositioner>().AnimateLand();
+            _netAnimator.SetTrigger("land");
+            _impactDelay = false;
         }
     }
 

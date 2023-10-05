@@ -22,6 +22,7 @@ public class InitializePlayer : NetworkBehaviour
     public GameObject MainMenuUI;
     public Transform UI;
     public Transform PlayerName;
+    public GameObject FPItemsPrefab;
 
     public GameObject ScoreboardItemPrefab;
 
@@ -39,11 +40,12 @@ public class InitializePlayer : NetworkBehaviour
             PlayerName.GetComponent<TMP_Text>().text = playerName;
             SyncNameServer(playerName, PlayerName.gameObject);
 
-            //SetGameLayerRecursive(transform.Find("Character/Armature/Hips").gameObject, 12);
-
             InitializePlayerServerRpc(base.LocalConnection);
             
             Cursor.lockState = CursorLockMode.Locked;
+
+            GameObject FPItems = Instantiate(FPItemsPrefab);
+            FPItems.GetComponentInChildren<FPGunPositioner>().aimer = transform.Find("Cam/FPGunPositioner");
 
             //make scoreboard item and activate player
             StartCoroutine(Wait2());
@@ -161,10 +163,10 @@ public class InitializePlayer : NetworkBehaviour
 
     private void SetGameLayerRecursive(GameObject _go, int _layer)
     {
-        _go.layer = _layer;
+        if(_go.layer != 13) _go.layer = _layer;
         foreach (Transform child in _go.transform)
         {
-            child.gameObject.layer = _layer;
+            if(child.gameObject.layer != 13) child.gameObject.layer = _layer;
 
             Transform _HasChildren = child.GetComponentInChildren<Transform>();
             if (_HasChildren != null)

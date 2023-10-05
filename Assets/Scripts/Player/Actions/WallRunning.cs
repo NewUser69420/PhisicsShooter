@@ -13,6 +13,8 @@ public class WallRunning : NetworkBehaviour
     public float wallRunTimer;
     public float wallRunTimerMax;
     public bool canWallRun = true;
+    private float resetWallTimer = 3;
+    private float resetWallTimerMax = 3;
 
     [Header("Input")]
     [System.NonSerialized] public float horizontalInput;
@@ -58,12 +60,22 @@ public class WallRunning : NetworkBehaviour
             canWallRun = false;
         }
 
+        if(resetWallTimer > 0 && !canWallRun)
+        {
+            resetWallTimer -= Time.deltaTime;
+        }
+        else if (resetWallTimer <= 0)
+        {
+            resetWallTimer = resetWallTimerMax;
+            ResetAbleToRunOnWall();
+        }
+
         if(playerState.aState != ActionState.WallRunning)
         {
             wallRunTimer = wallRunTimerMax;
         }
 
-        if(newWallName != oldWallName)
+        if(newWallName != oldWallName && !canWallRun)
         {
             ResetAbleToRunOnWall();
         }
