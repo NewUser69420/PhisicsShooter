@@ -297,33 +297,31 @@ public class PredictedPlayerController : NetworkBehaviour
         {
             _shootLaser = false;
 
-            if (_laserShooter.LaserPrefab == null)
+            if (_laserShooter.LaserPrefab == null || _laserShooter.LaserPrefabVisual == null)
             {
                 Debug.Log("Prefab is null");
                 return;
             }
-            NetworkObject LeftBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.LeftEye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
-            NetworkObject RightBullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.RightEye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
+            NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
+            NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
 
-            Laser_Bullet predictedBulletLeft = LeftBullet.GetComponent<Laser_Bullet>();
-            Laser_Bullet predictedBulletRight = RightBullet.GetComponent<Laser_Bullet>();
-            predictedBulletLeft.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-            predictedBulletRight.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+            Laser_Bullet predictedBullet = Bullet.GetComponent<Laser_Bullet>();
+            Laser_BulletVisual predictedBulletVisual = BulletVisual.GetComponent<Laser_BulletVisual>();
+            predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+            predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
 
-            base.Spawn(LeftBullet, base.Owner);
-            base.Spawn(RightBullet, base.Owner);
+            base.Spawn(Bullet, base.Owner);
+            base.Spawn(BulletVisual, base.Owner);
 
-            predictedBulletLeft.PlayerConn = NetworkObject.LocalConnection;
-            predictedBulletRight.PlayerConn = NetworkObject.LocalConnection;
-            SetPlayerBulletRpc(LeftBullet, RightBullet, NetworkObject.LocalConnection);
+            predictedBullet.PlayerConn = NetworkObject.LocalConnection;
+            SetPlayerBulletRpc(Bullet, NetworkObject.LocalConnection);
         }
     }
 
     [ServerRpc]
-    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn)
+    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkConnection playerConn)
     {
         obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
-        obj2.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
     }
 
     private void AddGravity()

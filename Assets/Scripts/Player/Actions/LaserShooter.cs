@@ -6,10 +6,11 @@ using UnityEngine;
 public class LaserShooter : NetworkBehaviour
 {
     public Transform Cam;
-    public Transform LeftEye;
-    public Transform RightEye;
+    public Transform Eye;
+    public Transform Muzzle;
 
     [System.NonSerialized] public NetworkObject LaserPrefab;
+    [System.NonSerialized] public NetworkObject LaserPrefabVisual;
 
     [System.NonSerialized] public float resetTime;
     [System.NonSerialized] public float laserSpeed;

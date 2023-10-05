@@ -22,7 +22,6 @@ public class InitializePlayer : NetworkBehaviour
     public GameObject MainMenuUI;
     public Transform UI;
     public Transform PlayerName;
-    public GameObject FPItemsPrefab;
 
     public GameObject ScoreboardItemPrefab;
 
@@ -43,9 +42,6 @@ public class InitializePlayer : NetworkBehaviour
             InitializePlayerServerRpc(base.LocalConnection);
             
             Cursor.lockState = CursorLockMode.Locked;
-
-            GameObject FPItems = Instantiate(FPItemsPrefab);
-            FPItems.GetComponentInChildren<FPGunPositioner>().aimer = transform.Find("Cam/FPGunPositioner");
 
             //make scoreboard item and activate player
             StartCoroutine(Wait2());

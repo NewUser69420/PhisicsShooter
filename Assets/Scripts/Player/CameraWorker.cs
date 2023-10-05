@@ -12,20 +12,21 @@ public class CameraWorker : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        if (base.IsServer) return;
-        if (!base.Owner.IsLocalClient) return;
-        transform.Find("Cam").gameObject.SetActive(true);
+        if(Owner.IsLocalClient)
+        {
+            transform.Find("Cam").GetComponent<Camera>().enabled = true;
+            transform.Find("Cam").GetComponent<AudioListener>().enabled = true;
+            transform.Find("Cam/FPItems").gameObject.SetActive(true);
 
-        playerControlls = new PlayerControlls();
-        playerControlls.Enable();
+            playerControlls = new PlayerControlls();
+            playerControlls.Enable();
 
-        initialized = true;
+            initialized = true;
+        }
     }
 
     private void Update()
     {
-        if (base.IsServer) return;
-        if (!base.Owner.IsLocalClient) return;
         if (!initialized) return;
         
         //look
@@ -47,5 +48,13 @@ public class CameraWorker : NetworkBehaviour
     {
         obj.transform.rotation = Quaternion.Euler (0f, _yRotation * -1, 0f);
         obj.transform.Find("Cam").transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+
+        SyncWithClientsRpc(obj, _xRotation);
+    }
+
+    [ObserversRpc]
+    private void SyncWithClientsRpc(GameObject obj, float __xRotation)
+    {
+        obj.transform.Find("Cam").transform.localRotation = Quaternion.Euler(__xRotation, 0f, 0f);
     }
 }

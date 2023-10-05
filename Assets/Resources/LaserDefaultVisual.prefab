@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3552598074933062386}
   - component: {fileID: 2335411578585866692}
   m_Layer: 3
-  m_Name: CapsuleUnused
+  m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -50,7 +50,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2536478921244616369}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -92,7 +92,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2536478921244616369}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 10
   m_Type: 2
   m_Shape: 0
@@ -184,9 +184,9 @@ GameObject:
   - component: {fileID: 1286296165359731576}
   - component: {fileID: 4878915225201079255}
   - component: {fileID: 7521054291996902512}
-  - component: {fileID: 3037315811145559163}
+  - component: {fileID: 2560742665825111123}
   m_Layer: 3
-  m_Name: LaserDefault
+  m_Name: LaserDefaultVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -257,7 +257,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 1
+  m_CollisionDetection: 2
 --- !u!114 &1286296165359731576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -276,7 +276,7 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 4878915225201079255}
   - {fileID: 7521054291996902512}
-  - {fileID: 3037315811145559163}
+  - {fileID: 0}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
@@ -292,7 +292,7 @@ MonoBehaviour:
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 8141574332602193669
+  <AssetPathHash>k__BackingField: 17578323274856440389
 --- !u!114 &4878915225201079255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,7 +353,7 @@ MonoBehaviour:
   _resendType: 0
   _resendInterval: 30
   _networkTransform: {fileID: 0}
---- !u!114 &3037315811145559163
+--- !u!114 &2560742665825111123
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -362,13 +362,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8422177648136145546}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d41ee39dcce173418b7bbda2a6f9bac, type: 3}
+  m_Script: {fileID: 11500000, guid: ff2a8ce35eb25804daedb876d36f8078, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 2
+  _componentIndexCache: 255
   _addedNetworkObject: {fileID: 1286296165359731576}
-  _networkObjectCache: {fileID: 1286296165359731576}
-  _startingForce: {x: 0, y: 0, z: 0}
-  SoundObjectPrefab: {fileID: 2429989336855710736, guid: c1ce1a7824fde7344badde88aec127e1,
-    type: 3}
-  damage: 10
+  _networkObjectCache: {fileID: 0}

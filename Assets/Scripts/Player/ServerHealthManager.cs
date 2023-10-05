@@ -81,7 +81,11 @@ public class ServerHealthManager : NetworkBehaviour
     private void DoDeath(NetworkConnection _killedCon, GameObject pobj, NetworkConnection _shooterConn)
     {
         StartCoroutine(Wait());
-        
+
+        //make sound
+        GetComponent<PlayerAudioManager>().Play("Death");
+        SyncSound("Death");
+
         //do death
         SetMaxHealth();
 
@@ -153,5 +157,11 @@ public class ServerHealthManager : NetworkBehaviour
         invinceble = true;
         yield return new WaitForSeconds(0.1f);
         invinceble = false;
+    }
+
+    [ObserversRpc]
+    private void SyncSound(string sound)
+    {
+        GetComponent<PlayerAudioManager>().Play(sound);  
     }
 }

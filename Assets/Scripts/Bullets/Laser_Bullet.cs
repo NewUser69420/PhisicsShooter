@@ -216,6 +216,6 @@ public class Laser_Bullet : NetworkBehaviour
 
     private void TurnOffBullet()
     {
-        transform.Find("Capsule").gameObject.SetActive(false);
+        transform.Find("CapsuleUnused").gameObject.SetActive(false);
     }
 }
