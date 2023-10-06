@@ -4,8 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Cam
   - MainMenu
+  - Camera
+  - EventListener
   layers:
   - Default
   - TransparentFX

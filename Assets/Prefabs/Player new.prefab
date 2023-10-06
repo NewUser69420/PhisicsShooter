@@ -8859,12 +8859,15 @@ MonoBehaviour:
   _componentIndexCache: 1
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
+  sceneName: 
   spawnPos: {x: 0, y: 5, z: 0}
   playerName: 
   MainMenuUI: {fileID: 0}
   UI: {fileID: 3686292687426678077}
   PlayerName: {fileID: 2331428191420037761}
   ScoreboardItemPrefab: {fileID: 8030286040259239346, guid: 14e991bd3436ca3468115d51a5e41b1c,
+    type: 3}
+  PlayerItemPrefab: {fileID: 1103866604405358686, guid: 0d610509af981354698ec8632c87b678,
     type: 3}
 --- !u!114 &-4210208256836070211
 MonoBehaviour:
@@ -8928,6 +8931,7 @@ MonoBehaviour:
   _wallJumpForce: 550
   _wallJumpUp: 700
   _wallJumpForward: 350
+  _activated: 0
   _dashReset: 2
 --- !u!114 &4070201328074355821
 MonoBehaviour:

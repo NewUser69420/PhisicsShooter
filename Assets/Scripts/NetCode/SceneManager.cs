@@ -9,7 +9,7 @@ using Unity.VisualScripting;
 
 public class SceneManager : MonoBehaviour
 {
-    private List<NetworkObject> objsToKeep = new List<NetworkObject>(); 
+    //private List<NetworkObject> objsToKeep = new List<NetworkObject>(); 
 
     private void Awake()
     {
@@ -19,8 +19,8 @@ public class SceneManager : MonoBehaviour
     public void ChangeSceneForServer(NetworkConnection conn, bool bl)
     {
         //GetObjsToKeep();
-        SceneLoadData sld = new SceneLoadData("SampleScene");
-        sld.MovedNetworkObjects = objsToKeep.ToArray();
+        SceneLoadData sld = new SceneLoadData("Lobbies");
+        //sld.MovedNetworkObjects = objsToKeep.ToArray();
         sld.ReplaceScenes = ReplaceOption.All;
         InstanceFinder.SceneManager.LoadGlobalScenes(sld);
     }

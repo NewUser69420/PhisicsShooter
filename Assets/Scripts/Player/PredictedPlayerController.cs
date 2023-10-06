@@ -23,8 +23,9 @@ public class PredictedPlayerController : NetworkBehaviour
     [SerializeField] private float _wallJumpForce;
     [SerializeField] private float _wallJumpUp;
     [SerializeField] private float _wallJumpForward;
-
-    [System.NonSerialized] public bool _activated;
+    
+    public bool _activated;
+    
     [System.NonSerialized] public bool _didWallJump;
     [System.NonSerialized] public bool _canDashOnWallJump;
     [System.NonSerialized] public bool _shootLaser;

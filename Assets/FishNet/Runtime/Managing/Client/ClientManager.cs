@@ -11,6 +11,7 @@ using GameKit.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace FishNet.Managing.Client
 {
@@ -135,6 +136,7 @@ namespace FishNet.Managing.Client
         public ushort _port;
         private GameObject LoadingScreen;
         private GameObject HomeScreen;
+        private GameObject Background;
 
         private void OnDestroy()
         {
@@ -161,6 +163,7 @@ namespace FishNet.Managing.Client
 
             LoadingScreen = GameObject.Find("MainMenuUI").transform.Find("LoadingScreen").gameObject;
             HomeScreen = GameObject.Find("MainMenuUI").transform.Find("HomeScreen").gameObject;
+            Background = GameObject.Find("MainMenuUI").transform.Find("Background").gameObject;
         }
 
 
@@ -333,6 +336,7 @@ namespace FishNet.Managing.Client
                 {
                     Debug.Log("Back To MainMenu");
                     HomeScreen.SetActive(true);
+                    Background.SetActive(true);
                     LoadingScreen.SetActive(false);
                     connectionTries = 0;
                 }

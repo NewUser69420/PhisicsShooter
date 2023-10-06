@@ -1,8 +1,12 @@
+using FishNet.Connection;
+using FishNet.Managing.Scened;
 using FishNet.Object;
 using UnityEngine;
 
 public class CameraWorker : NetworkBehaviour
 {
+    [System.NonSerialized] public string sceneName;
+    
     private float xRotation;
     private float yRotation;
     [SerializeField] private float sensitivity;
@@ -12,7 +16,24 @@ public class CameraWorker : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        if(Owner.IsLocalClient)
+        base.SceneManager.OnLoadEnd += OnInitialize;
+    }
+
+    public void OnInitialize(SceneLoadEndEventArgs args)
+    {
+        foreach(var scene in args.LoadedScenes)
+        {
+            if(scene.name == sceneName)
+            {
+                ButtSex(Owner);
+            }
+        }
+    }
+
+    [TargetRpc]
+    private void ButtSex(NetworkConnection _conn)
+    {
+        if (Owner.IsLocalClient)
         {
             transform.Find("Cam").GetComponent<Camera>().enabled = true;
             transform.Find("Cam").GetComponent<AudioListener>().enabled = true;
@@ -20,6 +41,8 @@ public class CameraWorker : NetworkBehaviour
 
             playerControlls = new PlayerControlls();
             playerControlls.Enable();
+
+            GameObject.Find("Lobbies").GetComponent<Canvas>().enabled = false;
 
             initialized = true;
         }

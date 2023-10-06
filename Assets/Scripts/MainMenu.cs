@@ -102,18 +102,6 @@ public class MainMenu : MonoBehaviour
     private void Update()
     {
         if (playerControlls.MainMenu.GoBackOne.WasPressedThisFrame()) GoBackOne(layer);
-
-        foreach(NetworkObject obj in InstanceFinder.ClientManager.Objects.Spawned.Values)
-        {
-            if(obj.gameObject.tag == "Player")
-            {
-                Cam.SetActive(false);
-            }
-            else
-            {
-                Cam.SetActive(true);
-            }
-        }
     }
 
     public void Play()

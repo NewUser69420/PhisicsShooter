@@ -15,6 +15,8 @@ using UnityEngine;
 
 public class InitializePlayer : NetworkBehaviour
 {
+    public string sceneName;
+    
     public Vector3 spawnPos;
 
     public string playerName = "playername not set";
@@ -24,23 +26,73 @@ public class InitializePlayer : NetworkBehaviour
     public Transform PlayerName;
 
     public GameObject ScoreboardItemPrefab;
+    public GameObject PlayerItemPrefab;
 
     private GameObject obj;
 
     public override void OnStartNetwork()
     {
         MainMenuUI = GameObject.Find("MainMenuUI");
+
+        base.SceneManager.OnLoadEnd += OnInitializePlayer;
         
-        if (base.Owner.IsLocalClient)
+        if(base.Owner.IsLocalClient)
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
             playerName = MainMenuUI.GetComponent<MainMenu>().playerName;
             PlayerName.GetComponent<TMP_Text>().text = playerName;
             SyncNameServer(playerName, PlayerName.gameObject);
+        }
+    }
 
+    public void OnInitializePlayer(SceneLoadEndEventArgs args)
+    {
+        foreach(var scene in args.LoadedScenes)
+        {
+            if (scene.name == sceneName)
+            {
+                InitializeThePlayerOnClient(Owner);
+            }
+            else if (scene.name == "1v1Lobby" || scene.name == "2v2Lobby" || scene.name == "3v3Lobby")
+            {
+                StartCoroutine(Wait3());
+            }
+        }
+    }
+
+    IEnumerator Wait3()
+    {
+        yield return new WaitForSeconds(0.5f);
+        GameObject PlayerItem = Instantiate(PlayerItemPrefab, GameObject.Find("LobbyManager/PlayerHolder").transform);
+        PlayerItem.GetComponentInChildren<TMP_Text>().text = playerName;
+
+        SyncPlayerItemServer(PlayerItemPrefab, playerName);
+    }
+
+    [ServerRpc]
+    private void SyncPlayerItemServer(GameObject prefab, string _playerName)
+    {
+        GameObject _PlayerItem = Instantiate(prefab, GameObject.Find("LobbyManager/PlayerHolder").transform);
+        _PlayerItem.GetComponentInChildren<TMP_Text>().text = _playerName;
+
+        SyncPlayerItemClient(prefab, _playerName);
+    }
+
+    [ObserversRpc]
+    private void SyncPlayerItemClient(GameObject _prefab, string __playerName)
+    {
+        GameObject __PlayerItem = Instantiate(_prefab, GameObject.Find("LobbyManager/PlayerHolder").transform);
+        __PlayerItem.GetComponentInChildren<TMP_Text>().text = __playerName;
+    }
+
+    [TargetRpc]
+    private void InitializeThePlayerOnClient(NetworkConnection _conn)
+    {
+        if (base.Owner.IsLocalClient)
+        {
             InitializePlayerServerRpc(base.LocalConnection);
-            
+
             Cursor.lockState = CursorLockMode.Locked;
 
             //make scoreboard item and activate player
