@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class MainMenu : MonoBehaviour
 {
@@ -38,6 +39,8 @@ public class MainMenu : MonoBehaviour
     private Transform DedicatedServerScreen;
     [SerializeField]
     private Transform NameErrorTransform;
+    [SerializeField]
+    private GameObject SceneListPrefab;
 
     private TMP_Text NameErrorMessage;
 

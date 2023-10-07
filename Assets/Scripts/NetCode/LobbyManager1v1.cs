@@ -1,14 +1,14 @@
 using FishNet.Connection;
 using FishNet.Object;
-using System;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class LobbyManager1v1 : NetworkBehaviour
 {
-    [System.NonSerialized] public List<Status> readyStatus = new List<Status>();
+    private List<GameObject> sceneObjects = new();
+
+    [System.NonSerialized] public Dictionary<int, bool> readyStatus = new Dictionary<int, bool>();
 
     [SerializeField] private TMP_Text timerVal;
 
@@ -21,6 +21,8 @@ public class LobbyManager1v1 : NetworkBehaviour
     private float timer;
     private float timerMax = 60;
 
+    
+
     public void PressedReady()
     {
         isReady = !isReady;
@@ -30,13 +32,37 @@ public class LobbyManager1v1 : NetworkBehaviour
     [ServerRpc]
     private void SyncDataWithServer(LobbyManager1v1 _manager, bool _isReady, int _id)
     {
-        _manager.readyStatus.Add(new Status() { PlayerId = _id, PlayerStatus = _isReady});
+        if(!_manager.readyStatus.ContainsKey(_id))
+        {
+            //make new instance
+            _manager.readyStatus.Add(_id, _isReady);
+        }
+        else
+        {
+            //edit instance
+            _manager.readyStatus[_id] = _isReady;
+        }
     }
 
-    private void Start()
+    public override void OnStartNetwork()
     {
         timer = timerMax;
-        if (Owner.IsLocalClient) { conn = LocalConnection; SyncCon(this, conn); }
+        timerVal.text = Mathf.RoundToInt(timer).ToString();
+        if (Owner.IsLocalClient)
+        {
+            conn = LocalConnection; SyncCon(this, conn);
+
+            foreach (var thing in base.SceneManager.SceneConnections)
+            {
+                if (thing.Key == gameObject.scene)
+                {
+                    foreach (var obj in thing.Key.GetRootGameObjects())
+                    {
+                        sceneObjects.Add(obj);
+                    }
+                }
+            }
+        }
     }
 
     [ServerRpc]
@@ -50,10 +76,13 @@ public class LobbyManager1v1 : NetworkBehaviour
         if(base.IsServer)
         {
             playerAmount = 0;
-            foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
+            foreach (GameObject obj in sceneObjects)
             {
-                Debug.Log(obj.name);
-                playerAmount++;
+                if(obj.tag == "Player")
+                {
+                    Debug.Log(obj.name + obj.GetComponent<NetworkObject>().OwnerId);
+                    playerAmount++;
+                }
             }
             if (playerAmount == 2) lobbyIsFull = true;
             else lobbyIsFull = false;
@@ -62,14 +91,15 @@ public class LobbyManager1v1 : NetworkBehaviour
             {
                 timer -= Time.deltaTime;
                 timerVal.text = Mathf.RoundToInt(timer).ToString();
+                SyncTimerClientRpc(timerVal.gameObject, timer);
             }
-            else
+            else if(timer <= 0)
             {
                 //start game
                 Debug.Log($"started game");
             }
 
-            if(!readyStatus.Contains(new Status() { PlayerStatus = false}) && lobbyIsFull)
+            if(!readyStatus.ContainsValue(false) && lobbyIsFull)
             {
                 //start game cancalable
                 Debug.Log($"started game");
@@ -77,32 +107,15 @@ public class LobbyManager1v1 : NetworkBehaviour
 
             foreach(var thing in readyStatus)
             {
-                Debug.Log($"id: {thing.PlayerId}  status: {thing.PlayerStatus}");
+                Debug.Log($"id: {thing.Key}  status: {thing.Value}");
             }
         }
     }
-}
 
-public class Status : IEquatable<Status>
-{
-    public int PlayerId { get; set; }
-
-    public bool PlayerStatus { get; set; }
-
-    public override string ToString()
+    [ObserversRpc]
+    private void SyncTimerClientRpc(GameObject _timerVal, float _timer)
     {
-        return "ID: " + PlayerStatus + "   Name: " + PlayerId;
-    }
-    public override bool Equals(object obj)
-    {
-        if (obj == null) return false;
-        Status objAsPart = obj as Status;
-        if (objAsPart == null) return false;
-        else return Equals(objAsPart);
-    }
-    public bool Equals(Status other)
-    {
-        if (other == null) return false;
-        return (this.PlayerStatus.Equals(other.PlayerStatus));
+        Debug.Log($"TEST1");
+        _timerVal.GetComponent<TMP_Text>().text = Mathf.RoundToInt(_timer).ToString();
     }
 }

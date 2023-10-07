@@ -22,7 +22,7 @@ public class ServerHealthManager : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        if (base.IsClient)
+        if (Owner.IsLocalClient)
         {
             GiveLocalConn(base.LocalConnection);
         }

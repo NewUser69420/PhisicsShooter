@@ -15,8 +15,7 @@ public class LobbyButn : NetworkBehaviour
 
     private void Start()
     {
-        if (base.IsServer) return;
-        StartCoroutine(Wait());
+        if(!base.IsServer) StartCoroutine(Wait());
     }
 
     IEnumerator Wait()
@@ -75,29 +74,38 @@ public class LobbyButn : NetworkBehaviour
             }
             else if (pair.Key.name == _lobbyName)
             {
+                var stackedSceneHandle = pair.Key.handle;
                 checklist.Add(0);
                 //join scene if not full
                 if (pair.Value.Count < playerMax)
                 {
                     //join this scene
-                    SceneLoadData sld = new SceneLoadData(pair.Key);
-                    sld.ReplaceScenes = ReplaceOption.None;
+                    SceneLookupData lookup = new SceneLookupData(stackedSceneHandle, _lobbyName);
+                    SceneLoadData sld = new SceneLoadData(lookup);
                     sld.Options.AllowStacking = true;
                     sld.MovedNetworkObjects = objsToKeep.ToArray();
                     sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
                     base.SceneManager.LoadConnectionScenes(_conn, sld);
                     Debug.Log($"Joining lobby");
                     return;
+
+                    ////old
+                    //SceneLoadData sld = new SceneLoadData(pair.Key);
+                    //sld.ReplaceScenes = ReplaceOption.None;
+                    //sld.Options.AllowStacking = true;
+                    //sld.MovedNetworkObjects = objsToKeep.ToArray();
+                    //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
+                    //base.SceneManager.LoadConnectionScenes(_conn, sld);
                 }
             }
         }
 
         if (!checklist.Contains(0))
         {
-            //make and join a scene
-            SceneLoadData sld = new SceneLoadData(_lobbyName);
-            sld.ReplaceScenes = ReplaceOption.None;
-            sld.Options.AllowStacking = true;
+            //no scenes yet make and join a scene
+            SceneLookupData lookup = new SceneLookupData(0, _lobbyName);
+            SceneLoadData sld = new SceneLoadData(lookup);
+            sld.Options.AllowStacking = false;
             sld.MovedNetworkObjects = objsToKeep.ToArray();
             sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
             base.SceneManager.LoadConnectionScenes(_conn, sld);
@@ -106,9 +114,9 @@ public class LobbyButn : NetworkBehaviour
         }
 
         //if still here (should only be bc other scenes are full) make and join scene
-        SceneLoadData sldd = new SceneLoadData(_lobbyName);
-        sldd.ReplaceScenes = ReplaceOption.None;
-        sldd.Options.AllowStacking = true;
+        SceneLookupData lookupp = new SceneLookupData(0, _lobbyName);
+        SceneLoadData sldd = new SceneLoadData(lookupp);
+        sldd.Options.AllowStacking = false;
         sldd.MovedNetworkObjects = objsToKeep.ToArray();
         sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         base.SceneManager.LoadConnectionScenes(_conn, sldd);

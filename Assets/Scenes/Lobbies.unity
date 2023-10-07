@@ -245,7 +245,6 @@ MonoBehaviour:
   <ComponentIndex>k__BackingField: 0
   <PredictedSpawn>k__BackingField: {fileID: 0}
   _networkBehaviours:
-  - {fileID: 0}
   - {fileID: 1700364590}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
@@ -1302,7 +1301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e560f65b3e29be948b675f08dfc195e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 1
+  _componentIndexCache: 0
   _addedNetworkObject: {fileID: 102835527}
   _networkObjectCache: {fileID: 102835527}
 --- !u!114 &1700364591

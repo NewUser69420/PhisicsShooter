@@ -8859,9 +8859,10 @@ MonoBehaviour:
   _componentIndexCache: 1
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
+  sceneObjects: []
   sceneName: 
   spawnPos: {x: 0, y: 5, z: 0}
-  playerName: 
+  conId: -1
   MainMenuUI: {fileID: 0}
   UI: {fileID: 3686292687426678077}
   PlayerName: {fileID: 2331428191420037761}
