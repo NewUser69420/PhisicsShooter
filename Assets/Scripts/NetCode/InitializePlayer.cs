@@ -9,6 +9,8 @@ using UnityEngine;
 
 public class InitializePlayer : NetworkBehaviour
 {
+    [System.NonSerialized] public bool isTestPlayer;
+    
     [SerializeField] private List<NetworkObject> sceneObjects = new();
 
     [SerializeField] private string sceneName = "scene name not set";
