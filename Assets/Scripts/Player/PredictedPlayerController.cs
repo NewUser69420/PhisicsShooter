@@ -1,14 +1,12 @@
 using FishNet;
 using FishNet.Component.Animating;
 using FishNet.Connection;
-using FishNet.Demo.AdditiveScenes;
+using FishNet.Managing.Scened;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
-using UnityEngine.InputSystem.HID;
 using static PlayerState;
 
 public class PredictedPlayerController : NetworkBehaviour
@@ -27,10 +25,12 @@ public class PredictedPlayerController : NetworkBehaviour
     public bool _activated;
     
     [System.NonSerialized] public bool _didWallJump;
+    [System.NonSerialized] public bool _isTestPlayer;
     [System.NonSerialized] public bool _canDashOnWallJump;
     [System.NonSerialized] public bool _shootLaser;
     [System.NonSerialized] public Rigidbody _rb;
 
+    private UnityEngine.SceneManagement.Scene currentScene;
     private PlayerControlls _playerControlls;
     private PlayerState _playerState;
     private Animator _animator;
@@ -138,6 +138,11 @@ public class PredictedPlayerController : NetworkBehaviour
         InstanceFinder.TimeManager.OnPostTick += TimeManager_OnPostTick;
     }
 
+    public override void OnStartNetwork()
+    {
+        base.SceneManager.OnLoadEnd += _OnSceneLoad;
+    }
+
     private void OnDestroy()
     {
         if (InstanceFinder.TimeManager != null)
@@ -160,6 +165,14 @@ public class PredictedPlayerController : NetworkBehaviour
     {
         if (!base.IsServer)
             AddGravity();
+    }
+
+    private void _OnSceneLoad(SceneLoadEndEventArgs args)
+    {
+        foreach (var scene in args.LoadedScenes)
+        {
+            if (scene.name != "Lobbies") currentScene = scene;
+        }
     }
 
     private void Update()
@@ -203,7 +216,7 @@ public class PredictedPlayerController : NetworkBehaviour
 
             if(_activated)
             {
-                _mainMenu.gameObject.SetActive(false);
+                if(!_isTestPlayer) _mainMenu.gameObject.SetActive(false);
             }
             else
             {
@@ -303,6 +316,8 @@ public class PredictedPlayerController : NetworkBehaviour
                 Debug.Log("Prefab is null");
                 return;
             }
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
+            
             NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
 
@@ -315,14 +330,19 @@ public class PredictedPlayerController : NetworkBehaviour
             base.Spawn(BulletVisual, base.Owner);
 
             predictedBullet.PlayerConn = NetworkObject.LocalConnection;
-            SetPlayerBulletRpc(Bullet, NetworkObject.LocalConnection);
+            SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection);
         }
     }
 
     [ServerRpc]
-    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkConnection playerConn)
+    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn)
     {
-        obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
+        foreach(var scene in playerConn.Scenes)
+        {
+            if (scene.name != "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, scene); UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, scene); }
+        }
+        
+        if(obj1 != null) obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
     }
 
     private void AddGravity()

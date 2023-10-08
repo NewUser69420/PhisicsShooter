@@ -4,6 +4,8 @@ using FishNet.Managing.Scened;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using System.Linq;
+using FishNet;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -11,9 +13,14 @@ public class LobbyManager : NetworkBehaviour
 
     [System.NonSerialized] public Dictionary<int, bool> readyStatus = new Dictionary<int, bool>();
 
+    List<NetworkConnection> conns = new List<NetworkConnection>();
+                List<NetworkObject> nobjsToLoad = new List<NetworkObject>();
+
     [SerializeField] private TMP_Text timerVal;
 
-    private NetworkConnection conn;
+    private UnityEngine.SceneManagement.Scene thisLobbyScene;
+
+    private List<NetworkConnection> conn = new();
 
     private int playerAmount;
 
@@ -49,16 +56,30 @@ public class LobbyManager : NetworkBehaviour
     {
         timer = timerMax;
         timerVal.text = Mathf.RoundToInt(timer).ToString();
-        if (Owner.IsLocalClient)
+        if (!base.IsServer)
         {
-            conn = LocalConnection; SyncCon(this, conn);
+            Debug.Log("Trying to sync conn");
+            conn.Add(LocalConnection);
+            SyncCon(gameObject, conn);
+            GameObject.Find("Lobbies").SetActive(false);
+        }
+
+        if (base.IsServer) Invoke(nameof(SetThisSceneVar), 1f);
+    }
+
+    private void SetThisSceneVar()
+    {
+        foreach(var scene in conn[0].Scenes)
+        {
+            if (scene.name != "Lobbies") thisLobbyScene = scene;
         }
     }
 
-    [ServerRpc]
-    private void SyncCon(LobbyManager _manager, NetworkConnection _conn)
+    [ServerRpc(RequireOwnership = false)]
+    private void SyncCon(GameObject _manager, List<NetworkConnection> _conn)
     {
-        _manager.conn = _conn;
+        _manager.GetComponent<LobbyManager>().conn = _conn;
+        Debug.Log($"Set Conn {_conn}");
     }
 
     private void Update()
@@ -92,33 +113,40 @@ public class LobbyManager : NetworkBehaviour
             Debug.Log($"readystatuscount: {readyStatus.Count} + doesreadystatus contain false: {readyStatus.ContainsValue(false)} + is lobby full: {lobbyIsFull}");
             if(readyStatus.Count > 1 && !readyStatus.ContainsValue(false) && lobbyIsFull)
             {
-                List<NetworkConnection> connsToLoad = new List<NetworkConnection>();
-                List<NetworkObject> nobjsToLoad = new List<NetworkObject>();
-
+                //get players to load
                 foreach (NetworkObject obj in sceneObjects)
                 {
                     if(obj.CompareTag("Player"))
                     {
-                        connsToLoad.Add(obj.Owner);
+                        conns.Add(obj.Owner);
                         nobjsToLoad.Add(obj);
                     }
                 }
+                //start game cancalable
+                Debug.Log($"started game");
+                SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
+                SceneLoadData sld = new SceneLoadData(lookup);
+                sld.Options.AllowStacking = false;
+                sld.MovedNetworkObjects = nobjsToLoad.ToArray();
+                //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
+                base.SceneManager.LoadConnectionScenes(conns.ToArray(), sld);
 
-            //start game cancalable
-            Debug.Log($"started game");
-            SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
-            SceneLoadData sld = new SceneLoadData(lookup);
-            sld.Options.AllowStacking = false;
-            sld.MovedNetworkObjects = nobjsToLoad.ToArray();
-            //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-            base.SceneManager.LoadConnectionScenes(connsToLoad.ToArray(), sld);
-        }
+                Invoke(nameof(UnloadLobbyScene), 0.5f);
+            }
 
             foreach(var thing in readyStatus)
             {
                 Debug.Log($"id: {thing.Key}  status: {thing.Value}");
             }
         }
+    }
+
+    private void UnloadLobbyScene()
+    {
+        //get rid of lobby scene
+        SceneUnloadData sud = new SceneUnloadData(thisLobbyScene);
+        base.SceneManager.UnloadConnectionScenes(conns.ToArray(), sud);
+        Debug.Log("got rid of lobby scene");
     }
 
     [ObserversRpc]

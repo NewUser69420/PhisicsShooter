@@ -186,7 +186,7 @@ public class MainMenu : MonoBehaviour
     public void OnSceneLoaded(SceneLoadEndEventArgs obj)
     {
         //deactive loading screen
-        StartCoroutine(Wait());
+        if(gameObject.activeSelf) StartCoroutine(Wait());
     }
 
     private void OnClientConnectionChange(ClientConnectionStateArgs args)

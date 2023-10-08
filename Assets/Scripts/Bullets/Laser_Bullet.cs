@@ -27,7 +27,7 @@ public class Laser_Bullet : NetworkBehaviour
     private bool canDoDamage = true;
     
     public override void OnStartNetwork(){
-        StartCoroutine (Wait());
+        if (this.IsSpawned) StartCoroutine(Wait());
 
         //Make sound
         GameObject SoundObject = Instantiate(SoundObjectPrefab);

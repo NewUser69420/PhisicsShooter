@@ -13,8 +13,6 @@ public class InitializePlayer : NetworkBehaviour
     
     [SerializeField] private List<NetworkObject> sceneObjects = new();
 
-    [SerializeField] private string sceneName = "scene name not set";
-
     [SerializeField]  private Vector3 spawnPos;
     [SerializeField] private int conId = -1;
 
@@ -31,9 +29,14 @@ public class InitializePlayer : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
+        Invoke(nameof(DoStartNetwork), 0.5f);
+    }
+
+    private void DoStartNetwork()
+    {
         MainMenuUI = GameObject.Find("MainMenuUI");
 
-        if(base.IsServer) DoSceneObjList();
+        if (base.IsServer && !isTestPlayer) DoSceneObjList();
 
         conId = OwnerId;
 
@@ -43,9 +46,12 @@ public class InitializePlayer : NetworkBehaviour
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
-            playerName = MainMenuUI.GetComponent<MainMenu>().playerName;
-            PlayerName.GetComponent<TMP_Text>().text = playerName;
-            SyncNameServer(playerName, PlayerName.gameObject);
+            if (!isTestPlayer)
+            {
+                playerName = MainMenuUI.GetComponent<MainMenu>().playerName;
+                PlayerName.GetComponent<TMP_Text>().text = playerName;
+                SyncNameServer(playerName, PlayerName.gameObject);
+            }
         }
     }
 
@@ -82,15 +88,12 @@ public class InitializePlayer : NetworkBehaviour
 
         foreach (var _scene in args.LoadedScenes)
         {
-            if (_scene.name == sceneName)
-            {
-                if(Owner.IsLocalClient) InitializeThePlayerOnClient(Owner);
-            }
-            else if (_scene.name == "1v1Lobby" || _scene.name == "2v2Lobby" || _scene.name == "3v3Lobby")
+            if (_scene.name == "1v1Lobby" || _scene.name == "2v2Lobby" || _scene.name == "3v3Lobby")
             {
                 if (Owner.IsLocalClient) StartCoroutine(Wait3());
                 if (Owner.IsLocalClient || base.IsServer) StartCoroutine(Wait4(sceneObjects));
-            } 
+            }
+            if (_scene.name != "Lobbies" && base.IsClient) UnityEngine.SceneManagement.SceneManager.SetActiveScene(_scene);
         }
     }
 
@@ -137,7 +140,7 @@ public class InitializePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
-    private void InitializeThePlayerOnClient(NetworkConnection _conn)
+    public void InitializeThePlayerOnClient(NetworkConnection _conn)
     {
         if (base.Owner.IsLocalClient)
         {

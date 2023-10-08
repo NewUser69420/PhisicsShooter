@@ -18,7 +18,7 @@ public class Laser_BulletVisual : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        StartCoroutine(Wait());
+        if(this.IsSpawned) StartCoroutine(Wait());
 
         uint timeToTicks = base.TimeManager.TimeToTicks(0.65f);
 
