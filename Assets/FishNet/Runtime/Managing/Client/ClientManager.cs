@@ -11,7 +11,6 @@ using GameKit.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace FishNet.Managing.Client
 {
@@ -132,11 +131,9 @@ namespace FishNet.Managing.Client
 #endif
         #endregion
 
-        private int connectionTries;
         public ushort _port;
-        private GameObject LoadingScreen;
-        private GameObject HomeScreen;
-        private GameObject Background;
+        private string _lastIp = "localhost";
+        public bool triedConnect;
 
         private void OnDestroy()
         {
@@ -160,10 +157,6 @@ namespace FishNet.Managing.Client
             //Listen for client connections from server.
             RegisterBroadcast<ClientConnectionChangeBroadcast>(OnClientConnectionBroadcast);
             RegisterBroadcast<ConnectedClientsBroadcast>(OnConnectedClientsBroadcast);
-
-            LoadingScreen = GameObject.Find("MainMenuUI").transform.Find("LoadingScreen").gameObject;
-            HomeScreen = GameObject.Find("MainMenuUI").transform.Find("HomeScreen").gameObject;
-            Background = GameObject.Find("MainMenuUI").transform.Find("Background").gameObject;
         }
 
 
@@ -323,22 +316,13 @@ namespace FishNet.Managing.Client
             NetworkManager.UpdateFramerate();
             OnClientConnectionState?.Invoke(args);
 
-            if (state == LocalConnectionState.Stopped)
+            if(args.ConnectionState == LocalConnectionState.Stopped)
             {
-                connectionTries++;
-
-                if(connectionTries == 1)
+                if(_lastIp == "localhost")
                 {
-                    Debug.Log($"Trying again with: 86.83.234.112:" + _port);
                     StartConnection("86.83.234.112", _port);
-                }
-                else if(connectionTries > 1)
-                {
-                    Debug.Log("Back To MainMenu");
-                    HomeScreen.SetActive(true);
-                    Background.SetActive(true);
-                    LoadingScreen.SetActive(false);
-                    connectionTries = 0;
+                    _lastIp = "86.83.234.112";
+                    Debug.Log($"trying to connect with ip: 86.83.234.112 and port: {_port}");
                 }
             }
         }

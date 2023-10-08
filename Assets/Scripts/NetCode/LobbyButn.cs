@@ -1,30 +1,29 @@
 using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Object;
-using FishNet.Object.Synchronizing;
+using FishNet.Object.Prediction;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class LobbyButn : NetworkBehaviour
 {
     private NetworkObject Player;
 
-    private void Start()
+    public override void OnStartNetwork()
     {
-        if(!base.IsServer) StartCoroutine(Wait());
+        if (base.IsServer) return;
+        StartCoroutine(Wait());
     }
 
     IEnumerator Wait()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
         {
-            if (obj.GetComponent<NetworkObject>().OwnerId == LocalConnection.ClientId) Player = obj.GetComponent<NetworkObject>();
+            if (obj.GetComponent<NetworkObject>().OwnerId == base.LocalConnection.ClientId) { Player = obj.GetComponent<NetworkObject>(); Debug.Log($"player id = {Player.OwnerId}"); }
         }
+        if(Player == null) Debug.Log($"error, cant find player object with id: {base.LocalConnection.ClientId}");
     }
 
     public void OnButnClick()
@@ -33,15 +32,54 @@ public class LobbyButn : NetworkBehaviour
         switch(gameObject.name)
         {
             case "B1v1":
-                JoinLobby(LocalConnection, "1v1Lobby", Player);
+                Test(Player);
                 break;
             case "B2v2":
-                JoinLobby(LocalConnection, "2v2Lobby", Player);
+                JoinLobby(base.LocalConnection, "2v2Lobby", Player);
                 break;
             case "B3v3":
-                JoinLobby(LocalConnection, "3v3Lobby", Player);
+                JoinLobby(base.LocalConnection, "3v3Lobby", Player);
                 break;
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void Test(NetworkObject nobj)
+    {
+        ////temp fix to get all pobj in the right scene
+        //foreach(var pair in base.SceneManager.SceneConnections)
+        //{
+        //    foreach(var thing in pair.Value)
+        //    {
+        //        foreach(var obj in thing.Objects)
+        //        {
+        //            if(obj.tag == "Player")
+        //            {
+        //                if(obj.GetComponent<NetworkObject>().OwnerId != nobj.OwnerId)
+        //                {
+        //                    SyncLocationOfPobjs(obj.Owner, nobj);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+        
+        SceneLoadData sld = new SceneLoadData("1v1Lobby");
+        sld.MovedNetworkObjects = new NetworkObject[] { nobj };
+        sld.ReplaceScenes = ReplaceOption.None;
+        base.SceneManager.LoadConnectionScenes(nobj.Owner, sld);
+    }
+
+    [TargetRpc]
+    private void SyncLocationOfPobjs(NetworkConnection _conn, NetworkObject _obj)
+    {
+        StartCoroutine(Wait2(_obj));
+    }
+
+    IEnumerator Wait2(NetworkObject __obj)
+    {
+        yield return new WaitForSeconds(1);
+        if(__obj.GetComponent<InitializePlayer>() != null) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(__obj.gameObject, UnityEngine.SceneManagement.SceneManager.GetSceneByName("1v1Lobby"));
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -74,17 +112,16 @@ public class LobbyButn : NetworkBehaviour
             }
             else if (pair.Key.name == _lobbyName)
             {
-                var stackedSceneHandle = pair.Key.handle;
                 checklist.Add(0);
                 //join scene if not full
                 if (pair.Value.Count < playerMax)
                 {
                     //join this scene
-                    SceneLookupData lookup = new SceneLookupData(stackedSceneHandle, _lobbyName);
+                    SceneLookupData lookup = new SceneLookupData(pair.Key.handle, _lobbyName);
                     SceneLoadData sld = new SceneLoadData(lookup);
                     sld.Options.AllowStacking = true;
                     sld.MovedNetworkObjects = objsToKeep.ToArray();
-                    sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
+                    //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
                     base.SceneManager.LoadConnectionScenes(_conn, sld);
                     Debug.Log($"Joining lobby");
                     return;
@@ -107,7 +144,7 @@ public class LobbyButn : NetworkBehaviour
             SceneLoadData sld = new SceneLoadData(lookup);
             sld.Options.AllowStacking = false;
             sld.MovedNetworkObjects = objsToKeep.ToArray();
-            sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
+            //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
             base.SceneManager.LoadConnectionScenes(_conn, sld);
             Debug.Log($"No lobby exists, Making own");
             return;
@@ -118,7 +155,7 @@ public class LobbyButn : NetworkBehaviour
         SceneLoadData sldd = new SceneLoadData(lookupp);
         sldd.Options.AllowStacking = false;
         sldd.MovedNetworkObjects = objsToKeep.ToArray();
-        sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
+        //sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         base.SceneManager.LoadConnectionScenes(_conn, sldd);
         Debug.Log($"Lobbies full, Making own");
         return;

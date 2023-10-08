@@ -41,31 +41,34 @@ namespace FishNet.Object
         /// <summary>
         /// Pauses rigidbodies for prediction.
         /// </summary>
-        internal RigidbodyPauser RigidbodyPauser;
+        public RigidbodyPauser RigidbodyPauser { get; private set; }
         #endregion
 
         #region Private.
         #region Preset SmoothingDatas.
+        [System.NonSerialized]
         private static AdaptiveInterpolationSmoothingData _accurateSmoothingData = new AdaptiveInterpolationSmoothingData()
         {
-            InterpolationPercent = 0.5f,
-            CollisionInterpolationPercent = 0.05f,
-            InterpolationDecreaseStep = 1,
-            InterpolationIncreaseStep = 2,
+            NormalPercent = 0.625f,
+            CollisionPercent = 0.0625f,
+            NormalStep = 0.25f,
+            CollisionStep = 1f,
         };
+        [System.NonSerialized]
         private static AdaptiveInterpolationSmoothingData _mixedSmoothingData = new AdaptiveInterpolationSmoothingData()
         {
-            InterpolationPercent = 1f,
-            CollisionInterpolationPercent = 0.1f,
-            InterpolationDecreaseStep = 1,
-            InterpolationIncreaseStep = 3,
+            NormalPercent = 1.25f,
+            CollisionPercent = 0.125f,
+            NormalStep = 0.25f,
+            CollisionStep = 0.75f,
         };
+        [System.NonSerialized]
         private static AdaptiveInterpolationSmoothingData _gradualSmoothingData = new AdaptiveInterpolationSmoothingData()
         {
-            InterpolationPercent = 1.5f,
-            CollisionInterpolationPercent = 0.2f,
-            InterpolationDecreaseStep = 1,
-            InterpolationIncreaseStep = 5,
+            NormalPercent = 1.875f,
+            CollisionPercent = 0.25f,
+            NormalStep = 0.25f,
+            CollisionStep = 0.5f,
         };
         #endregion
         /// <summary>
@@ -92,14 +95,17 @@ namespace FishNet.Object
         /// Local client objects this object is currently colliding with.
         /// </summary>
         private HashSet<GameObject> _localClientCollidedObjects = new HashSet<GameObject>();
+#if UNITY_EDITOR
+        /// <summary>
+        /// This is only used to preview smoother data settings.
+        /// </summary>
+        [SerializeField]
+        private AdaptiveInterpolationSmoothingData _preconfiguredSmoothingDataPreview = _mixedSmoothingData;
+#endif
         #endregion
 
-        private void Prediction_Awake()
+        private void InitializeSmoothers()
         {
-            if (!_enablePrediction)
-                return;
-
-
             bool usesRb = (_predictionType == PredictionType.Rigidbody);
             bool usesRb2d = (_predictionType == PredictionType.Rigidbody2D);
             if (usesRb || usesRb2d)
@@ -111,7 +117,7 @@ namespace FishNet.Object
 
             //Create SetInterpolation smoother.
             _ownerSetInterpolationSmoother = new SetInterpolationSmoother();
-            float teleportThreshold = (_enableTeleport) ? _ownerTeleportThreshold : MoveRates.UNSET_VALUE;
+            float teleportThreshold = (_enableTeleport) ? _ownerTeleportThreshold : MoveRatesCls.UNSET_VALUE;
             SetInterpolationSmootherData osd = new SetInterpolationSmootherData()
             {
                 GraphicalObject = _graphicalObject,
@@ -125,20 +131,15 @@ namespace FishNet.Object
             _ownerSetInterpolationSmoother.InitializeOnce(osd);
 
             //Spectator.
-            //_spectatorSetInterpolationSmoother = new SetInterpolationSmoother();
-            //_spectatorSetInterpolationSmoother.InitializeOnce(osd);
+            _spectatorSetInterpolationSmoother = new SetInterpolationSmoother();
+            _spectatorSetInterpolationSmoother.InitializeOnce(osd);
 
             //Create adaptive interpolation smoother if enabled.
             if (_spectatorAdaptiveInterpolation)
             {
                 _spectatorAdaptiveInterpolationSmoother = new AdaptiveInterpolationSmoother();
                 //Smoothing values.
-                AdaptiveInterpolationSmoothingData aisd;
-                if (_adaptiveSmoothingType == AdaptiveSmoothingType.Custom)
-                    aisd = _customSmoothingData;
-                else
-                    aisd = _preconfiguredSmoothingDataPreview;
-
+                AdaptiveInterpolationSmoothingData aisd = GetAdaptiveSmoothingData(_adaptiveSmoothingType);
                 //Other details.
                 aisd.GraphicalObject = _graphicalObject;
                 aisd.SmoothPosition = true;
@@ -156,23 +157,29 @@ namespace FishNet.Object
                 return;
 
             _ownerSetInterpolationSmoother.Update();
-            //  _spectatorSetInterpolationSmoother.Update();
-            _spectatorAdaptiveInterpolationSmoother?.Update();
+            if (IsHost)
+                _spectatorSetInterpolationSmoother.Update();
+            else
+                _spectatorAdaptiveInterpolationSmoother?.Update();
         }
 
         private void TimeManager_OnPreTick()
         {
             //Do not need to check use prediction because this method only fires if prediction is on for this object.
             _ownerSetInterpolationSmoother.OnPreTick();
-            //   _spectatorSetInterpolationSmoother.OnPreTick();
-            _spectatorAdaptiveInterpolationSmoother?.OnPreTick();
+            if (IsHost)
+                _spectatorSetInterpolationSmoother.OnPreTick();
+            else
+                _spectatorAdaptiveInterpolationSmoother?.OnPreTick();
         }
         private void TimeManager_OnPostTick()
         {
             //Do not need to check use prediction because this method only fires if prediction is on for this object.
             _ownerSetInterpolationSmoother.OnPostTick();
-            // _spectatorSetInterpolationSmoother.OnPostTick();
-            _spectatorAdaptiveInterpolationSmoother?.OnPostTick();
+            if (IsHost)
+                _spectatorSetInterpolationSmoother.OnPostTick();
+            else
+                _spectatorAdaptiveInterpolationSmoother?.OnPostTick();
 
             TrySetCollisionExited();
         }
@@ -181,6 +188,9 @@ namespace FishNet.Object
         {
             if (!_enablePrediction)
                 return;
+
+            InitializeSmoothers();
+
             if (asServer)
                 return;
 
@@ -230,6 +240,8 @@ namespace FishNet.Object
 
         private void PredictionManager_OnPostReconcile(uint clientReconcileTick, uint serverReconcileTick)
         {
+            _spectatorAdaptiveInterpolationSmoother?.OnPostReconcile(clientReconcileTick, serverReconcileTick);
+
             for (int i = 0; i < _predictionBehaviours.Count; i++)
                 _predictionBehaviours[i].Reconcile_Client_End();
 
@@ -253,7 +265,8 @@ namespace FishNet.Object
             /* Adaptive smoother uses localTick (clientTick) to track graphical datas.
              * There's no need to use serverTick since the only purpose of adaptiveSmoother
              * is to smooth graphic changes, not update the transform itself. */
-            _spectatorAdaptiveInterpolationSmoother?.OnPreReplicateReplay(clientTick, serverTick);
+            if (!IsHost)
+                _spectatorAdaptiveInterpolationSmoother?.OnPreReplicateReplay(clientTick, serverTick);
         }
 
         private void PredictionManager_OnPostReplicateReplay(uint clientTick, uint serverTick)
@@ -261,9 +274,9 @@ namespace FishNet.Object
             /* Adaptive smoother uses localTick (clientTick) to track graphical datas.
             * There's no need to use serverTick since the only purpose of adaptiveSmoother
             * is to smooth graphic changes, not update the transform itself. */
-            _spectatorAdaptiveInterpolationSmoother?.OnPostReplicateReplay(clientTick, serverTick);
+            if (!IsHost)
+                _spectatorAdaptiveInterpolationSmoother?.OnPostReplicateReplay(clientTick, serverTick);
         }
-
 
         /// <summary>
         /// Returns if this object is colliding with any local client objects.
@@ -273,7 +286,7 @@ namespace FishNet.Object
         {
             /* If it's been more than 1 tick since collision stayed
              * then do not consider as collided. */
-            return (TimeManager.LocalTick - _collisionStayedTick) < 1;
+            return (TimeManager.LocalTick - _collisionStayedTick) <= 1;
         }
 
         /// <summary>
@@ -281,7 +294,7 @@ namespace FishNet.Object
         /// </summary>
         private void OnCollisionEnter(Collision collision)
         {
-            if (!ClientInitialized)
+            if (!IsClientInitialized)
                 return;
             if (_predictionType != PredictionType.Rigidbody)
                 return;
@@ -305,7 +318,7 @@ namespace FishNet.Object
         /// </summary>
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            if (!ClientInitialized)
+            if (!IsClientInitialized)
                 return;
             if (_predictionType != PredictionType.Rigidbody2D)
                 return;
@@ -321,7 +334,7 @@ namespace FishNet.Object
         /// </summary>
         private void OnCollisionStay(Collision collision)
         {
-            if (!ClientInitialized)
+            if (!IsClientInitialized)
                 return;
             if (_predictionType != PredictionType.Rigidbody)
                 return;
@@ -334,7 +347,7 @@ namespace FishNet.Object
         /// </summary>
         private void OnCollisionStay2D(Collision2D collision)
         {
-            if (!ClientInitialized)
+            if (!IsClientInitialized)
                 return;
             if (_predictionType != PredictionType.Rigidbody2D)
                 return;
@@ -408,22 +421,29 @@ namespace FishNet.Object
             Owner.ReplicateTick.Update(NetworkManager.TimeManager, value, EstimatedTick.OldTickOption.Discard);
         }
 
+        /// <summary>
+        /// Returns which smoothing data to use.
+        /// </summary>
+        private AdaptiveInterpolationSmoothingData GetAdaptiveSmoothingData(AdaptiveSmoothingType ast)
+        {
+            if (_adaptiveSmoothingType == AdaptiveSmoothingType.Custom)
+                return _customSmoothingData;
+            else if (_adaptiveSmoothingType == AdaptiveSmoothingType.Accuracy)
+                return _accurateSmoothingData;
+            else if (_adaptiveSmoothingType == AdaptiveSmoothingType.Mixed)
+                return _mixedSmoothingData;
+            else if (_adaptiveSmoothingType == AdaptiveSmoothingType.Gradual)
+                return _gradualSmoothingData;
+
+            //Fall through.
+            NetworkManager.LogError($"AdaptiveSmoothingType {ast} is unhandled.");
+            return _mixedSmoothingData;
+        }
+
 #if UNITY_EDITOR
         private void Prediction_OnValidate()
         {
-            if (Application.isPlaying)
-            {
-                //   InitializeSmoother(true);
-            }
-            else
-            {
-                if (_adaptiveSmoothingType == AdaptiveSmoothingType.Accuracy)
-                    _preconfiguredSmoothingDataPreview = _accurateSmoothingData;
-                else if (_adaptiveSmoothingType == AdaptiveSmoothingType.Mixed)
-                    _preconfiguredSmoothingDataPreview = _mixedSmoothingData;
-                else if (_adaptiveSmoothingType == AdaptiveSmoothingType.Gradual)
-                    _preconfiguredSmoothingDataPreview = _gradualSmoothingData;
-            }
+            _preconfiguredSmoothingDataPreview = GetAdaptiveSmoothingData(_adaptiveSmoothingType);
         }
 #endif
     }

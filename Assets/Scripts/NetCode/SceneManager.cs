@@ -1,41 +1,23 @@
 using FishNet.Managing.Scened;
 using FishNet;
 using FishNet.Object;
+using FishNet.Connection;
+using UnityEngine;
+using FishNet.Transporting;
+using Unity.VisualScripting;
+using System.Collections;
 
 public class SceneManager : NetworkBehaviour
 {
-    ////private List<NetworkObject> objsToKeep = new List<NetworkObject>(); 
-
-    //private void Awake()
-    //{
-
-    //    InstanceFinder.ServerManager.OnAuthenticationResult += ChangeSceneForServer;
-    //}
-
-    //public void ChangeSceneForServer(NetworkConnection conn, bool bl)
-    //{
-    //    //GetObjsToKeep();
-    //    SceneLoadData sld = new SceneLoadData("Lobbies");
-    //    //sld.MovedNetworkObjects = objsToKeep.ToArray();
-    //    sld.ReplaceScenes = ReplaceOption.All;
-    //    InstanceFinder.SceneManager.LoadGlobalScenes(sld);
-    //}
-
-    //private void GetObjsToKeep()
-    //{
-    //    foreach (NetworkObject obj in InstanceFinder.ServerManager.Objects.SceneObjects.Values)
-    //    {
-    //        //if (obj.gameObject.name == "ServerHealthManager") objsToKeep.Add(obj);
-    //    }
-    //}
-
     public override void OnStartNetwork()
     {
-        if(InstanceFinder.IsServer)
+        if(base.IsServer)
         {
-            SceneLoadData sld = new SceneLoadData("Lobbies");
+            SceneLookupData lookup = new SceneLookupData(0, "Lobbies");
+            SceneLoadData sld = new SceneLoadData(lookup);
+            sld.Options.AllowStacking = false;
             sld.ReplaceScenes = ReplaceOption.All;
-            InstanceFinder.SceneManager.LoadGlobalScenes(sld);
+            base.SceneManager.LoadGlobalScenes(sld);
         }
     }
 }

@@ -705,7 +705,7 @@ namespace FishNet.Object
         /// Gets the next replicate in perform when server or non-owning client.
         /// </summary>
         /// </summary>
-        [CodegenMakePublic] //internal
+        [CodegenMakePublic]
         [APIExclude]
         protected internal void Replicate_NonOwner<T>(ReplicateUserLogicDelegate<T> del, BasicQueue<T> replicatesQueue, List<T> replicatesHistory, Channel channel) where T : IReplicateData
         {
@@ -891,7 +891,8 @@ namespace FishNet.Object
         [APIExclude]
         protected internal void Replicate_Owner<T>(ReplicateUserLogicDelegate<T> del, uint methodHash, List<T> replicatesHistory, T data, Channel channel) where T : IReplicateData
         {
-            if (!IsOwner)
+            bool ownerlessAndServer = (!Owner.IsValid && IsServer);
+            if (!IsOwner && !ownerlessAndServer)
                 return;
 
             //Only check to enqueu/send if not clientHost.
@@ -1303,9 +1304,6 @@ namespace FishNet.Object
         public void Reconcile_Server<T>(uint methodHash, T data, Channel channel) where T : IReconcileData
         {
             if (!IsServer)
-                return;
-            //Cannot reconcile this tick.
-            if (TimeManager.LocalTick % PredictionManager.ReconcileIntervalTickDivisor != 0)
                 return;
 
             uint tick = _networkObjectCache.ReplicateTick.RemoteTick;

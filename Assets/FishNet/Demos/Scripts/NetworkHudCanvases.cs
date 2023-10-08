@@ -1,25 +1,28 @@
 ﻿using FishNet.Managing;
 using FishNet.Transporting;
-using FishNet.Transporting.Tugboat;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class NetworkHudCanvases : MonoBehaviour
 {
-    [Header("connection data")]
-    public ushort serverHostPort;
-    public ushort clientConnectPort;
-    public string ip;
-
-
-
+    #region Types.
+    /// <summary>
+    /// Ways the HUD will automatically start a connection.
+    /// </summary>
+    private enum AutoStartType
+    {
+        Disabled,
+        Host,
+        Server,
+        Client
+    }
+    #endregion
 
     #region Serialized.
     /// <summary>
     /// What connections to automatically start on play.
     /// </summary>
-    [Space(30)]
     [Tooltip("What connections to automatically start on play.")]
     [SerializeField]
     private AutoStartType _autoStartType = AutoStartType.Disabled;
@@ -56,19 +59,6 @@ public class NetworkHudCanvases : MonoBehaviour
     private Image _clientIndicator;
     #endregion
 
-    #region Types.
-    /// <summary>
-    /// Ways the HUD will automatically start a connection.
-    /// </summary>
-    private enum AutoStartType
-    {
-        Disabled,
-        Host,
-        Server,
-        Client
-    }
-    #endregion
-
     #region Private.
     /// <summary>
     /// Found NetworkManager.
@@ -89,7 +79,7 @@ public class NetworkHudCanvases : MonoBehaviour
     private EventSystem _eventSystem;
 #endif
     #endregion
-    
+
     void OnGUI()
     {
 #if ENABLE_INPUT_SYSTEM        
@@ -120,13 +110,13 @@ public class NetworkHudCanvases : MonoBehaviour
         if (Application.platform != RuntimePlatform.WebGLPlayer)
         {
             if (GUILayout.Button($"{GetNextStateText(_serverState)} Server", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-                OnClick_Server(serverHostPort);
+                OnClick_Server();
             GUILayout.Space(10f);
         }
 
         //Client button.
         if (GUILayout.Button($"{GetNextStateText(_clientState)} Client", GUILayout.Width(buttonSize.x), GUILayout.Height(buttonSize.y)))
-            OnClick_Client(ip, clientConnectPort);
+            OnClick_Client();
 
         style.fontSize = originalFontSize;
 
@@ -161,18 +151,9 @@ public class NetworkHudCanvases : MonoBehaviour
         }
 
         if (_autoStartType == AutoStartType.Host || _autoStartType == AutoStartType.Server)
-            OnClick_Server(serverHostPort);
+            OnClick_Server();
         if (!Application.isBatchMode && (_autoStartType == AutoStartType.Host || _autoStartType == AutoStartType.Client))
-            OnClick_Client(ip, clientConnectPort);
-
-
-        if (serverHostPort == 0) serverHostPort = 7770;
-        if (clientConnectPort == 0) clientConnectPort = 7770;
-        if (ip == "")
-        {
-            ip = _networkManager.ServerManager.GetComponent<Tugboat>().GetClientAddress();
-            Debug.Log(ip);
-        }
+            OnClick_Client();
     }
 
 
@@ -218,8 +199,7 @@ public class NetworkHudCanvases : MonoBehaviour
     }
 
 
-    [ContextMenu("StartServer")]
-    public void OnClick_Server(ushort _port)
+    public void OnClick_Server()
     {
         if (_networkManager == null)
             return;
@@ -227,13 +207,13 @@ public class NetworkHudCanvases : MonoBehaviour
         if (_serverState != LocalConnectionState.Stopped)
             _networkManager.ServerManager.StopConnection(true);
         else
-            _networkManager.ServerManager.StartConnection(_port);
+            _networkManager.ServerManager.StartConnection();
 
         DeselectButtons();
     }
 
 
-    public void OnClick_Client(string _ip, ushort _clientConnectPort)
+    public void OnClick_Client()
     {
         if (_networkManager == null)
             return;
@@ -241,7 +221,7 @@ public class NetworkHudCanvases : MonoBehaviour
         if (_clientState != LocalConnectionState.Stopped)
             _networkManager.ClientManager.StopConnection();
         else
-            _networkManager.ClientManager.StartConnection(_ip, _clientConnectPort);
+            _networkManager.ClientManager.StartConnection();
 
         DeselectButtons();
     }

@@ -1,3 +1,4 @@
+using FishNet.Managing.Logging;
 using LiteNetLib;
 using LiteNetLib.Layers;
 using System;
@@ -62,8 +63,6 @@ namespace FishNet.Transporting.Tugboat.Client
         private readonly object _stopLock = new object();
         #endregion
 
-        
-
         /// <summary>
         /// Initializes this for use.
         /// </summary>
@@ -103,6 +102,7 @@ namespace FishNet.Transporting.Tugboat.Client
             _client.Start();
             _client.Connect(_address, _port, string.Empty);
         }
+
 
         /// <summary>
         /// Stops the socket on a new thread.

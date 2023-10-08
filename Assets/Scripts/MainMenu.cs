@@ -4,6 +4,7 @@ using FishNet.Managing;
 using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using FishNet.Transporting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -43,6 +44,7 @@ public class MainMenu : MonoBehaviour
     private GameObject SceneListPrefab;
 
     private TMP_Text NameErrorMessage;
+    private bool triedConnect;
 
     private void Awake()
     {
@@ -97,6 +99,7 @@ public class MainMenu : MonoBehaviour
         playerControlls.Enable();
 
         InstanceFinder.SceneManager.OnLoadEnd += OnSceneLoaded;
+        InstanceFinder.ClientManager.OnClientConnectionState += OnClientConnectionChange;
         _networkManager = FindObjectOfType<NetworkManager>();
 
         DontDestroyOnLoad(gameObject);
@@ -186,6 +189,20 @@ public class MainMenu : MonoBehaviour
         StartCoroutine(Wait());
     }
 
+    private void OnClientConnectionChange(ClientConnectionStateArgs args)
+    {
+        if(args.ConnectionState == LocalConnectionState.Stopped)
+        {
+            if (triedConnect)
+            {
+                LoadingScreen.gameObject.SetActive(false);
+                ServerSelectionScreen.gameObject.SetActive(true);
+                return;
+            }
+            triedConnect = true;
+        }
+    }
+
     IEnumerator Wait()
     {
         yield return new WaitForSeconds(1f);
@@ -196,6 +213,7 @@ public class MainMenu : MonoBehaviour
 
     public void ConnectClient(string _ip, ushort _port)
     {
+        FindObjectOfType<ClientManager>().triedConnect = false;
         _networkManager.ClientManager.StartConnection(_ip, _port);
     }
 

@@ -23,7 +23,6 @@ using FishNet.Component.ColliderRollback;
 using FishNet.Managing.Predicting;
 using System.Runtime.CompilerServices;
 using GameKit.Utilities;
-using FishNet.Component.Spawning;
 #if UNITY_EDITOR
 using FishNet.Editing.PrefabCollectionGenerator;
 #endif
@@ -79,7 +78,7 @@ namespace FishNet.Managing
         private static List<NetworkManager> _instances = new List<NetworkManager>();
         /// <summary>
         /// Currently initialized NetworkManagers.
-        /// </summary>
+        /// </summary> //Remove on 2024/01/01 Convert to IReadOnlyList.
         public static IReadOnlyCollection<NetworkManager> Instances
         {
             get
@@ -98,8 +97,7 @@ namespace FishNet.Managing
                 }
                 return _instances;
             }
-        }
-
+        }  
         /// <summary>
         /// True if server is active.
         /// </summary>
@@ -648,4 +646,6 @@ namespace FishNet.Managing
         #endregion
 
     }
+
+
 }

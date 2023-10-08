@@ -137,11 +137,6 @@ namespace FishNet.Object
         [Tooltip("Custom settings for smoothing data.")]
         [SerializeField]
         private AdaptiveInterpolationSmoothingData _customSmoothingData = _mixedSmoothingData;
-        /// <summary>
-        /// Preview of selected preconfigured smoothing data. This is only used for the inspector.
-        /// </summary>
-        [SerializeField]
-        private AdaptiveInterpolationSmoothingData _preconfiguredSmoothingDataPreview;
 #endif
         /// <summary>
         /// Returns if this object was placed in the scene during edit-time.
@@ -322,13 +317,23 @@ namespace FishNet.Object
 #endif
         #endregion
 
+        /// <summary>
+        /// Outputs data about this NetworkObject to string.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"Name [{gameObject.name}] Id [{ObjectId}]";
+        }
+
+
         protected virtual void Awake()
         {
             _isStatic = gameObject.isStatic;
             RuntimeChildNetworkObjects = CollectionCaches<NetworkObject>.RetrieveList();
             SetChildDespawnedState();
 #if PREDICTION_V2
-            Prediction_Awake();
+            //Prediction_Awake();
 #endif
         }
 
@@ -428,7 +433,7 @@ namespace FishNet.Object
             CollectionCaches<NetworkObject>.Store(RuntimeChildNetworkObjects);
             IsDeinitializing = true;
 
-            SetActiveStatus(false);
+            SetDeinitializedStatus();
             //Do not need to set state if being destroyed.
             //Don't need to reset sync types if object is being destroyed.
         }
@@ -491,20 +496,20 @@ namespace FishNet.Object
         /// <summary>
         /// Sets IsClient or IsServer to isActive.
         /// </summary>
-        private void SetActiveStatus(bool isActive, bool server)
+        internal void SetInitializedStatus(bool isInitialized, bool asServer)
         {
-            if (server)
-                IsServer = isActive;
+            if (asServer)
+                IsServerInitialized = isInitialized;
             else
-                IsClient = isActive;
+                IsClientInitialized = isInitialized;
         }
         /// <summary>
-        /// Sets IsClient and IsServer to isActive.
+        /// Sets IsServerInitialized and IsClientInitialized as false;
         /// </summary>
-        private void SetActiveStatus(bool isActive)
+        private void SetDeinitializedStatus()
         {
-            IsServer = isActive;
-            IsClient = isActive;
+            IsServerInitialized = false;
+            IsClientInitialized = false;
         }
         /// <summary>
         /// Preinitializes this object for the network.
@@ -639,8 +644,12 @@ namespace FishNet.Object
                 transform.SetParent(t);
             }
 
-            //Rebuild observers since root changed.
-            NetworkManager.ServerManager.Objects.RebuildObservers(this);
+            /* Rebuild observers since root changed.
+             * 
+             * This only occurs if this nob is network spawned.
+             * If not spawned the rebuild will occur after the
+             * user calls Spawn on the nob/object. */
+            NetworkManager?.ServerManager.Objects.RebuildObservers(this);
         }
 
         /// <summary>
@@ -667,10 +676,10 @@ namespace FishNet.Object
                 NetworkManager.LogWarning($"{gameObject.name} cannot be set as a child of itself.");
                 return true;
             }
-            //Nested prefabs cannot be moved.
-            if (ParentNetworkObject != null)
+            //Nested prefabs cannot be moved to new parent nobs.
+            if (ParentNetworkObject != null && ParentNetworkObject != nob)
             {
-                NetworkManager.LogWarning($"{gameObject.name} cannot have the parent changed because it is a nested prefab.");
+                NetworkManager.LogWarning($"{gameObject.name} cannot have the parent changed because it is a nested NetworkObject.");
                 return true;
             }
 
@@ -800,6 +809,7 @@ namespace FishNet.Object
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Initialize(bool asServer, bool invokeSyncTypeCallbacks)
         {
+            SetInitializedStatus(true, asServer);
             InitializeCallbacks(asServer, invokeSyncTypeCallbacks);
         }
 
@@ -833,7 +843,8 @@ namespace FishNet.Object
                 RemoveClientRpcLinkIndexes();
             }
 
-            SetActiveStatus(false, asServer);
+            SetInitializedStatus(false, asServer);
+
             if (asServer)
                 Observers.Clear();
         }
@@ -867,8 +878,7 @@ namespace FishNet.Object
             SceneManager = null;
             RollbackManager = null;
             //Misc sets.
-            ObjectId = 0;
-            ClientInitialized = false;
+            ObjectId = 0;          
         }
 
         /// <summary>
@@ -1045,7 +1055,7 @@ namespace FishNet.Object
             return ctp;
         }
 
-#region Editor.
+        #region Editor.
 #if UNITY_EDITOR
         /// <summary>
         /// Removes duplicate NetworkObject components on this object returning the removed count.
@@ -1139,7 +1149,7 @@ namespace FishNet.Object
             }
         }
 #endif
-#endregion
+        #endregion
     }
 
 }

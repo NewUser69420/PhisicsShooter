@@ -1,8 +1,6 @@
-﻿using FishNet;
-using FishNet.Object;
+﻿using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
-using System.Collections.Generic;
 using UnityEngine;
 
 /*
@@ -94,12 +92,12 @@ namespace FishNet.PredictionV2
 
         private void TimeManager_OnTick()
         {
-            _startPosition = _rigidbody.transform.position;
             Move(BuildMoveData());
         }
 
         private MoveData BuildMoveData()
         {
+
             if (!base.IsOwner)
                 return default;
 
@@ -111,35 +109,37 @@ namespace FishNet.PredictionV2
             return md;
         }
 
-        private MoveData? _lastMoveData;
+        private MoveData _lastData;
 
         [ReplicateV2]
         private void Move(MoveData md, ReplicateState state = ReplicateState.Invalid, Channel channel = Channel.Unreliable)
         {
-            //if (state == ReplicateState.Predicted && _lastMoveData.HasValue)
-            //{
-            //    MoveData lastMd = _lastMoveData.Value;
-            //    lastMd.Horizontal *= 0.9f;
-            //    /* The tick will increase even if the data is unset.
-            //     * Cache the tick, set md to last data, then reapply the tick. */
-            //    uint tick = md.GetTick();
-            //    md = lastMd;
-            //    md.SetTick(tick);
-            //    _lastMoveData = lastMd;
-            //}
-            //else if (state == ReplicateState.UserCreated && !base.IsOwner && !base.IsServer)
-            //{
-            //    _lastMoveData = md;
-            //}
 
-            //If predicted input via replay then slow down velocity.
-            if (state == ReplicateState.ReplayedPredicted || state == ReplicateState.Predicted)
-                _rigidbody.velocity *= 0.5f;
+            //if (!base.IsOwner)
+            //{
+            //    if (state == ReplicateState.ReplayedPredicted || state == ReplicateState.Predicted)
+            //    {
+            //        uint tick = md.GetTick();
+            //        md = _lastData;
+            //        md.SetTick(tick);
+            //    }
+            //    else
+            //    {
+            //        _lastData = md;
+            //    }
+            //}
+            //if (base.IsOwner && state != ReplicateState.UserCreated && state != ReplicateState.ReplayedUserCreated)
+            //  Debug.LogError($"SDFSD  " + md.GetTick());
+            /* If predicted input via replay then slow down velocity.
+             * This prevents potential overshooting if the object were to change
+             * direction. If your rigidbody has a substantial amount of drag or is
+             * likely to continue in the same direction this likely is not needed.
+             * 
+             * This is not a requirement by any means but rather a modification for
+             * this demo scene/game type. */
+            //if (state == ReplicateState.ReplayedPredicted || state == ReplicateState.Predicted)
+            //    _rigidbody.velocity *= 0.75f;
 
-            /* ReplicateState is set based on if the data is new, being replayed, ect.
-            * Visit the ReplicationState enum for more information on what each value
-            * indicates. At the end of this guide a more advanced use of state will
-            * be demonstrated. */
             Vector3 forces = new Vector3(md.Horizontal, 0f, md.Vertical) * _moveRate;
             _rigidbody.AddForce(forces);
 
@@ -147,55 +147,22 @@ namespace FishNet.PredictionV2
                 _rigidbody.AddForce(new Vector3(0f, _jumpForce, 0f), ForceMode.Impulse);
             //Add gravity to make the object fall faster.
             _rigidbody.AddForce(Physics.gravity * 3f);
-
-            lastReplicateTick = md.GetTick();
         }
 
-        private uint lastReplicateTick;
-        private Dictionary<uint, float> _yPositions = new Dictionary<uint, float>();
-
-        private Vector3 _startPosition;
         private void TimeManager_OnPostTick()
         {
-            //if (!base.IsOwner)
-            //_yPositions[lastReplicateTick] = transform.position.y;
-
             /* The base.IsServer check is not required but does save a little
             * performance by not building the reconcileData if not server. */
             if (IsServer)
             {
-                if (base.IsOwner)
-                {
-                    float distance = Vector3.Distance(_rigidbody.transform.position, _startPosition);
-                    float rate = (distance / (float)base.TimeManager.TickDelta);
-                    Debug.Log($"Tick {base.TimeManager.LocalTick}. Rate {rate}");
-                }
                 ReconcileData rd = new ReconcileData(transform.position, transform.rotation, _rigidbody.velocity, _rigidbody.angularVelocity);
                 Reconciliation(rd);
-                // if (base.IsOwner)
-                // Debug.LogWarning($"Sending reconcile. MdTick {rd.GetTick()}. LocalTick {base.TimeManager.LocalTick}. PosY {transform.position.y}");
             }
         }
 
         [ReconcileV2]
         private void Reconciliation(ReconcileData rd, Channel channel = Channel.Unreliable)
         {
-            if (!base.IsOwner)
-            {
-                if (!_yPositions.TryGetValue(rd.GetTick(), out float value))
-                    value = 9999f;
-                //Debug.LogError($"Tick {rd.GetTick()}. VelocityY {rd.Velocity.y}. Reconcile Y {rd.Position.y}. Saved Y {value}");
-
-                List<uint> removedEntries = new List<uint>();
-                foreach (var item in _yPositions.Keys)
-                {
-                    if (item <= rd.GetTick())
-                        removedEntries.Add(item);
-                }
-                foreach (var item in removedEntries)
-                    _yPositions.Remove(item);
-            }
-
             transform.position = rd.Position;
             transform.rotation = rd.Rotation;
             _rigidbody.velocity = rd.Velocity;
