@@ -41,7 +41,6 @@ public class OfflinePlayerMovement : MonoBehaviour
     private bool _allowDash = true;
     private bool _wallLeft;
     private bool _speedLimitDisabled;
-    private bool _impactDelay = true;
 
     public float _dashReset;
 
@@ -96,7 +95,6 @@ public class OfflinePlayerMovement : MonoBehaviour
         {
             _velTimer = _velTimerMax;
             oldVel = _rb.velocity;
-            _impactDelay = true;
         }
 
         oldGState = newGState;

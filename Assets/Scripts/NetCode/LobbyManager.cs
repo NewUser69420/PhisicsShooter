@@ -14,9 +14,11 @@ public class LobbyManager : NetworkBehaviour
     [System.NonSerialized] public Dictionary<int, bool> readyStatus = new Dictionary<int, bool>();
 
     List<NetworkConnection> conns = new List<NetworkConnection>();
-                List<NetworkObject> nobjsToLoad = new List<NetworkObject>();
+    List<NetworkObject> nobjsToLoad = new List<NetworkObject>();
 
     [SerializeField] private TMP_Text timerVal;
+
+    [SerializeField] private GameObject LoadingScreen;
 
     private UnityEngine.SceneManagement.Scene thisLobbyScene;
 
@@ -65,10 +67,17 @@ public class LobbyManager : NetworkBehaviour
         }
 
         if (base.IsServer) Invoke(nameof(SetThisSceneVar), 1f);
+        Invoke(nameof(TurnLoadingScreenOff), 1.5f);
+    }
+
+    private void TurnLoadingScreenOff()
+    {
+        LoadingScreen.SetActive(false);
     }
 
     private void SetThisSceneVar()
     {
+        if (conn[0].Scenes == null) return;
         foreach(var scene in conn[0].Scenes)
         {
             if (scene.name != "Lobbies") thisLobbyScene = scene;
@@ -89,6 +98,7 @@ public class LobbyManager : NetworkBehaviour
             playerAmount = 0;
             foreach (NetworkObject obj in sceneObjects)
             {
+                if (obj.GetComponent<NetworkObject>() == null) return;
                 if(obj.tag == "Player")
                 {
                     Debug.Log(obj.name + obj.OwnerId);
@@ -107,7 +117,18 @@ public class LobbyManager : NetworkBehaviour
             else if(timer <= 0)
             {
                 //start game
+                EnableLoadingScreen();
+                TurnLoadingScreenOnClient();
+
                 Debug.Log($"started game");
+                SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
+                SceneLoadData sld = new SceneLoadData(lookup);
+                sld.Options.AllowStacking = false;
+                sld.MovedNetworkObjects = nobjsToLoad.ToArray();
+                //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
+                base.SceneManager.LoadConnectionScenes(conns.ToArray(), sld);
+
+                Invoke(nameof(UnloadLobbyScene), 0.5f);
             }
 
             Debug.Log($"readystatuscount: {readyStatus.Count} + doesreadystatus contain false: {readyStatus.ContainsValue(false)} + is lobby full: {lobbyIsFull}");
@@ -122,7 +143,10 @@ public class LobbyManager : NetworkBehaviour
                         nobjsToLoad.Add(obj);
                     }
                 }
-                //start game cancalable
+                //start game cancalable (still have to make cancalable)
+                EnableLoadingScreen();
+                TurnLoadingScreenOnClient();
+
                 Debug.Log($"started game");
                 SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
                 SceneLoadData sld = new SceneLoadData(lookup);
@@ -141,6 +165,12 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    [ObserversRpc]
+    private void TurnLoadingScreenOnClient()
+    {
+        EnableLoadingScreen();
+    }
+
     private void UnloadLobbyScene()
     {
         //get rid of lobby scene
@@ -153,5 +183,10 @@ public class LobbyManager : NetworkBehaviour
     private void SyncTimerClientRpc(GameObject _timerVal, float _timer)
     {
         _timerVal.GetComponent<TMP_Text>().text = Mathf.RoundToInt(_timer).ToString();
+    }
+
+    private void EnableLoadingScreen()
+    {
+        LoadingScreen.SetActive(true);
     }
 }

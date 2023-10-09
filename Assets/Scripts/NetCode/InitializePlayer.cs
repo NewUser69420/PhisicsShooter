@@ -4,13 +4,12 @@ using FishNet.Object;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
 public class InitializePlayer : NetworkBehaviour
-{
-    [System.NonSerialized] public bool isTestPlayer;
-    
+{    
     [SerializeField] private List<NetworkObject> sceneObjects = new();
 
     [SerializeField]  private Vector3 spawnPos;
@@ -26,6 +25,7 @@ public class InitializePlayer : NetworkBehaviour
     [SerializeField] private GameObject PlayerItemPrefab;
 
     private GameObject obj;
+    private List<GameObject> PlayerItems = new List<GameObject>();
 
     public override void OnStartNetwork()
     {
@@ -36,7 +36,7 @@ public class InitializePlayer : NetworkBehaviour
     {
         MainMenuUI = GameObject.Find("MainMenuUI");
 
-        if (base.IsServer && !isTestPlayer) DoSceneObjList();
+        if (base.IsServer) DoSceneObjList();
 
         conId = OwnerId;
 
@@ -46,12 +46,9 @@ public class InitializePlayer : NetworkBehaviour
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
-            if (!isTestPlayer)
-            {
-                playerName = MainMenuUI.GetComponent<MainMenu>().playerName;
-                PlayerName.GetComponent<TMP_Text>().text = playerName;
-                SyncNameServer(playerName, PlayerName.gameObject);
-            }
+            playerName = MainMenuUI.GetComponent<MainMenu>().playerName;
+            PlayerName.GetComponent<TMP_Text>().text = playerName;
+            SyncNameServer(playerName, PlayerName.gameObject);
         }
     }
 
@@ -109,6 +106,7 @@ public class InitializePlayer : NetworkBehaviour
         yield return new WaitForSeconds(1f);
         foreach (NetworkObject obj in _sceneObjects)
         {
+            if (obj == null) break;
             if (obj.name == "LobbyManager")
             {
                 obj.GetComponent<LobbyManager>().sceneObjects = _sceneObjects;
@@ -126,16 +124,22 @@ public class InitializePlayer : NetworkBehaviour
         }
         GameObject _PlayerItem = Instantiate(prefab, Parent);
         _PlayerItem.GetComponentInChildren<TMP_Text>().text = _playerName;
+        PlayerItems.Add(_PlayerItem);
         base.Spawn(_PlayerItem);
-        SyncPlayerItemClient(_PlayerItem, _playerName);
+        SyncPlayerItemClient(PlayerItems, _playerName);
     }
 
     [ObserversRpc]
-    private void SyncPlayerItemClient(GameObject __PlayerItem, string __playerName)
+    private void SyncPlayerItemClient(List<GameObject> __PlayerItems, string __playerName)
     {
-        foreach(NetworkObject obj in sceneObjects)
+        foreach(var _obj in __PlayerItems)
         {
-            if (obj.name == "LobbyManager") { __PlayerItem.transform.SetParent(obj.transform.Find("PlayerHolder")); __PlayerItem.GetComponentInChildren<TMP_Text>().text = __playerName; }
+            Debug.Log($"Test2");
+            foreach (NetworkObject __obj in sceneObjects)
+            {
+                Debug.Log($"Test3");
+                if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); __obj.GetComponentInChildren<TMP_Text>().text = __playerName; }
+            }
         }
     }
 

@@ -10,6 +10,8 @@ public class LobbyButn : NetworkBehaviour
 {
     private NetworkObject Player;
 
+    [SerializeField] private GameObject LoadingScreen;
+
     public override void OnStartNetwork()
     {
         if (base.IsServer) return;
@@ -23,13 +25,13 @@ public class LobbyButn : NetworkBehaviour
         {
             if (obj.GetComponent<NetworkObject>().OwnerId == base.LocalConnection.ClientId) { Player = obj.GetComponent<NetworkObject>(); Debug.Log($"player id = {Player.OwnerId}"); }
         }
-        if(Player == null) Debug.Log($"error, cant find player object with id: {base.LocalConnection.ClientId}");
+        if (Player == null) Debug.Log($"error, cant find player object with id: {base.LocalConnection.ClientId}");
     }
 
     public void OnButnClick()
     {
         if (base.IsServer) return;
-        switch(gameObject.name)
+        switch (gameObject.name)
         {
             case "B1v1":
                 Test(Player);
@@ -46,24 +48,8 @@ public class LobbyButn : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void Test(NetworkObject nobj)
     {
-        ////temp fix to get all pobj in the right scene
-        //foreach(var pair in base.SceneManager.SceneConnections)
-        //{
-        //    foreach(var thing in pair.Value)
-        //    {
-        //        foreach(var obj in thing.Objects)
-        //        {
-        //            if(obj.tag == "Player")
-        //            {
-        //                if(obj.GetComponent<NetworkObject>().OwnerId != nobj.OwnerId)
-        //                {
-        //                    SyncLocationOfPobjs(obj.Owner, nobj);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-        
+        DoLoadingScreenClientRpc(nobj.Owner);
+
         SceneLoadData sld = new SceneLoadData("1v1Lobby");
         sld.MovedNetworkObjects = new NetworkObject[] { nobj };
         sld.ReplaceScenes = ReplaceOption.None;
@@ -71,16 +57,22 @@ public class LobbyButn : NetworkBehaviour
     }
 
     [TargetRpc]
-    private void SyncLocationOfPobjs(NetworkConnection _conn, NetworkObject _obj)
+    private void DoLoadingScreenClientRpc(NetworkConnection _conn)
     {
-        StartCoroutine(Wait2(_obj));
+        GameObject.Find("Lobbies").transform.Find("LoadingScreen").gameObject.SetActive(true);
     }
 
-    IEnumerator Wait2(NetworkObject __obj)
-    {
-        yield return new WaitForSeconds(1);
-        if(__obj.GetComponent<InitializePlayer>() != null) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(__obj.gameObject, UnityEngine.SceneManagement.SceneManager.GetSceneByName("1v1Lobby"));
-    }
+    //[TargetRpc]
+    //private void SyncLocationOfPobjs(NetworkConnection _conn, NetworkObject _obj)
+    //{
+    //    StartCoroutine(Wait2(_obj));
+    //}
+
+    //IEnumerator Wait2(NetworkObject __obj)
+    //{
+    //    yield return new WaitForSeconds(1);
+    //    if(__obj.GetComponent<InitializePlayer>() != null) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(__obj.gameObject, UnityEngine.SceneManagement.SceneManager.GetSceneByName("1v1Lobby"));
+    //}
 
     [ServerRpc(RequireOwnership = false)]
     private void JoinLobby(NetworkConnection _conn, string _lobbyName, NetworkObject _Player)
