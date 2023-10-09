@@ -57,14 +57,12 @@ public class InitializePlayer : NetworkBehaviour
         sceneObjects.Clear();
         foreach (var pair in base.SceneManager.SceneConnections)
         {
-            Debug.Log($"{pair.Key.name} + {gameObject.scene.name}");
             if (pair.Key == gameObject.scene)
             {
                 foreach (var obj in pair.Key.GetRootGameObjects())
                 {
                     if (obj.GetComponent<NetworkObject>() != null)
                     {
-                        Debug.Log($"added obj: {obj.name}");
                         sceneObjects.Add(obj.GetComponent<NetworkObject>());
                     }
                 }
@@ -134,10 +132,8 @@ public class InitializePlayer : NetworkBehaviour
     {
         foreach(var _obj in __PlayerItems)
         {
-            Debug.Log($"Test2");
             foreach (NetworkObject __obj in sceneObjects)
             {
-                Debug.Log($"Test3");
                 if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); __obj.GetComponentInChildren<TMP_Text>().text = __playerName; }
             }
         }
@@ -146,7 +142,7 @@ public class InitializePlayer : NetworkBehaviour
     [TargetRpc]
     public void InitializeThePlayerOnClient(NetworkConnection _conn)
     {
-        if (base.Owner.IsLocalClient)
+        if (base.IsOwner)
         {
             InitializePlayerServerRpc(base.LocalConnection);
 
@@ -154,6 +150,8 @@ public class InitializePlayer : NetworkBehaviour
 
             //make scoreboard item and activate player
             StartCoroutine(Wait2());
+
+            GameObject.Find("MainMenuUI").SetActive(false);
         }
 
         if (base.IsServer)
@@ -171,8 +169,12 @@ public class InitializePlayer : NetworkBehaviour
             SyncScoreboardServer(ScoreboardItemPrefab, client.ClientId, client);
         }
 
-        //activate player
-        GetComponent<PredictedPlayerController>()._activated = true;
+        //activate ui
+        Invoke(nameof(SetUIActive), 1f);
+    }
+
+    private void SetUIActive()
+    {
         UI.gameObject.SetActive(true);
     }
 

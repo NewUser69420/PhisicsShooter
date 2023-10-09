@@ -2710,6 +2710,12 @@ MonoBehaviour:
   serverHostPort: 0
   clientConnectPort: 0
   playerName: 
+  scenesToIgnore:
+  - Lobbies
+  - 1v1Lobby
+  - 2v2Lobby
+  - 3v3Lobby
+  - MainMenu
   HomeScreen: {fileID: 996116328}
   Cam: {fileID: 1627420091}
   ServerSelectionScreen: {fileID: 327714076}
@@ -2717,8 +2723,6 @@ MonoBehaviour:
   LoadingScreen: {fileID: 1331623978}
   DedicatedServerScreen: {fileID: 1494765809}
   NameErrorTransform: {fileID: 1155737921}
-  SceneListPrefab: {fileID: 5291069265168678051, guid: 327c59eaf422e1645813c95fd210813d,
-    type: 3}
 --- !u!114 &1658850399
 MonoBehaviour:
   m_ObjectHideFlags: 0

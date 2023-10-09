@@ -22,9 +22,9 @@ public class MainMenu : MonoBehaviour
     public ushort serverHostPort = 0;
     public ushort clientConnectPort = 0;
     public string playerName;
+    public List<string> scenesToIgnore = new List<string>();
 
     private string layer = "home";
-    int connectedPlayers;
 
     [SerializeField]
     public Transform HomeScreen;
@@ -40,8 +40,6 @@ public class MainMenu : MonoBehaviour
     private Transform DedicatedServerScreen;
     [SerializeField]
     private Transform NameErrorTransform;
-    [SerializeField]
-    private GameObject SceneListPrefab;
 
     private TMP_Text NameErrorMessage;
     private bool triedConnect;
@@ -183,10 +181,13 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void OnSceneLoaded(SceneLoadEndEventArgs obj)
+    public void OnSceneLoaded(SceneLoadEndEventArgs args)
     {
         //deactive loading screen
         if(gameObject.activeSelf) StartCoroutine(Wait());
+
+        if (GameObject.FindGameObjectWithTag("Player") == null) return;
+        //if (!scenesToIgnore.Contains(GameObject.FindGameObjectWithTag("Player").scene.name)) { gameObject.SetActive(false); }
     }
 
     private void OnClientConnectionChange(ClientConnectionStateArgs args)

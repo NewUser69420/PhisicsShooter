@@ -1,41 +1,52 @@
-using FishNet;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Spawner : MonoBehaviour
+public class Spawner : NetworkBehaviour
 {
     private UnityEngine.SceneManagement.Scene currentScene;
     
     public NetworkObject KillerPrefab;
     public NetworkObject PhysicsBallPrefab;
+    public List<string> scenesToIgnore = new List<string>();
 
-    private void Awake()
+    private bool hasDone;
+
+    public override void OnStartNetwork()
     {
-        if (InstanceFinder.ServerManager == null) return;
-        InstanceFinder.SceneManager.OnLoadEnd += OnSceneLoaded;
-        Invoke(nameof(Spawn), 0.7f);
+        base.SceneManager.OnLoadEnd += OnSceneLoaded;
+        Invoke(nameof(Spawn), 3f);
+        Invoke(nameof(SyncSpawn), 4f);
     }
 
     private void OnSceneLoaded(SceneLoadEndEventArgs args)
     {
         foreach(var scene in args.LoadedScenes)
         {
-            if(scene.name != "Lobbies") currentScene = scene;
+            if(!scenesToIgnore.Contains(scene.name) && !hasDone) { currentScene = scene; hasDone = true; }
         }
     }
 
     private void Spawn()
     {
-        if (InstanceFinder.IsServer)
-        {
+        if (base.IsServer)
+        {   
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
-            
             NetworkObject Killer = Instantiate(KillerPrefab);
             NetworkObject PhysicsBall = Instantiate(PhysicsBallPrefab);
 
-            InstanceFinder.ServerManager.Spawn(Killer);
-            InstanceFinder.ServerManager.Spawn(PhysicsBall);
+            base.ServerManager.Spawn(Killer);
+            base.ServerManager.Spawn(PhysicsBall);
         }
+    }
+
+    [ObserversRpc]
+    private void SyncSpawn()
+    {
+        Debug.Log(gameObject.scene.name);
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("PhisicsBall(Clone)"), gameObject.scene);
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("Killer(Clone)"), gameObject.scene);
     }
 }

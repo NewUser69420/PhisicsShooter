@@ -25,7 +25,6 @@ public class PredictedPlayerController : NetworkBehaviour
     public bool _activated;
     
     [System.NonSerialized] public bool _didWallJump;
-    [System.NonSerialized] public bool _isTestPlayer;
     [System.NonSerialized] public bool _canDashOnWallJump;
     [System.NonSerialized] public bool _shootLaser;
     [System.NonSerialized] public Rigidbody _rb;
@@ -37,7 +36,6 @@ public class PredictedPlayerController : NetworkBehaviour
     private NetworkAnimator _netAnimator;
     private WallRunning _wallRunner;
     private LaserShooter _laserShooter;
-    private MainMenu _mainMenu;
     private PlayerAudioManager _playerAudioManager;
     private RaycastHit _hit;
     private Vector3 _dashDirection;
@@ -128,7 +126,6 @@ public class PredictedPlayerController : NetworkBehaviour
         _wallRunner = GetComponent<WallRunning>();
         _laserShooter = GetComponent<LaserShooter>();
         _playerAudioManager = GetComponent<PlayerAudioManager>();
-        if (GameObject.Find("MainMenuUI") != null) _mainMenu = GameObject.Find("MainMenuUI").GetComponent<MainMenu>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
@@ -213,15 +210,6 @@ public class PredictedPlayerController : NetworkBehaviour
         if (base.IsOwner)
         {
             SyncDataServerRpc(base.ClientManager.Connection, _playerState.aState, _playerState.gState);
-
-            if(_activated)
-            {
-                if(!_isTestPlayer) _mainMenu.gameObject.SetActive(false);
-            }
-            else
-            {
-                _mainMenu.gameObject.SetActive(true);
-            }
         }
 
         //velocityCheck
@@ -310,39 +298,46 @@ public class PredictedPlayerController : NetworkBehaviour
         if(_shootLaser)
         {
             _shootLaser = false;
-
-            if (_laserShooter.LaserPrefab == null || _laserShooter.LaserPrefabVisual == null)
-            {
-                Debug.Log("Prefab is null");
-                return;
-            }
-            if(!_isTestPlayer) UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
             
+            if (_laserShooter.LaserPrefab == null || _laserShooter.LaserPrefabVisual == null) { Debug.Log($"Bullet Prefab is null"); return; }
+
+            //spawn bullet
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
+            Debug.Log($"Spawing bullet in scene: {gameObject.scene.name}.  on client");
             NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
-
-            Laser_Bullet predictedBullet = Bullet.GetComponent<Laser_Bullet>();
-            Laser_BulletVisual predictedBulletVisual = BulletVisual.GetComponent<Laser_BulletVisual>();
-            predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-            predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-
+            
             base.Spawn(Bullet, base.Owner);
             base.Spawn(BulletVisual, base.Owner);
 
-            predictedBullet.PlayerConn = NetworkObject.LocalConnection;
-            SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection);
+            //setup bullet
+            StartCoroutine(SetupBullet(Bullet, BulletVisual));
         }
+    }
+
+    IEnumerator SetupBullet(NetworkObject _Bullet, NetworkObject _BulletVisual)
+    {
+        yield return new WaitForSeconds(0.5f);
+        
+        Laser_Bullet predictedBullet = _Bullet.GetComponent<Laser_Bullet>();
+        Laser_BulletVisual predictedBulletVisual = _BulletVisual.GetComponent<Laser_BulletVisual>();
+        predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+        predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+
+        predictedBullet.PlayerConn = NetworkObject.LocalConnection;
+        SetPlayerBulletRpc(_Bullet, _BulletVisual, NetworkObject.LocalConnection);
     }
 
     [ServerRpc]
     private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn)
     {
-        foreach(var scene in playerConn.Scenes)
-        {
-            if (scene.name != "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, scene); UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, scene); }
-        }
-        
-        if(obj1 != null) obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, gameObject.scene);
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, gameObject.scene);
+
+        obj1.GetComponent<Laser_Bullet>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+        obj2.GetComponent<Laser_BulletVisual>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+
+        if (obj1 != null) obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
     }
 
     private void AddGravity()

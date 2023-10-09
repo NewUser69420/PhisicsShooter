@@ -88,7 +88,6 @@ public class LobbyManager : NetworkBehaviour
     private void SyncCon(GameObject _manager, List<NetworkConnection> _conn)
     {
         _manager.GetComponent<LobbyManager>().conn = _conn;
-        Debug.Log($"Set Conn {_conn}");
     }
 
     private void Update()
@@ -101,7 +100,6 @@ public class LobbyManager : NetworkBehaviour
                 if (obj.GetComponent<NetworkObject>() == null) return;
                 if(obj.tag == "Player")
                 {
-                    Debug.Log(obj.name + obj.OwnerId);
                     playerAmount++;
                 }
             }
@@ -131,7 +129,6 @@ public class LobbyManager : NetworkBehaviour
                 Invoke(nameof(UnloadLobbyScene), 0.5f);
             }
 
-            Debug.Log($"readystatuscount: {readyStatus.Count} + doesreadystatus contain false: {readyStatus.ContainsValue(false)} + is lobby full: {lobbyIsFull}");
             if(readyStatus.Count > 1 && !readyStatus.ContainsValue(false) && lobbyIsFull)
             {
                 //get players to load
@@ -176,7 +173,6 @@ public class LobbyManager : NetworkBehaviour
         //get rid of lobby scene
         SceneUnloadData sud = new SceneUnloadData(thisLobbyScene);
         base.SceneManager.UnloadConnectionScenes(conns.ToArray(), sud);
-        Debug.Log("got rid of lobby scene");
     }
 
     [ObserversRpc]
