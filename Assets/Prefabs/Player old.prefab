@@ -6996,7 +6996,7 @@ GameObject:
   - component: {fileID: 6716973120631557576}
   - component: {fileID: -5220917985001784956}
   m_Layer: 7
-  m_Name: Player
+  m_Name: Player old
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7161,7 +7161,7 @@ MonoBehaviour:
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 7807759643866311769
+  <AssetPathHash>k__BackingField: 9406677126620966951
 --- !u!114 &6187275009774067414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7177,6 +7177,8 @@ MonoBehaviour:
   _componentIndexCache: 1
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
+  footLeft: {fileID: 0}
+  footRight: {fileID: 0}
   groundedTimerMax: 0.15
 --- !u!114 &7850414259707371282
 MonoBehaviour:
@@ -7193,13 +7195,15 @@ MonoBehaviour:
   _componentIndexCache: 2
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
+  sceneObjects: []
   spawnPos: {x: 0, y: 5, z: 0}
-  playerName: 
+  conId: -1
   MainMenuUI: {fileID: 0}
   UI: {fileID: 3686292687426678077}
   PlayerName: {fileID: 2331428191420037761}
   ScoreboardItemPrefab: {fileID: 8030286040259239346, guid: 14e991bd3436ca3468115d51a5e41b1c,
     type: 3}
+  PlayerItemPrefab: {fileID: 0}
 --- !u!114 &-4210208256836070211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7244,6 +7248,7 @@ MonoBehaviour:
   _wallJumpForce: 550
   _wallJumpUp: 700
   _wallJumpForward: 350
+  _activated: 0
   _dashReset: 2
 --- !u!114 &4070201328074355821
 MonoBehaviour:
@@ -7332,8 +7337,8 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   Cam: {fileID: 4969374493567585470}
-  LeftEye: {fileID: 8971373072140826637}
-  RightEye: {fileID: 4965320605601151779}
+  Eye: {fileID: 0}
+  Muzzle: {fileID: 0}
 --- !u!114 &3972808476742583625
 MonoBehaviour:
   m_ObjectHideFlags: 0

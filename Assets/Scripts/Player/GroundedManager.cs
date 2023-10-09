@@ -3,7 +3,7 @@ using FishNet.Object;
 using UnityEngine;
 using static PlayerState;
 
-public class GroundedManager : NetworkBehaviour
+public class GroundedManager : MonoBehaviour
 {
     private PlayerState playerState;
     [SerializeField] private feet footLeft;

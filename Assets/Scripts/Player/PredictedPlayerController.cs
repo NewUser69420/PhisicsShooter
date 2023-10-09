@@ -316,7 +316,7 @@ public class PredictedPlayerController : NetworkBehaviour
                 Debug.Log("Prefab is null");
                 return;
             }
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
+            if(!_isTestPlayer) UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
             
             NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));

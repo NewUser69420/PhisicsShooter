@@ -12,6 +12,7 @@ public class Spawner : MonoBehaviour
 
     private void Awake()
     {
+        if (InstanceFinder.ServerManager == null) return;
         InstanceFinder.SceneManager.OnLoadEnd += OnSceneLoaded;
         Invoke(nameof(Spawn), 0.7f);
     }
@@ -28,7 +29,7 @@ public class Spawner : MonoBehaviour
     {
         if (InstanceFinder.IsServer)
         {
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
+            if(!GameObject.FindGameObjectWithTag("Player").GetComponent<InitializePlayer>().isTestPlayer) UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
             
             NetworkObject Killer = Instantiate(KillerPrefab);
             NetworkObject PhysicsBall = Instantiate(PhysicsBallPrefab);

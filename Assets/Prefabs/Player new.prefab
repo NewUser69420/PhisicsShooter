@@ -1492,7 +1492,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 16296
+    m_Bits: 65448
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -8860,7 +8860,6 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   sceneObjects: []
-  sceneName: 
   spawnPos: {x: 0, y: 5, z: 0}
   conId: -1
   MainMenuUI: {fileID: 0}
