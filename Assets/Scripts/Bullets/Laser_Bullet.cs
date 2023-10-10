@@ -6,7 +6,6 @@ using FishNet.Component.Prediction;
 using FishNet.Managing.Timing;
 using System.Linq;
 using FishNet.Connection;
-using Unity.VisualScripting;
 
 public class Laser_Bullet : NetworkBehaviour
 {

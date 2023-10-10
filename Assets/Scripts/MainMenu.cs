@@ -150,6 +150,7 @@ public class MainMenu : MonoBehaviour
             ServerSelectionScreen.gameObject.SetActive(false);
             LoadingScreen.gameObject.SetActive(true);
             FindObjectOfType<ClientManager>()._port = 7777;
+            FindObjectOfType<ClientManager>().triedConnect = false;
 
             ConnectClient(ip, 7777);
             Debug.Log("Connecting with: " + ip + ":7777");
@@ -169,6 +170,7 @@ public class MainMenu : MonoBehaviour
             ServerSelectionScreen.gameObject.SetActive(false);
             LoadingScreen.gameObject.SetActive(true);
             FindObjectOfType<ClientManager>()._port = 7779;
+            FindObjectOfType<ClientManager>().triedConnect = false;
 
             ConnectClient(ip, 7779);
             Debug.Log("Connecting with: " + ip + ":7779");

@@ -7,7 +7,6 @@ using UnityEngine;
 using System.Linq;
 using FishNet;
 using FishNet.Transporting;
-using Unity.VisualScripting;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -55,9 +54,7 @@ public class LobbyManager : NetworkBehaviour
     }
 
     public override void OnStartNetwork()
-    {
-        base.ServerManager.OnRemoteConnectionState += OnConnectionChange;
-        
+    {     
         timer = timerMax;
         timerVal.text = Mathf.RoundToInt(timer).ToString();
         if (!base.IsServer)
@@ -70,6 +67,15 @@ public class LobbyManager : NetworkBehaviour
 
         if (base.IsServer) Invoke(nameof(SetThisSceneVar), 1f);
         Invoke(nameof(TurnLoadingScreenOff), 1.5f);
+    }
+
+    private void OnEnable()
+    {
+        base.ServerManager.OnRemoteConnectionState += OnConnectionChange;
+    }
+    private void OnDisable()
+    {
+        base.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
     }
 
     private void TurnLoadingScreenOff()

@@ -131,9 +131,8 @@ namespace FishNet.Managing.Client
 #endif
         #endregion
 
-        public ushort _port;
-        private string _lastIp = "localhost";
-        public bool triedConnect;
+        [System.NonSerialized] public ushort _port;
+        [System.NonSerialized] public bool triedConnect;
 
         private void OnDestroy()
         {
@@ -316,13 +315,14 @@ namespace FishNet.Managing.Client
             NetworkManager.UpdateFramerate();
             OnClientConnectionState?.Invoke(args);
 
+            //try connect with serverpc
             if(args.ConnectionState == LocalConnectionState.Stopped)
             {
-                if(_lastIp == "localhost")
+                if(!triedConnect)
                 {
                     StartConnection("86.83.234.112", _port);
-                    _lastIp = "86.83.234.112";
-                    Debug.Log($"trying to connect with ip: 86.83.234.112 and port: {_port}");
+                    triedConnect = true;
+                    Debug.Log($"Try Connect with ip:86.83.234.112 and port:{_port}");
                 }
             }
         }
