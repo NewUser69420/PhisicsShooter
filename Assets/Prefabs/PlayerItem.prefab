@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5177058856212831820}
   - component: {fileID: 8050233980563191504}
   - component: {fileID: -678190926889888162}
+  - component: {fileID: 4810319469147830663}
   m_Layer: 5
   m_Name: PlayerItem
   m_TagString: Untagged
@@ -98,8 +99,8 @@ MonoBehaviour:
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 0}
-    LocalScale: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    LocalScale: {x: 1, y: 1, z: 1}
   _isNetworked: 1
   _isGlobal: 0
   _initializeOrder: 0
@@ -110,6 +111,19 @@ MonoBehaviour:
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 11165605495792119815
+--- !u!114 &4810319469147830663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103866604405358686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 207570af9aff9f44488aea00025f1921, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownerId: -1
 --- !u!1 &4735580490288883288
 GameObject:
   m_ObjectHideFlags: 0

@@ -8816,13 +8816,13 @@ MonoBehaviour:
   - {fileID: 8493029229925738328}
   - {fileID: 7850414259707371282}
   - {fileID: -4210208256836070211}
-  - {fileID: 8335858748364528607}
   - {fileID: 8085059715665855612}
   - {fileID: 4070201328074355821}
   - {fileID: 4009746763782404851}
   - {fileID: -4802719821691361813}
   - {fileID: 3972808476742583625}
   - {fileID: -5220917985001784956}
+  - {fileID: 0}
   - {fileID: 4933301066982015608}
   - {fileID: 7468245027202887601}
   - {fileID: 248462370639913199}
@@ -8859,7 +8859,6 @@ MonoBehaviour:
   _componentIndexCache: 1
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
-  sceneObjects: []
   spawnPos: {x: 0, y: 5, z: 0}
   conId: -1
   MainMenuUI: {fileID: 0}
@@ -8898,9 +8897,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3edef80abf0607b419f8fcad3bbc5999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 3
-  _addedNetworkObject: {fileID: 1866983901336284639}
-  _networkObjectCache: {fileID: 1866983901336284639}
   footLeft: {fileID: 4335044842446489877}
   footRight: {fileID: 6278278634383786403}
   groundedTimerMax: 0.13
@@ -8916,7 +8912,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41a4ab79633b15c4487bd4deaebd6971, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 4
+  _componentIndexCache: 3
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   _speed: 600
@@ -8945,7 +8941,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e053b87ab17eea44a8bb92568dd96933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 5
+  _componentIndexCache: 4
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   grapplingValueMax: 40
@@ -8972,7 +8968,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63048a1cadc46f54ab85c386c4c5301c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 6
+  _componentIndexCache: 5
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   whatIsWall:
@@ -9016,7 +9012,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 843eb13ada2fa14459efce7ffffd8c98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 7
+  _componentIndexCache: 6
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   Cam: {fileID: 4969374493567585470}
@@ -9034,7 +9030,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d763ba7784647164d81fa90c339648a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 8
+  _componentIndexCache: 7
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   health: []
@@ -9125,7 +9121,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bbf2c09000835148bc57078b5a8a272, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 9
+  _componentIndexCache: 8
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
 --- !u!1 &4349267897868931464

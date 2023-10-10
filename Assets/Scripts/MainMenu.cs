@@ -200,6 +200,11 @@ public class MainMenu : MonoBehaviour
                 ServerSelectionScreen.gameObject.SetActive(true);
                 return;
             }
+            else
+            {
+                Background.gameObject.SetActive(true);
+                LoadingScreen.gameObject.SetActive(true);
+            }
             triedConnect = true;
         }
     }

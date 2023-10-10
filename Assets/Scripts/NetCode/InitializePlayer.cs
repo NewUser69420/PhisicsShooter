@@ -1,6 +1,7 @@
 using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using FishNet.Transporting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,9 +10,7 @@ using TMPro;
 using UnityEngine;
 
 public class InitializePlayer : NetworkBehaviour
-{    
-    [SerializeField] private List<NetworkObject> sceneObjects = new();
-
+{        
     [SerializeField]  private Vector3 spawnPos;
     [SerializeField] private int conId = -1;
 
@@ -36,11 +35,10 @@ public class InitializePlayer : NetworkBehaviour
     {
         MainMenuUI = GameObject.Find("MainMenuUI");
 
-        if (base.IsServer) DoSceneObjList();
-
         conId = OwnerId;
 
         base.SceneManager.OnLoadEnd += OnLoadScene;
+        
 
         if (base.Owner.IsLocalClient)
         {
@@ -52,41 +50,13 @@ public class InitializePlayer : NetworkBehaviour
         }
     }
 
-    private void DoSceneObjList()
-    {
-        sceneObjects.Clear();
-        foreach (var pair in base.SceneManager.SceneConnections)
-        {
-            if (pair.Key == gameObject.scene)
-            {
-                foreach (var obj in pair.Key.GetRootGameObjects())
-                {
-                    if (obj.GetComponent<NetworkObject>() != null)
-                    {
-                        sceneObjects.Add(obj.GetComponent<NetworkObject>());
-                    }
-                }
-            }
-        }
-        SyncSceneObjectList(sceneObjects, this);
-    }
-
-    [ObserversRpc]
-    private void SyncSceneObjectList(List<NetworkObject> _list, InitializePlayer _script)
-    {
-        _script.sceneObjects = _list;
-    }
-
     public void OnLoadScene(SceneLoadEndEventArgs args)
     {
-        if (base.IsServer) Invoke(nameof(DoSceneObjList), 0.5f);
-
         foreach (var _scene in args.LoadedScenes)
         {
             if (_scene.name == "1v1Lobby" || _scene.name == "2v2Lobby" || _scene.name == "3v3Lobby")
             {
                 if (Owner.IsLocalClient) StartCoroutine(Wait3());
-                if (Owner.IsLocalClient || base.IsServer) StartCoroutine(Wait4(sceneObjects));
             }
             if (_scene.name != "Lobbies" && base.IsClient) UnityEngine.SceneManagement.SceneManager.SetActiveScene(_scene);
         }
@@ -96,47 +66,38 @@ public class InitializePlayer : NetworkBehaviour
     {
         yield return new WaitForSeconds(1f);
 
-        SyncPlayerItemServer(PlayerItemPrefab, playerName);
-    }
-
-    IEnumerator Wait4(List<NetworkObject> _sceneObjects)
-    {
-        yield return new WaitForSeconds(1f);
-        foreach (NetworkObject obj in _sceneObjects)
-        {
-            if (obj == null) break;
-            if (obj.name == "LobbyManager")
-            {
-                obj.GetComponent<LobbyManager>().sceneObjects = _sceneObjects;
-            }
-        }
+        SyncPlayerItemServer(OwnerId, PlayerItemPrefab, playerName);
     }
 
     [ServerRpc]
-    private void SyncPlayerItemServer(GameObject prefab, string _playerName)
+    private void SyncPlayerItemServer(int _id, GameObject prefab, string _playerName)
     {
         Transform Parent = null;
-        foreach (NetworkObject obj in sceneObjects)
+        foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
         {
             if (obj.name == "LobbyManager") Parent = obj.transform.Find("PlayerHolder");
         }
         GameObject _PlayerItem = Instantiate(prefab, Parent);
         _PlayerItem.GetComponentInChildren<TMP_Text>().text = _playerName;
+        _PlayerItem.GetComponent<PlayerItem>().ownerId = _id;
         PlayerItems.Add(_PlayerItem);
         base.Spawn(_PlayerItem);
-        SyncPlayerItemClient(PlayerItems, _playerName);
+        SyncPlayerItemClient(_id, PlayerItems, _playerName);
     }
 
     [ObserversRpc]
-    private void SyncPlayerItemClient(List<GameObject> __PlayerItems, string __playerName)
+    private void SyncPlayerItemClient(int __id, List<GameObject> __PlayerItems, string __playerName)
     {
-        foreach(var _obj in __PlayerItems)
+        foreach (var _obj in __PlayerItems)
         {
-            foreach (NetworkObject __obj in sceneObjects)
+            Debug.Log($"playeritem id = {_obj.GetComponent<PlayerItem>().ownerId}");
+            foreach (var __obj in gameObject.scene.GetRootGameObjects())
             {
-                if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); __obj.GetComponentInChildren<TMP_Text>().text = __playerName; }
+                if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); _obj.GetComponentInChildren<TMP_Text>().text = __playerName; _obj.GetComponent<PlayerItem>().ownerId = __id; }
             }
         }
+
+
     }
 
     [TargetRpc]

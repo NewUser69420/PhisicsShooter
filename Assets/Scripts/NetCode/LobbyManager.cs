@@ -6,11 +6,11 @@ using TMPro;
 using UnityEngine;
 using System.Linq;
 using FishNet;
+using FishNet.Transporting;
+using Unity.VisualScripting;
 
 public class LobbyManager : NetworkBehaviour
 {
-    public List<NetworkObject> sceneObjects = new();
-
     [System.NonSerialized] public Dictionary<int, bool> readyStatus = new Dictionary<int, bool>();
 
     List<NetworkConnection> conns = new List<NetworkConnection>();
@@ -56,6 +56,8 @@ public class LobbyManager : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
+        base.ServerManager.OnRemoteConnectionState += OnConnectionChange;
+        
         timer = timerMax;
         timerVal.text = Mathf.RoundToInt(timer).ToString();
         if (!base.IsServer)
@@ -95,9 +97,9 @@ public class LobbyManager : NetworkBehaviour
         if(base.IsServer)
         {         
             playerAmount = 0;
-            foreach (NetworkObject obj in sceneObjects)
+            foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
             {
-                if (obj.GetComponent<NetworkObject>() == null) return;
+                if (obj == null) return;
                 if(obj.tag == "Player")
                 {
                     playerAmount++;
@@ -128,16 +130,17 @@ public class LobbyManager : NetworkBehaviour
 
                 Invoke(nameof(UnloadLobbyScene), 0.5f);
             }
+            if (timer > 0 && !lobbyIsFull) { timer = timerMax; SyncTimerClientRpc(timerVal.gameObject, timer); }
 
             if(readyStatus.Count > 1 && !readyStatus.ContainsValue(false) && lobbyIsFull)
             {
                 //get players to load
-                foreach (NetworkObject obj in sceneObjects)
+                foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
                 {
                     if(obj.CompareTag("Player"))
                     {
-                        conns.Add(obj.Owner);
-                        nobjsToLoad.Add(obj);
+                        conns.Add(obj.GetComponent<NetworkObject>().Owner);
+                        nobjsToLoad.Add(obj.GetComponent<NetworkObject>());
                     }
                 }
                 //start game cancalable (still have to make cancalable)
@@ -155,9 +158,9 @@ public class LobbyManager : NetworkBehaviour
                 Invoke(nameof(UnloadLobbyScene), 0.5f);
             }
 
-            foreach(var thing in readyStatus)
+            foreach(var item in readyStatus)
             {
-                Debug.Log($"id: {thing.Key}  status: {thing.Value}");
+                Debug.Log($"Key: {item.Key} + Value: {item.Value}");
             }
         }
     }
@@ -184,5 +187,27 @@ public class LobbyManager : NetworkBehaviour
     private void EnableLoadingScreen()
     {
         LoadingScreen.SetActive(true);
+    }
+
+    private void OnConnectionChange(NetworkConnection conn, RemoteConnectionStateArgs args)
+    {
+        if (!this.isActiveAndEnabled) return;
+        if(args.ConnectionState == RemoteConnectionState.Stopped && base.IsServer)
+        {
+            foreach(Transform child in gameObject.transform.Find("PlayerHolder"))
+            {
+                Debug.Log("Test0");
+                if (child.name == "PlayerItem(Clone)" && child.GetComponent<PlayerItem>().ownerId == conn.ClientId)
+                {
+                    Debug.Log($"Test1");
+                    if (child != null) base.Despawn(child.gameObject);
+                    if (child != null) Destroy(child);
+
+                    readyStatus.Remove(key: conn.ClientId);
+                }
+            }
+
+            base.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
+        }
     }
 }
