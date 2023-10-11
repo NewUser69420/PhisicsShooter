@@ -35,27 +35,27 @@ public class LobbyButn : NetworkBehaviour
         switch (gameObject.name)
         {
             case "B1v1":
-                Test(Player);
+                JoinLobby("1v1Lobby", Player);
                 break;
             case "B2v2":
-                JoinLobby(base.LocalConnection, "2v2Lobby", Player);
+                JoinLobby("2v2Lobby", Player);
                 break;
             case "B3v3":
-                JoinLobby(base.LocalConnection, "3v3Lobby", Player);
+                JoinLobby("3v3Lobby", Player);
                 break;
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void Test(NetworkObject nobj)
-    {
-        DoLoadingScreenClientRpc(nobj.Owner);
+    //[ServerRpc(RequireOwnership = false)]
+    //private void Test(NetworkObject nobj)
+    //{
+    //    DoLoadingScreenClientRpc(nobj.Owner);
 
-        SceneLoadData sld = new SceneLoadData("1v1Lobby");
-        sld.MovedNetworkObjects = new NetworkObject[] { nobj };
-        sld.ReplaceScenes = ReplaceOption.None;
-        base.SceneManager.LoadConnectionScenes(nobj.Owner, sld);
-    }
+    //    SceneLoadData sld = new SceneLoadData("1v1Lobby");
+    //    sld.MovedNetworkObjects = new NetworkObject[] { nobj };
+    //    sld.ReplaceScenes = ReplaceOption.None;
+    //    base.SceneManager.LoadConnectionScenes(nobj.Owner, sld);
+    //}
 
     [TargetRpc]
     private void DoLoadingScreenClientRpc(NetworkConnection _conn)
@@ -76,7 +76,7 @@ public class LobbyButn : NetworkBehaviour
     //}
 
     [ServerRpc(RequireOwnership = false)]
-    private void JoinLobby(NetworkConnection _conn, string _lobbyName, NetworkObject _Player)
+    private void JoinLobby(string _lobbyName, NetworkObject _Player)
     {
         List<NetworkObject> objsToKeep = new();
         objsToKeep.Add(_Player);
@@ -115,7 +115,8 @@ public class LobbyButn : NetworkBehaviour
                     sld.Options.AllowStacking = true;
                     sld.MovedNetworkObjects = objsToKeep.ToArray();
                     //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-                    base.SceneManager.LoadConnectionScenes(_conn, sld);
+                    base.SceneManager.LoadConnectionScenes(_Player.Owner, sld);
+                    DoLoadingScreenClientRpc(_Player.Owner);
                     Debug.Log($"Joining lobby");
                     return;
 
@@ -138,7 +139,8 @@ public class LobbyButn : NetworkBehaviour
             sld.Options.AllowStacking = false;
             sld.MovedNetworkObjects = objsToKeep.ToArray();
             //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-            base.SceneManager.LoadConnectionScenes(_conn, sld);
+            base.SceneManager.LoadConnectionScenes(_Player.Owner, sld);
+            DoLoadingScreenClientRpc(_Player.Owner);
             Debug.Log($"No lobby exists, Making own");
             return;
         }
@@ -149,7 +151,8 @@ public class LobbyButn : NetworkBehaviour
         sldd.Options.AllowStacking = false;
         sldd.MovedNetworkObjects = objsToKeep.ToArray();
         //sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-        base.SceneManager.LoadConnectionScenes(_conn, sldd);
+        base.SceneManager.LoadConnectionScenes(_Player.Owner, sldd);
+        DoLoadingScreenClientRpc(_Player.Owner);
         Debug.Log($"Lobbies full, Making own");
         return;
     }

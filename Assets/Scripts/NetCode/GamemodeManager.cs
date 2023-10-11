@@ -1,3 +1,4 @@
+using FishNet;
 using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Object;
@@ -13,8 +14,15 @@ public class GamemodeManager : NetworkBehaviour
         Invoke(nameof(TurnOfLoadingScreen), 5f);
         Invoke(nameof(InitializePlayer), 3f);
         Invoke(nameof(EnablePlayerMovement), 5.5f);
+    }
 
-        base.ServerManager.OnRemoteConnectionState += OnClientConnectState;
+    private void OnEnable()
+    {
+        InstanceFinder.ServerManager.OnRemoteConnectionState += OnClientConnectState;
+    }
+    private void OnDisable()
+    {
+        InstanceFinder.ServerManager.OnRemoteConnectionState -= OnClientConnectState;
     }
 
     private void TurnOfLoadingScreen()
@@ -48,6 +56,7 @@ public class GamemodeManager : NetworkBehaviour
 
     private void OnClientConnectState(NetworkConnection conn, RemoteConnectionStateArgs args)
     {
+        Debug.Log($"Client state = {args.ConnectionState}");
         if(args.ConnectionState == RemoteConnectionState.Stopped)
         {
             int playerCount = 0;
