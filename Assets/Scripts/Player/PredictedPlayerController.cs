@@ -303,29 +303,20 @@ public class PredictedPlayerController : NetworkBehaviour
 
             //spawn bullet
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
-            Debug.Log($"Spawing bullet in scene: {gameObject.scene.name}.  on client");
             NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             
             base.Spawn(Bullet, base.Owner);
             base.Spawn(BulletVisual, base.Owner);
 
-            //setup bullet
-            StartCoroutine(SetupBullet(Bullet, BulletVisual));
+            Laser_Bullet predictedBullet = Bullet.GetComponent<Laser_Bullet>();
+            Laser_BulletVisual predictedBulletVisual = BulletVisual.GetComponent<Laser_BulletVisual>();
+            predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+            predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+
+            predictedBullet.PlayerConn = NetworkObject.LocalConnection;
+            SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection);
         }
-    }
-
-    IEnumerator SetupBullet(NetworkObject _Bullet, NetworkObject _BulletVisual)
-    {
-        yield return new WaitForSeconds(0.5f);
-        
-        Laser_Bullet predictedBullet = _Bullet.GetComponent<Laser_Bullet>();
-        Laser_BulletVisual predictedBulletVisual = _BulletVisual.GetComponent<Laser_BulletVisual>();
-        predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-        predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-
-        predictedBullet.PlayerConn = NetworkObject.LocalConnection;
-        SetPlayerBulletRpc(_Bullet, _BulletVisual, NetworkObject.LocalConnection);
     }
 
     [ServerRpc]

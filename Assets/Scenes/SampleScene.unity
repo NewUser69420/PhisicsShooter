@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.1733879, g: 0.2167387, b: 0.29880753, a: 1}
+  m_IndirectSpecularColor: {r: 0.17338789, g: 0.21673869, b: 0.29880753, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -914,6 +914,7 @@ GameObject:
   - component: {fileID: 417840158}
   - component: {fileID: 417840157}
   - component: {fileID: 417840156}
+  - component: {fileID: 417840159}
   m_Layer: 10
   m_Name: Ring1
   m_TagString: Untagged
@@ -1007,6 +1008,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 417840154}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &417840159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417840154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f6333a11015bc647a0f542b555e72e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &428121399
 GameObject:
   m_ObjectHideFlags: 0
@@ -1993,6 +2006,7 @@ GameObject:
   - component: {fileID: 889298214}
   - component: {fileID: 889298213}
   - component: {fileID: 889298212}
+  - component: {fileID: 889298215}
   m_Layer: 10
   m_Name: Ring3
   m_TagString: Untagged
@@ -2086,6 +2100,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 889298210}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &889298215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 889298210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f6333a11015bc647a0f542b555e72e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &992924013
 GameObject:
   m_ObjectHideFlags: 0
@@ -8164,6 +8190,7 @@ GameObject:
   - component: {fileID: 1702508588}
   - component: {fileID: 1702508587}
   - component: {fileID: 1702508586}
+  - component: {fileID: 1702508589}
   m_Layer: 10
   m_Name: Ring4
   m_TagString: Untagged
@@ -8257,6 +8284,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1702508584}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1702508589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702508584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f6333a11015bc647a0f542b555e72e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1712147603
 GameObject:
   m_ObjectHideFlags: 0
@@ -9004,6 +9043,7 @@ GameObject:
   - component: {fileID: 2069361562}
   - component: {fileID: 2069361561}
   - component: {fileID: 2069361560}
+  - component: {fileID: 2069361563}
   m_Layer: 10
   m_Name: Ring2
   m_TagString: Untagged
@@ -9097,6 +9137,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2069361558}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &2069361563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069361558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f6333a11015bc647a0f542b555e72e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &2085609227 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5339721044593375959, guid: c9462ff4171f8d943aa0c1f775b26d81,

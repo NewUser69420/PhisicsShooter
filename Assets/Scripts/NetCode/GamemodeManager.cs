@@ -38,7 +38,7 @@ public class GamemodeManager : NetworkBehaviour
     {
         foreach(var obj in gameObject.scene.GetRootGameObjects())
         {
-            if (obj.CompareTag("Player")) { obj.GetComponent<PredictedPlayerController>().enabled = true; }
+            if (obj.CompareTag("Player")) { obj.GetComponent<PredictedPlayerController>()._activated = true; }
         }
     }
 }
