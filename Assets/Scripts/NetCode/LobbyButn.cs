@@ -13,6 +13,8 @@ public class LobbyButn : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
+        GameObject.Find("Lobbies").transform.Find("LoadingScreen").gameObject.SetActive(false);
+        
         if (base.IsServer) return;
         StartCoroutine(Wait());
     }

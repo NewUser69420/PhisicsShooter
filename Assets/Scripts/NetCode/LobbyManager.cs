@@ -71,11 +71,11 @@ public class LobbyManager : NetworkBehaviour
 
     private void OnEnable()
     {
-        base.ServerManager.OnRemoteConnectionState += OnConnectionChange;
+        InstanceFinder.ServerManager.OnRemoteConnectionState += OnConnectionChange;
     }
     private void OnDisable()
     {
-        base.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
+        InstanceFinder.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
     }
 
     private void TurnLoadingScreenOff()
