@@ -20,7 +20,6 @@ public class QuitHandler : MonoBehaviour
 
     private void OnClientConnectionChange(ClientConnectionStateArgs args)
     {
-        Debug.Log($"OnClientConnectionChange + {args.ConnectionState}");
         if(args.ConnectionState == LocalConnectionState.Stopping)
         {
             Debug.Log("Going back to main menu");
@@ -34,7 +33,6 @@ public class QuitHandler : MonoBehaviour
 
     private void OnServerConnectionChange(NetworkConnection conn, RemoteConnectionStateArgs args)
     {
-        Debug.Log($"OnServerConnectionChange + {args.ConnectionState}");
         if (args.ConnectionState == RemoteConnectionState.Stopped && InstanceFinder.IsServer)
         {
             foreach(var obj in conn.Objects)

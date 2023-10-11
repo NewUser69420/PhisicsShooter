@@ -115,10 +115,7 @@ public class InitializePlayer : NetworkBehaviour
             GameObject.Find("MainMenuUI").SetActive(false);
         }
 
-        if (base.IsServer)
-        {
-            StartCoroutine(Wait());
-        }
+        StartCoroutine(Wait());
     }
 
     IEnumerator Wait2()
@@ -188,7 +185,13 @@ public class InitializePlayer : NetworkBehaviour
     IEnumerator Wait()
     {
         yield return new WaitForSeconds(0.5f);
-        
+
+        DoName();
+    }
+
+    [ServerRpc]
+    private void DoName()
+    {
         List<GameObject> pobjs = new List<GameObject>();
         GameObject obj = null;
         String pName = null;
