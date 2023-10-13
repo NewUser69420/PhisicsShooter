@@ -3,13 +3,11 @@ using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Object;
 using FishNet.Transporting;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class GamemodeManager : NetworkBehaviour
+public class GamemodeManager : MonoBehaviour
 {
-    public override void OnStartNetwork()
+    private void Awake()
     {
         Invoke(nameof(TurnOfLoadingScreen), 5f);
         Invoke(nameof(InitializePlayer), 3f);
@@ -18,11 +16,11 @@ public class GamemodeManager : NetworkBehaviour
 
     private void OnEnable()
     {
-        InstanceFinder.ServerManager.OnRemoteConnectionState += OnClientConnectState;
+        InstanceFinder.ServerManager.OnRemoteConnectionState += OnConnectionChange;
     }
     private void OnDisable()
     {
-        InstanceFinder.ServerManager.OnRemoteConnectionState -= OnClientConnectState;
+        InstanceFinder.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
     }
 
     private void TurnOfLoadingScreen()
@@ -54,18 +52,17 @@ public class GamemodeManager : NetworkBehaviour
         }
     }
 
-    private void OnClientConnectState(NetworkConnection conn, RemoteConnectionStateArgs args)
+    private void OnConnectionChange(NetworkConnection conn, RemoteConnectionStateArgs args)
     {
-        Debug.Log($"Client state = {args.ConnectionState}");
-        if(args.ConnectionState == RemoteConnectionState.Stopped)
+        Debug.Log($"ConnectionChanged");
+        if (args.ConnectionState == RemoteConnectionState.Stopped)
         {
-            int playerCount = 0;
-            foreach(var obj in  gameObject.scene.GetRootGameObjects())
+            int playerObjs = 0;
+            foreach(var obj in gameObject.scene.GetRootGameObjects())
             {
-                if (obj.CompareTag("Player")) playerCount++;
+                if(obj.CompareTag("Player")) playerObjs++;
             }
-            Debug.Log(playerCount);
-            if (playerCount == 0) UnloadScene();
+            if(playerObjs == 0) UnloadScene();
         }
     }
 
@@ -73,6 +70,6 @@ public class GamemodeManager : NetworkBehaviour
     {
         Debug.Log("Unloading GameScene");
         SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
-        base.NetworkManager.SceneManager.UnloadConnectionScenes(sud);
+        InstanceFinder.NetworkManager.SceneManager.UnloadConnectionScenes(sud);
     }
 }

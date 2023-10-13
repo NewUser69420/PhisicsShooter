@@ -18,11 +18,14 @@ public class UI : NetworkBehaviour
     [SerializeField] private Slider dashSlider;
     [SerializeField] private Slider grappleSlider;
     [SerializeField] private GameObject ScoreBoard;
+    [SerializeField] private GameObject ESC;
+    [SerializeField] private GameObject Crosshair;
 
     [System.NonSerialized] public int deathCounterValue = 0;
     [System.NonSerialized] public int killCounterValue = 0;
 
     private float dashTimer;
+    private bool esc;
 
     private void Awake()
     {
@@ -53,6 +56,23 @@ public class UI : NetworkBehaviour
         {
             ScoreBoard.SetActive(false);
         }
+
+        //toggle ESC
+        if(playerControlls.MainMenu.GoBackOne.WasPressedThisFrame())
+        {
+            ESC.SetActive(!esc);
+            Crosshair.SetActive(esc);
+            switch(esc)
+            {
+                case true:
+                    Cursor.lockState = CursorLockMode.Locked;
+                    break;
+                case false:
+                    Cursor.lockState = CursorLockMode.None;
+                    break;
+            }
+            esc = !esc;
+        }
         
         //calculate
         if(dashTimer < playerController._dashReset)
@@ -75,5 +95,17 @@ public class UI : NetworkBehaviour
         grappleSlider.value = Mathf.InverseLerp(0, grappling.grapplingValueMax, grappling.grapplingValue);
         deathCounter.text = deathCounterValue.ToString();
         killCounter.text = killCounterValue.ToString();
+    }
+
+    public void GoBackToMM()
+    {
+        Debug.Log("Going Back To MainMenu");
+    }
+
+    public void Quit()
+    {
+        Debug.Log("Quiting...");
+        FindAnyObjectByType<AudioManger>().Play("click3");
+        Application.Quit();
     }
 }

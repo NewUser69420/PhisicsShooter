@@ -119,8 +119,8 @@ public class MainMenu : MonoBehaviour
     public void Quit()
     {
         Debug.Log("Quiting...");
-        Application.Quit();
         FindAnyObjectByType<AudioManger>().Play("click3");
+        Application.Quit();
     }
 
     private void GoBackOne(string _layer)

@@ -112,7 +112,7 @@ public class LobbyButn : NetworkBehaviour
                     //join this scene
                     SceneLookupData lookup = new SceneLookupData(pair.Key.handle, _lobbyName);
                     SceneLoadData sld = new SceneLoadData(lookup);
-                    sld.Options.AllowStacking = true;
+                    sld.Options.AllowStacking = false;
                     sld.MovedNetworkObjects = objsToKeep.ToArray();
                     //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
                     base.SceneManager.LoadConnectionScenes(_Player.Owner, sld);
@@ -136,7 +136,7 @@ public class LobbyButn : NetworkBehaviour
             //no scenes yet make and join a scene
             SceneLookupData lookup = new SceneLookupData(0, _lobbyName);
             SceneLoadData sld = new SceneLoadData(lookup);
-            sld.Options.AllowStacking = false;
+            sld.Options.AllowStacking = true;
             sld.MovedNetworkObjects = objsToKeep.ToArray();
             //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
             base.SceneManager.LoadConnectionScenes(_Player.Owner, sld);
@@ -148,7 +148,7 @@ public class LobbyButn : NetworkBehaviour
         //if still here (should only be bc other scenes are full) make and join scene
         SceneLookupData lookupp = new SceneLookupData(0, _lobbyName);
         SceneLoadData sldd = new SceneLoadData(lookupp);
-        sldd.Options.AllowStacking = false;
+        sldd.Options.AllowStacking = true;
         sldd.MovedNetworkObjects = objsToKeep.ToArray();
         //sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         base.SceneManager.LoadConnectionScenes(_Player.Owner, sldd);

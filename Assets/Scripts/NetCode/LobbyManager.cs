@@ -8,6 +8,7 @@ using FishNet;
 using FishNet.Transporting;
 using System.Collections;
 using UnityEngine.Animations;
+using System.Reflection;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -36,6 +37,7 @@ public class LobbyManager : NetworkBehaviour
     private float cancleTimer = 5;
     private float cancleTimerMax = 5;
 
+    private int minPlayerCount = -1;
     private int maxPlayerCount = -1;
 
     
@@ -47,17 +49,29 @@ public class LobbyManager : NetworkBehaviour
         if(startedGameCancalable)
         {
             //cancle game
-            StopCoroutine(StartGameCancalable());
             CancleTimerVal.SetActive(false);
-            cancleTimer = cancleTimerMax;
+            SyncStopGameWithServer();
             startedGameCancalable = false;
         }
 
-        SyncDataWithServer(this, isReady, LocalConnection.ClientId, startedGameCancalable);
+        SyncDataWithServer(this, isReady, LocalConnection.ClientId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SyncDataWithServer(LobbyManager _manager, bool _isReady, int _id, bool _startedGame)
+    private void SyncStopGameWithServer()
+    {
+        startedGameCancalable = false;
+        TurnCancleTimerOff();
+    }
+
+    [ObserversRpc]
+    private void TurnCancleTimerOff()
+    {
+        CancleTimerVal.SetActive(false);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SyncDataWithServer(LobbyManager _manager, bool _isReady, int _id)
     {
         if(!_manager.readyStatus.ContainsKey(_id))
         {
@@ -69,11 +83,6 @@ public class LobbyManager : NetworkBehaviour
             //edit instance
             _manager.readyStatus[_id] = _isReady;
         }
-
-        if(_startedGame)
-        {
-            StopCoroutine(StartGameCancalable());
-        }
     }
 
     public override void OnStartNetwork()
@@ -82,7 +91,6 @@ public class LobbyManager : NetworkBehaviour
         timerVal.text = Mathf.RoundToInt(timer).ToString();
         if (!base.IsServer)
         {
-            Debug.Log("Trying to sync conn");
             conns.Add(LocalConnection);
             SyncCon(gameObject, conns);
             GameObject.Find("Lobbies").SetActive(false);
@@ -95,12 +103,15 @@ public class LobbyManager : NetworkBehaviour
         switch(gameObject.scene.name)
         {
             case "1v1Lobby":
+                minPlayerCount = 1;
                 maxPlayerCount = 2;
                 break;
             case "2v2Lobby":
+                minPlayerCount = 3;
                 maxPlayerCount = 4;
                 break;
             case "3v3Lobby":
+                minPlayerCount = 5;
                 maxPlayerCount = 6;
                 break;
         }
@@ -173,22 +184,25 @@ public class LobbyManager : NetworkBehaviour
             }
             if (timer > 0 && !lobbyIsFull) { timer = timerMax; SyncTimerClientRpc(timerVal.gameObject, timer); }
 
-            if(readyStatus.Count > 1 && !readyStatus.ContainsValue(false) && lobbyIsFull)
+            if (readyStatus.Count == maxPlayerCount && !readyStatus.ContainsValue(false) && !startedGameCancalable)
             {
-                //get players to load
-                foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
-                {
-                    if(obj.CompareTag("Player") && !connss.Contains(obj.GetComponent<NetworkObject>().Owner))
-                    {
-                        connss.Add(obj.GetComponent<NetworkObject>().Owner);
-                        nobjsToLoad.Add(obj.GetComponent<NetworkObject>());
-                    }
-                }
                 //start game cancalable (still have to make cancalable)
-                StartCoroutine(StartGameCancalable());
+                Invoke(nameof(StartGameCancalable), 5f);
                 timer = timerMax;
+                cancleTimer = cancleTimerMax;
                 CancleTimerVal.SetActive(true);
                 startedGameCancalable = true;
+                SyncStartedGameClient();
+            }
+            else if(readyStatus.Count == minPlayerCount && playerAmount != maxPlayerCount && !readyStatus.ContainsValue(false) && !startedGameCancalable)
+            {
+                //start game cancalable (still have to make cancalable)
+                Invoke(nameof(StartGameCancalable), 5f);
+                timer = timerMax;
+                cancleTimer = cancleTimerMax;
+                CancleTimerVal.SetActive(true);
+                startedGameCancalable = true;
+                SyncStartedGameClient();
             }
 
             foreach(var item in readyStatus)
@@ -199,15 +213,31 @@ public class LobbyManager : NetworkBehaviour
     }
 
     [ObserversRpc]
+    private void SyncStartedGameClient()
+    {
+        startedGameCancalable = true;
+    }
+
+    [ObserversRpc]
     private void SyncCancleTimer(float _timer, GameObject obj1)
     {
         obj1.transform.Find("CanleTimerVal").gameObject.SetActive(true);
         obj1.transform.Find("CanleTimerVal").gameObject.GetComponent<TMP_Text>().text = Mathf.RoundToInt(_timer).ToString();
     }
 
-    IEnumerator StartGameCancalable()
+    private void StartGameCancalable()
     {
-        yield return new WaitForSeconds(5f);
+        if (!startedGameCancalable) return;
+
+        //get players to load
+        foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
+        {
+            if (obj.CompareTag("Player") && !connss.Contains(obj.GetComponent<NetworkObject>().Owner))
+            {
+                connss.Add(obj.GetComponent<NetworkObject>().Owner);
+                nobjsToLoad.Add(obj.GetComponent<NetworkObject>());
+            }
+        }
 
         EnableLoadingScreen();
         TurnLoadingScreenOnClient();
@@ -218,9 +248,9 @@ public class LobbyManager : NetworkBehaviour
         sld.Options.AllowStacking = false;
         sld.MovedNetworkObjects = nobjsToLoad.ToArray();
         //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-        base.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
+        InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
 
-        Invoke(nameof(UnloadLobbyScene), 0.5f);
+        Invoke(nameof(UnloadLobbyScene), 1f);
     }
 
     [ObserversRpc]
@@ -230,19 +260,10 @@ public class LobbyManager : NetworkBehaviour
     }
 
     private void UnloadLobbyScene()
-    {
-        UnityEngine.SceneManagement.Scene _Scene = gameObject.scene;
-        foreach(var pair in base.SceneManager.SceneConnections)
-        {
-            if (pair.Value.Contains(conns[0]))
-            {
-                _Scene = pair.Key;
-            }
-        }
-        
+    {        
         //get rid of lobby scene
         Debug.Log($"Unloading lobby scene for {connss.Count} connections");
-        SceneUnloadData sud = new SceneUnloadData(_Scene.handle);
+        SceneUnloadData sud = new SceneUnloadData(thisLobbyScene);
         base.SceneManager.UnloadConnectionScenes(connss.ToArray(), sud);
     }
 
