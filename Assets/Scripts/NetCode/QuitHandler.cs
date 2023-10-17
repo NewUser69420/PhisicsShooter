@@ -1,8 +1,7 @@
 using FishNet;
 using FishNet.Connection;
+using FishNet.Managing.Scened;
 using FishNet.Transporting;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class QuitHandler : MonoBehaviour
@@ -11,11 +10,13 @@ public class QuitHandler : MonoBehaviour
     {
         InstanceFinder.ClientManager.OnClientConnectionState += OnClientConnectionChange;
         InstanceFinder.ServerManager.OnRemoteConnectionState += OnServerConnectionChange;
+        InstanceFinder.SceneManager.OnUnloadEnd += OnSceneUnload;
     }
     private void OnDisable()
     {
         InstanceFinder.ClientManager.OnClientConnectionState -= OnClientConnectionChange;
         InstanceFinder.ServerManager.OnRemoteConnectionState -= OnServerConnectionChange;
+        InstanceFinder.SceneManager.OnUnloadEnd -= OnSceneUnload;
     }
 
     private void OnClientConnectionChange(ClientConnectionStateArgs args)
@@ -43,5 +44,10 @@ public class QuitHandler : MonoBehaviour
                 Destroy(obj);
             }
         }
+    }
+
+    private void OnSceneUnload(SceneUnloadEndEventArgs args)
+    {
+
     }
 }

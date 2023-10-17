@@ -43,6 +43,7 @@ public class MainMenu : MonoBehaviour
 
     private TMP_Text NameErrorMessage;
     private bool triedConnect;
+    private bool connecting;
 
     private void Awake()
     {
@@ -202,13 +203,15 @@ public class MainMenu : MonoBehaviour
                 ServerSelectionScreen.gameObject.SetActive(true);
                 return;
             }
-            else
+            else if (connecting)
             {
                 Background.gameObject.SetActive(true);
                 LoadingScreen.gameObject.SetActive(true);
             }
             triedConnect = true;
         }
+
+        if (args.ConnectionState == LocalConnectionState.Started) connecting = false;
     }
 
     IEnumerator Wait()
@@ -221,6 +224,7 @@ public class MainMenu : MonoBehaviour
 
     public void ConnectClient(string _ip, ushort _port)
     {
+        connecting = true;
         FindObjectOfType<ClientManager>().triedConnect = false;
         FindObjectOfType<ClientManager>().loadingMM = false;
         _networkManager.ClientManager.StartConnection(_ip, _port);

@@ -9,6 +9,7 @@ using FishNet.Transporting;
 using System.Collections;
 using UnityEngine.Animations;
 using System.Reflection;
+using UnityEngine.ProBuilder.Shapes;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -63,15 +64,24 @@ public class LobbyManager : NetworkBehaviour
         GameObject LB = FindObjectOfType<LobbyButn>(true).transform.parent.parent.gameObject;
         LB.SetActive(true);
         LB.transform.Find("LoadingScreen").gameObject.SetActive(false);
+        GameObject Player = null;
+        foreach (var obj in LocalConnection.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
+        }
+
         BackToMMServer(LocalConnection);
     }
 
     [ServerRpc(RequireOwnership = false)]
     private void BackToMMServer(NetworkConnection conn)
     {
-        foreach (var obj in conn.Objects)
+        GameObject Player = null;
+        foreach (var obj in conn.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
         {
-            if (obj.CompareTag("Player")) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj.gameObject, "Lobbies");
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
         }
         
         SceneUnloadData sud = new SceneUnloadData(gameObject.scene);

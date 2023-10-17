@@ -45,7 +45,6 @@ public class Spawner : NetworkBehaviour
     [ObserversRpc]
     private void SyncSpawn()
     {
-        Debug.Log(gameObject.scene.name);
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("PhisicsBall(Clone)"), gameObject.scene);
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("Killer(Clone)"), gameObject.scene);
     }

@@ -44,6 +44,30 @@ public class UI : NetworkBehaviour
     private void Update()
     {
         if (!base.IsOwner) return;
+
+        //toggle ESC
+        if (playerControlls.MainMenu.GoBackOne.WasPressedThisFrame())
+        {
+            esc = !esc;
+            switch (esc)
+            {
+                case true:
+                    ESC.SetActive(true);
+                    Crosshair.SetActive(false);
+                    Cursor.lockState = CursorLockMode.None;
+                    playerController._activated = false;
+                    cam.active = false;
+                    break;
+                case false:
+                    ESC.SetActive(false);
+                    Crosshair.SetActive(true);
+                    Cursor.lockState = CursorLockMode.Locked;
+                    playerController._activated = true;
+                    cam.active = true;
+                    break;
+            }
+        }
+
         if (!playerController._activated) return;
 
         //set scoreboard active
@@ -60,27 +84,6 @@ public class UI : NetworkBehaviour
             ScoreBoard.SetActive(false);
         }
 
-        //toggle ESC
-        if(playerControlls.MainMenu.GoBackOne.WasPressedThisFrame())
-        {
-            ESC.SetActive(!esc);
-            Crosshair.SetActive(esc);
-            switch(esc)
-            {
-                case true:
-                    Cursor.lockState = CursorLockMode.Locked;
-                    playerController._activated = true;
-                    cam.active = true;
-                    break;
-                case false:
-                    Cursor.lockState = CursorLockMode.None;
-                    playerController._activated = false;
-                    cam.active = false;
-                    break;
-            }
-            esc = !esc;
-        }
-        
         //calculate
         if(dashTimer < playerController._dashReset)
         {
@@ -108,7 +111,7 @@ public class UI : NetworkBehaviour
     {
         if (base.IsServer) return;
         Debug.Log("Going Back To MainMenu");
-        FindObjectOfType<AudioManger>().Play("click1");
+        FindObjectOfType<AudioManger>().Play("click2");
         
         //stopping connecion
         FindObjectOfType<ClientManager>().loadingMM = true;
@@ -124,8 +127,8 @@ public class UI : NetworkBehaviour
         cam.active = false;
 
         //setup mm
-        MM.transform.Find("LoadingScreen").gameObject.SetActive(false);
         MM.transform.Find("ServerSelectionScreen").gameObject.SetActive(false);
+        MM.transform.Find("LoadingScreen").gameObject.SetActive(false);
         MM.transform.Find("HomeScreen").gameObject.SetActive(true);
     }
 
