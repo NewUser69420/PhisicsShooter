@@ -14,15 +14,6 @@ public class GamemodeManager : MonoBehaviour
         Invoke(nameof(EnablePlayerMovement), 5.5f);
     }
 
-    private void OnEnable()
-    {
-        InstanceFinder.ServerManager.OnRemoteConnectionState += OnConnectionChange;
-    }
-    private void OnDisable()
-    {
-        InstanceFinder.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
-    }
-
     private void TurnOfLoadingScreen()
     {
         foreach(var obj in gameObject.scene.GetRootGameObjects())
@@ -50,26 +41,5 @@ public class GamemodeManager : MonoBehaviour
         {
             if (obj.CompareTag("Player")) { obj.GetComponent<PredictedPlayerController>()._activated = true; }
         }
-    }
-
-    private void OnConnectionChange(NetworkConnection conn, RemoteConnectionStateArgs args)
-    {
-        Debug.Log($"ConnectionChanged");
-        if (args.ConnectionState == RemoteConnectionState.Stopped)
-        {
-            int playerObjs = 0;
-            foreach(var obj in gameObject.scene.GetRootGameObjects())
-            {
-                if(obj.CompareTag("Player")) playerObjs++;
-            }
-            if(playerObjs == 0) UnloadScene();
-        }
-    }
-
-    private void UnloadScene()
-    {
-        Debug.Log("Unloading GameScene");
-        SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
-        InstanceFinder.NetworkManager.SceneManager.UnloadConnectionScenes(sud);
     }
 }
