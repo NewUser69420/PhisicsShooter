@@ -199,19 +199,28 @@ public class LobbyManager : NetworkBehaviour
             }
             else if(timer <= 0)
             {
-                //start game
+                foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
+                {
+                    if (obj.CompareTag("Player") && !connss.Contains(obj.GetComponent<NetworkObject>().Owner))
+                    {
+                        connss.Add(obj.GetComponent<NetworkObject>().Owner);
+                        nobjsToLoad.Add(obj.GetComponent<NetworkObject>());
+                    }
+                }
+
                 EnableLoadingScreen();
                 TurnLoadingScreenOnClient();
 
                 Debug.Log($"started game");
                 SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
                 SceneLoadData sld = new SceneLoadData(lookup);
-                sld.Options.AllowStacking = false;
+                sld.Options.AllowStacking = true;
+                sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
                 sld.MovedNetworkObjects = nobjsToLoad.ToArray();
                 //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-                base.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
+                InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
 
-                Invoke(nameof(UnloadLobbyScene), 0.5f);
+                Invoke(nameof(UnloadLobbyScene), 1f);
             }
             if (timer > 0 && !lobbyIsFull) { timer = timerMax; SyncTimerClientRpc(timerVal.gameObject, timer); }
 
@@ -277,6 +286,7 @@ public class LobbyManager : NetworkBehaviour
         SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
         SceneLoadData sld = new SceneLoadData(lookup);
         sld.Options.AllowStacking = true;
+        sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
         sld.MovedNetworkObjects = nobjsToLoad.ToArray();
         //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
