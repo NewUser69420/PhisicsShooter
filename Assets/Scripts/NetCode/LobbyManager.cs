@@ -276,7 +276,7 @@ public class LobbyManager : NetworkBehaviour
         Debug.Log($"started game");
         SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
         SceneLoadData sld = new SceneLoadData(lookup);
-        sld.Options.AllowStacking = false;
+        sld.Options.AllowStacking = true;
         sld.MovedNetworkObjects = nobjsToLoad.ToArray();
         //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);

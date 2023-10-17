@@ -52,16 +52,13 @@ public class QuitHandler : MonoBehaviour
             Destroy(obj);
         }
 
-        Debug.Log("test0");
         for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
         {
-            Debug.Log("test1");
             int playerCount = 0;
             foreach (var obj in UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).GetRootGameObjects())
             {
                 if (obj.CompareTag("Player")) playerCount++;
             }
-            Debug.Log($"test2: {playerCount}");
             if (playerCount == 0)
             {
                 SceneUnloadData sud = new SceneUnloadData(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i));

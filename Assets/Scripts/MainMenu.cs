@@ -197,7 +197,7 @@ public class MainMenu : MonoBehaviour
     {
         if(args.ConnectionState == LocalConnectionState.Stopped)
         {
-            if (triedConnect)
+            if (triedConnect && connecting)
             {
                 LoadingScreen.gameObject.SetActive(false);
                 ServerSelectionScreen.gameObject.SetActive(true);
