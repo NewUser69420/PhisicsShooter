@@ -13,6 +13,7 @@ public class CameraWorker : NetworkBehaviour
     private PlayerControlls playerControlls;
     [SerializeField] private Transform Player;
     [System.NonSerialized] public bool initialized = false;
+    [System.NonSerialized] public bool active;
 
     [TargetRpc]
     public void Initialize(NetworkConnection _conn)
@@ -31,13 +32,14 @@ public class CameraWorker : NetworkBehaviour
                 //GameObject.Find("Lobbies").GetComponent<Canvas>().enabled = false;
 
                 initialized = true;
+                active = true;
             }
         }
     }
 
     private void Update()
     {
-        if (!initialized) return;
+        if (!initialized || !active) return;
         
         //look
         float mouseX = playerControlls.OnFoot.Look.ReadValue<Vector2>().x;

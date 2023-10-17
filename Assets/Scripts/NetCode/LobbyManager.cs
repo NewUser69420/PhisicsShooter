@@ -57,6 +57,27 @@ public class LobbyManager : NetworkBehaviour
         SyncDataWithServer(this, isReady, LocalConnection.ClientId);
     }
 
+    public void PressedBackToMM()
+    {
+        FindObjectOfType<AudioManger>().Play("click2");
+        GameObject LB = FindObjectOfType<LobbyButn>(true).transform.parent.parent.gameObject;
+        LB.SetActive(true);
+        LB.transform.Find("LoadingScreen").gameObject.SetActive(false);
+        BackToMMServer(LocalConnection);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void BackToMMServer(NetworkConnection conn)
+    {
+        foreach (var obj in conn.Objects)
+        {
+            if (obj.CompareTag("Player")) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj.gameObject, "Lobbies");
+        }
+        
+        SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
+        base.SceneManager.UnloadConnectionScenes(conn, sud);
+    }
+
     [ServerRpc(RequireOwnership = false)]
     private void SyncStopGameWithServer()
     {

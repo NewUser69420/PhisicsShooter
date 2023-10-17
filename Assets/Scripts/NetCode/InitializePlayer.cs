@@ -113,6 +113,10 @@ public class InitializePlayer : NetworkBehaviour
             StartCoroutine(Wait2());
 
             GameObject.Find("MainMenuUI").SetActive(false);
+            foreach(var obj in gameObject.scene.GetRootGameObjects())
+            {
+                if(obj.name == "EventSystem") obj.SetActive(true);
+            }
         }
 
         StartCoroutine(Wait());

@@ -133,6 +133,7 @@ namespace FishNet.Managing.Client
 
         [System.NonSerialized] public ushort _port;
         [System.NonSerialized] public bool triedConnect;
+        [System.NonSerialized] public bool loadingMM;
 
         private void OnDestroy()
         {
@@ -318,7 +319,7 @@ namespace FishNet.Managing.Client
             //try connect with serverpc
             if(args.ConnectionState == LocalConnectionState.Stopped)
             {
-                if(!triedConnect)
+                if(!triedConnect && !loadingMM)
                 {
                     StartConnection("86.83.234.112", _port);
                     triedConnect = true;

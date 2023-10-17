@@ -1,7 +1,8 @@
-using FishNet;
+using FishNet.Managing.Client;
 using FishNet.Object;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static PlayerState;
 
@@ -11,6 +12,7 @@ public class UI : NetworkBehaviour
     private PlayerControlls playerControlls;
     private PlayerState playerState;
     private Grappling grappling;
+    private CameraWorker cam;
 
     [SerializeField] private TMP_Text speed;
     [SerializeField] private TMP_Text deathCounter;
@@ -35,6 +37,7 @@ public class UI : NetworkBehaviour
         playerController = GetComponentInParent<PredictedPlayerController>();
         playerState = GetComponentInParent<PlayerState>();
         grappling = GetComponentInParent<Grappling>();
+        cam = GetComponentInParent<CameraWorker>();
         dashTimer = playerController._dashReset;
     }
 
@@ -66,9 +69,13 @@ public class UI : NetworkBehaviour
             {
                 case true:
                     Cursor.lockState = CursorLockMode.Locked;
+                    playerController._activated = true;
+                    cam.active = true;
                     break;
                 case false:
                     Cursor.lockState = CursorLockMode.None;
+                    playerController._activated = false;
+                    cam.active = false;
                     break;
             }
             esc = !esc;
@@ -99,7 +106,27 @@ public class UI : NetworkBehaviour
 
     public void GoBackToMM()
     {
+        if (base.IsServer) return;
         Debug.Log("Going Back To MainMenu");
+        FindObjectOfType<AudioManger>().Play("click1");
+        
+        //stopping connecion
+        FindObjectOfType<ClientManager>().loadingMM = true;
+        base.ClientManager.StopConnection();
+
+        //setting mm ui active
+        GameObject MM = FindObjectOfType<MainMenu>().gameObject;
+        MM.SetActive(true);
+        UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync("Lobbies");
+
+        //set player unactive
+        playerController._activated = false;
+        cam.active = false;
+
+        //setup mm
+        MM.transform.Find("LoadingScreen").gameObject.SetActive(false);
+        MM.transform.Find("ServerSelectionScreen").gameObject.SetActive(false);
+        MM.transform.Find("HomeScreen").gameObject.SetActive(true);
     }
 
     public void Quit()

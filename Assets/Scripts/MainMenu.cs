@@ -222,6 +222,7 @@ public class MainMenu : MonoBehaviour
     public void ConnectClient(string _ip, ushort _port)
     {
         FindObjectOfType<ClientManager>().triedConnect = false;
+        FindObjectOfType<ClientManager>().loadingMM = false;
         _networkManager.ClientManager.StartConnection(_ip, _port);
     }
 

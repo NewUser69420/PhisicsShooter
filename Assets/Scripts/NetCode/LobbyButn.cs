@@ -31,6 +31,7 @@ public class LobbyButn : NetworkBehaviour
 
     public void OnButnClick()
     {
+        FindObjectOfType<AudioManger>().Play("click1");
         if (base.IsServer) return;
         switch (gameObject.name)
         {
@@ -56,12 +57,6 @@ public class LobbyButn : NetworkBehaviour
     //    sld.ReplaceScenes = ReplaceOption.None;
     //    base.SceneManager.LoadConnectionScenes(nobj.Owner, sld);
     //}
-
-    [TargetRpc]
-    private void DoLoadingScreenClientRpc(NetworkConnection _conn)
-    {
-        GameObject.Find("Lobbies").transform.Find("LoadingScreen").gameObject.SetActive(true);
-    }
 
     //[TargetRpc]
     //private void SyncLocationOfPobjs(NetworkConnection _conn, NetworkObject _obj)
@@ -155,5 +150,11 @@ public class LobbyButn : NetworkBehaviour
         DoLoadingScreenClientRpc(_Player.Owner);
         Debug.Log($"Lobbies full, Making own");
         return;
+    }
+
+    [TargetRpc]
+    private void DoLoadingScreenClientRpc(NetworkConnection _conn)
+    {
+        GameObject.Find("Lobbies").transform.Find("LoadingScreen").gameObject.SetActive(true);
     }
 }
