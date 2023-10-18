@@ -31,10 +31,11 @@ public class LobbyManager : NetworkBehaviour
     private int playerAmount;
 
     private bool lobbyIsFull;
-    private bool isReady = false;
+    private bool isReady;
     private float timer;
     private float timerMax = 60;
-    private bool startedGameCancalable = false;
+    private bool startedGameCancalable;
+    private bool startedGame;
     private float cancleTimer = 5;
     private float cancleTimerMax = 5;
 
@@ -197,7 +198,7 @@ public class LobbyManager : NetworkBehaviour
                 timerVal.text = Mathf.RoundToInt(timer).ToString();
                 SyncTimerClientRpc(timerVal.gameObject, timer);
             }
-            else if(timer <= 0)
+            else if(timer <= 0 && !startedGame)
             {
                 foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
                 {
@@ -219,6 +220,8 @@ public class LobbyManager : NetworkBehaviour
                 sld.MovedNetworkObjects = nobjsToLoad.ToArray();
                 //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
                 InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
+
+                startedGame = true;
 
                 Invoke(nameof(UnloadLobbyScene), 1f);
             }

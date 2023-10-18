@@ -117,18 +117,21 @@ public class InitializePlayer : NetworkBehaviour
             {
                 if(obj.name == "EventSystem") obj.SetActive(true);
             }
-        }
 
-        StartCoroutine(Wait());
+            StartCoroutine(Wait());
+        }
     }
 
     IEnumerator Wait2()
     {
         yield return new WaitForSeconds(1f);
         
-        foreach (NetworkConnection client in base.ClientManager.Clients.Values)
+        foreach (var pair in base.SceneManager.SceneConnections)
         {
-            SyncScoreboardServer(ScoreboardItemPrefab, client.ClientId, client);
+            if (pair.Key == gameObject.scene)
+            {
+                foreach(var conn in  pair.Value) SyncScoreboardServer(ScoreboardItemPrefab, conn.ClientId, conn);
+            }
         }
 
         //activate ui
@@ -188,7 +191,7 @@ public class InitializePlayer : NetworkBehaviour
 
     IEnumerator Wait()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
 
         DoName();
     }
@@ -200,21 +203,27 @@ public class InitializePlayer : NetworkBehaviour
         GameObject obj = null;
         String pName = null;
         int id = 0;
-        foreach (var client in base.ServerManager.Clients)
+        foreach (var pair in base.SceneManager.SceneConnections)
         {
-            foreach (var pobj in client.Value.Objects)
+            if (pair.Key == gameObject.scene)
             {
-                if (pobj.gameObject.tag == "Player")
+                foreach (var conn in pair.Value)
                 {
-                    obj = pobj.transform.Find("NameCanvas/PlayerName").gameObject;
-                    if (pobj.GetComponent<NetworkObject>().OwnerId == client.Value.ClientId) pName = pobj.transform.Find("NameCanvas/PlayerName").GetComponent<TMP_Text>().text;
-                    else Debug.Log($"No match: {pobj.GetComponent<NetworkObject>().OwnerId} != {client.Value.ClientId}");
+                    foreach (var pobj in conn.Objects)
+                    {
+                        if (pobj.gameObject.tag == "Player")
+                        {
+                            obj = pobj.transform.Find("NameCanvas/PlayerName").gameObject;
+                            if (pobj.GetComponent<NetworkObject>().OwnerId == conn.ClientId) pName = pobj.transform.Find("NameCanvas/PlayerName").GetComponent<TMP_Text>().text;
+                            else Debug.Log($"No match: {pobj.GetComponent<NetworkObject>().OwnerId} != {conn.ClientId}");
+                        }
+                    }
+                    id = conn.ClientId;
+
+                    Debug.Log($"sending client rpc with obj:{obj.name} + name:{pName} + id:{id}");
+                    SyncNameClient(obj, pName, id);
                 }
             }
-            id = client.Value.ClientId;
-
-            Debug.Log($"sending client rpc with obj:{obj.name} + name:{pName} + id:{id}");
-            SyncNameClient(obj, pName, id);
         }
     }
 
