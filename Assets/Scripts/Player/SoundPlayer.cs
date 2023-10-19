@@ -39,6 +39,7 @@ public class SoundPlayer : NetworkBehaviour
                     //do grappling sounds
                     if(!isPlayingGrappling)
                     {
+                        Debug.Log("Grappling Test");
                         playerAudioManager.Play("Grappling");
                         AskToStartRpc(this.gameObject, "Grappling");
 
@@ -49,6 +50,7 @@ public class SoundPlayer : NetworkBehaviour
                     //do wallrunning sounds
                     if (!isPlayingWallrunning)
                     {
+                        Debug.Log("Grappling Test");
                         playerAudioManager.Play("WallRunning");
                         AskToStartRpc(this.gameObject, "WallRunning");
 

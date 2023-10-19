@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.ProBuilder.Shapes;
 
 public class InitializePlayer : NetworkBehaviour
 {        
@@ -125,13 +126,10 @@ public class InitializePlayer : NetworkBehaviour
     IEnumerator Wait2()
     {
         yield return new WaitForSeconds(1f);
-        
-        foreach (var pair in base.SceneManager.SceneConnections)
+
+        foreach (var obj in gameObject.scene.GetRootGameObjects())
         {
-            if (pair.Key == gameObject.scene)
-            {
-                foreach(var conn in  pair.Value) SyncScoreboardServer(ScoreboardItemPrefab, conn.ClientId, conn);
-            }
+            if(obj.CompareTag("Player")) { SyncScoreboardServer(ScoreboardItemPrefab, obj.GetComponent<NetworkObject>().Owner.ClientId, obj.GetComponent<NetworkObject>().Owner); Debug.Log($"Test0"); }
         }
 
         //activate ui

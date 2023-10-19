@@ -211,7 +211,7 @@ public class MainMenu : MonoBehaviour
             triedConnect = true;
         }
 
-        if (args.ConnectionState == LocalConnectionState.Started) connecting = false;
+        if (args.ConnectionState == LocalConnectionState.Started) { connecting = false; triedConnect = false; }
     }
 
     IEnumerator Wait()

@@ -400,14 +400,14 @@ public class PredictedPlayerController : NetworkBehaviour
             _rb.AddForce(Vector3.up * _wallRunner.upwardForce, ForceMode.Force);
 
             ////push to wall force
-            if (md.WallLeft) _rb.AddForce(-_wallNormal * 100, ForceMode.Force);
+            if (md.WallLeft) _rb.AddForce(-md.WallNormal * 100, ForceMode.Force);
 
             ////wallrun jump
             if (md.WallJump)
             {
                 _rb.AddForce(transform.forward * _wallJumpForward, ForceMode.Impulse);
                 _rb.AddForce(transform.up * _wallJumpUp, ForceMode.Impulse);
-                _rb.AddForce(_wallNormal * _wallJumpForce , ForceMode.Impulse);
+                _rb.AddForce(md.WallNormal * _wallJumpForce, ForceMode.Impulse);
                 if (md.aState == ActionState.Jumping)
                 {
                     _playerState.aState = ActionState.Passive;

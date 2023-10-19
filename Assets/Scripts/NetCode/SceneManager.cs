@@ -15,7 +15,7 @@ public class SceneManager : NetworkBehaviour
             SceneLookupData lookup = new SceneLookupData(0, "Lobbies");
             SceneLoadData sld = new SceneLoadData(lookup);
             sld.Options.AllowStacking = false;
-            sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
+            //sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
             sld.ReplaceScenes = ReplaceOption.All;
             base.SceneManager.LoadGlobalScenes(sld);
         }
