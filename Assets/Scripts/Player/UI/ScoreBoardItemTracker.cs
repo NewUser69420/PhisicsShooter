@@ -14,8 +14,10 @@ public class ScoreBoardItemTracker : MonoBehaviour
     [System.NonSerialized] public int kills;
     [System.NonSerialized ] public int deaths;
     [System.NonSerialized] public string nameValue;
-    [System.NonSerialized] public int id = -1;
+    [System.NonSerialized] public string team;
 
+    public int id = -1;
+    
     private List<int> deathCounter = new List<int>();
 
     private void Update()

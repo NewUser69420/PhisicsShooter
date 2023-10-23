@@ -13,6 +13,8 @@ public class ServerHealthManager : NetworkBehaviour
     public float totalHealth;
     public float maxHealth;
 
+    public Vector3 spawnPosition;
+
     private NetworkConnection Conn;
     private bool invinceble;
 
@@ -88,7 +90,9 @@ public class ServerHealthManager : NetworkBehaviour
         //do death
         SetMaxHealth();
 
-        pobj.transform.position = new Vector3(0, 5, 0);
+        pobj.transform.position = spawnPosition;
+
+        pobj.GetComponentInChildren<IK_foot>().ResetLeg();
 
         //add deathcounter on client
         GameObject _shooterObj = null;

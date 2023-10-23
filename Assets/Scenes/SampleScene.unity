@@ -9213,7 +9213,7 @@ PrefabInstance:
     - target: {fileID: 1254374856676894511, guid: c9462ff4171f8d943aa0c1f775b26d81,
         type: 3}
       propertyPath: m_Name
-      value: GamemodeManager
+      value: GameSetup
       objectReference: {fileID: 0}
     - target: {fileID: 1254374856676894511, guid: c9462ff4171f8d943aa0c1f775b26d81,
         type: 3}
@@ -9245,6 +9245,12 @@ PrefabInstance:
       propertyPath: _componentIndexCache
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5339721044593375959, guid: c9462ff4171f8d943aa0c1f775b26d81,
+        type: 3}
+      propertyPath: GamemodeManagerPrefab
+      value: 
+      objectReference: {fileID: 4111085276130113998, guid: 9c872a2077422e7408f11d24096c5f56,
+        type: 3}
     - target: {fileID: 7841153599219515571, guid: c9462ff4171f8d943aa0c1f775b26d81,
         type: 3}
       propertyPath: m_LocalPosition.x

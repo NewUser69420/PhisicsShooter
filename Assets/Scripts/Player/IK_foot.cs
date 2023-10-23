@@ -116,4 +116,9 @@ public class IK_foot : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawSphere(newFootPos, 0.1f);
     }
+
+    public void ResetLeg()
+    {
+        curFootPos = new Vector3(leg.position.x, leg.position.y - 1.1f, leg.position.z);
+    }
 }

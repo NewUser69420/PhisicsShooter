@@ -12,7 +12,6 @@ using UnityEngine.ProBuilder.Shapes;
 
 public class InitializePlayer : NetworkBehaviour
 {        
-    [SerializeField]  private Vector3 spawnPos;
     [SerializeField] private int conId = -1;
 
     [System.NonSerialized]  public string playerName = "playername not set";
@@ -97,8 +96,6 @@ public class InitializePlayer : NetworkBehaviour
                 if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); _obj.GetComponentInChildren<TMP_Text>().text = __playerName; _obj.GetComponent<PlayerItem>().ownerId = __id; }
             }
         }
-
-
     }
 
     [TargetRpc]
@@ -129,11 +126,11 @@ public class InitializePlayer : NetworkBehaviour
 
         foreach (var obj in gameObject.scene.GetRootGameObjects())
         {
-            if(obj.CompareTag("Player")) { SyncScoreboardServer(ScoreboardItemPrefab, obj.GetComponent<NetworkObject>().Owner.ClientId, obj.GetComponent<NetworkObject>().Owner); Debug.Log($"Test0"); }
+            if(obj.CompareTag("Player")) { SyncScoreboardServer(ScoreboardItemPrefab, obj.GetComponent<NetworkObject>().OwnerId, obj.GetComponent<NetworkObject>().Owner); }
         }
 
         //activate ui
-        Invoke(nameof(SetUIActive), 1f);
+        Invoke(nameof(SetUIActive), 2f);
     }
 
     private void SetUIActive()
@@ -265,7 +262,5 @@ public class InitializePlayer : NetworkBehaviour
         }
 
         obj.GetComponent<PredictedPlayerController>()._activated = true;
-
-        obj.transform.position = spawnPos;
     }
 }

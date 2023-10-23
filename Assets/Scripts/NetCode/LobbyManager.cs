@@ -6,10 +6,6 @@ using TMPro;
 using UnityEngine;
 using FishNet;
 using FishNet.Transporting;
-using System.Collections;
-using UnityEngine.Animations;
-using System.Reflection;
-using UnityEngine.ProBuilder.Shapes;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -218,7 +214,6 @@ public class LobbyManager : NetworkBehaviour
                 sld.Options.AllowStacking = true;
                 sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
                 sld.MovedNetworkObjects = nobjsToLoad.ToArray();
-                //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
                 InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
 
                 startedGame = true;
@@ -291,10 +286,25 @@ public class LobbyManager : NetworkBehaviour
         sld.Options.AllowStacking = true;
         sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
         sld.MovedNetworkObjects = nobjsToLoad.ToArray();
-        //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
 
+        Invoke(nameof(GiveGamemode), 1f);
         Invoke(nameof(UnloadLobbyScene), 1f);
+    }
+
+    private void GiveGamemode()
+    {
+        if (!startedGameCancalable) return;
+
+        UnityEngine.SceneManagement.Scene scene = new();
+        foreach (var pair in base.SceneManager.SceneConnections)
+        {
+            if (pair.Value.Contains(conns[0]) && !(pair.Key.name == "1v1Lobby" || pair.Key.name == "2v2Lobby" || pair.Key.name == "3v3Lobby" || pair.Key.name == "Lobbies")) { scene = pair.Key; Debug.Log($"found scene with name: {scene.name}"); }
+        }
+        foreach (var obj in scene.GetRootGameObjects())
+        {
+            if (obj.name == "GameSetup") obj.GetComponent<GameSetup>().gamemode = "1v1Deathmatch";
+        }
     }
 
     [ObserversRpc]

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7841153599219515571}
   - component: {fileID: 5339721044593375959}
   m_Layer: 0
-  m_Name: GamemodeManager
+  m_Name: GameSetup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,3 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4be2466173c01c641b27f87b58fff555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gamemode: 
+  DeathMatch: {fileID: 4111085276130113998, guid: 9c872a2077422e7408f11d24096c5f56,
+    type: 3}
+  SpawnPositions:
+  - key: SideA
+    val: {x: 0, y: 0, z: -17}
+  - key: SideB
+    val: {x: 0, y: 0, z: 19}
+  team1Colour: {r: 0.5377358, g: 0, b: 0.07810399, a: 1}
+  team2Colour: {r: 0, g: 0.16589236, b: 1, a: 1}
