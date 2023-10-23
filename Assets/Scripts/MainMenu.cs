@@ -22,9 +22,9 @@ public class MainMenu : MonoBehaviour
     public ushort serverHostPort = 0;
     public ushort clientConnectPort = 0;
     public string playerName;
+    public List<string> scenesToIgnore = new List<string>();
 
     private string layer = "home";
-    int connectedPlayers;
 
     [SerializeField]
     public Transform HomeScreen;
@@ -40,11 +40,10 @@ public class MainMenu : MonoBehaviour
     private Transform DedicatedServerScreen;
     [SerializeField]
     private Transform NameErrorTransform;
-    [SerializeField]
-    private GameObject SceneListPrefab;
 
     private TMP_Text NameErrorMessage;
     private bool triedConnect;
+    private bool connecting;
 
     private void Awake()
     {
@@ -121,8 +120,8 @@ public class MainMenu : MonoBehaviour
     public void Quit()
     {
         Debug.Log("Quiting...");
-        Application.Quit();
         FindAnyObjectByType<AudioManger>().Play("click3");
+        Application.Quit();
     }
 
     private void GoBackOne(string _layer)
@@ -152,6 +151,7 @@ public class MainMenu : MonoBehaviour
             ServerSelectionScreen.gameObject.SetActive(false);
             LoadingScreen.gameObject.SetActive(true);
             FindObjectOfType<ClientManager>()._port = 7777;
+            FindObjectOfType<ClientManager>().triedConnect = false;
 
             ConnectClient(ip, 7777);
             Debug.Log("Connecting with: " + ip + ":7777");
@@ -171,6 +171,7 @@ public class MainMenu : MonoBehaviour
             ServerSelectionScreen.gameObject.SetActive(false);
             LoadingScreen.gameObject.SetActive(true);
             FindObjectOfType<ClientManager>()._port = 7779;
+            FindObjectOfType<ClientManager>().triedConnect = false;
 
             ConnectClient(ip, 7779);
             Debug.Log("Connecting with: " + ip + ":7779");
@@ -183,24 +184,34 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void OnSceneLoaded(SceneLoadEndEventArgs obj)
+    public void OnSceneLoaded(SceneLoadEndEventArgs args)
     {
         //deactive loading screen
-        StartCoroutine(Wait());
+        if(gameObject.activeSelf) StartCoroutine(Wait());
+
+        if (GameObject.FindGameObjectWithTag("Player") == null) return;
+        //if (!scenesToIgnore.Contains(GameObject.FindGameObjectWithTag("Player").scene.name)) { gameObject.SetActive(false); }
     }
 
     private void OnClientConnectionChange(ClientConnectionStateArgs args)
     {
         if(args.ConnectionState == LocalConnectionState.Stopped)
         {
-            if (triedConnect)
+            if (triedConnect && connecting)
             {
                 LoadingScreen.gameObject.SetActive(false);
                 ServerSelectionScreen.gameObject.SetActive(true);
                 return;
             }
+            else if (connecting)
+            {
+                Background.gameObject.SetActive(true);
+                LoadingScreen.gameObject.SetActive(true);
+            }
             triedConnect = true;
         }
+
+        if (args.ConnectionState == LocalConnectionState.Started) { connecting = false; triedConnect = false; }
     }
 
     IEnumerator Wait()
@@ -213,7 +224,9 @@ public class MainMenu : MonoBehaviour
 
     public void ConnectClient(string _ip, ushort _port)
     {
+        connecting = true;
         FindObjectOfType<ClientManager>().triedConnect = false;
+        FindObjectOfType<ClientManager>().loadingMM = false;
         _networkManager.ClientManager.StartConnection(_ip, _port);
     }
 

@@ -47,7 +47,6 @@ public class FPGunPositioner : MonoBehaviour
         if (Physics.Raycast(Player.position, Player.right, out hit, 1f, whatIsWall))
         {
             defPos = new Vector3(defPosDefault.x - 0.3f, defPosDefault.y, defPosDefault.z);
-            Debug.Log($"test");
         }
         else defPos = defPosDefault;
         Debug.DrawRay(Player.position, Player.right * 1, Color.red);

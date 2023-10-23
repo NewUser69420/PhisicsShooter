@@ -6,7 +6,6 @@ using FishNet.Component.Prediction;
 using FishNet.Managing.Timing;
 using System.Linq;
 using FishNet.Connection;
-using Unity.VisualScripting;
 
 public class Laser_Bullet : NetworkBehaviour
 {
@@ -27,7 +26,7 @@ public class Laser_Bullet : NetworkBehaviour
     private bool canDoDamage = true;
     
     public override void OnStartNetwork(){
-        StartCoroutine (Wait());
+        if (this.IsSpawned) StartCoroutine(Wait());
 
         //Make sound
         GameObject SoundObject = Instantiate(SoundObjectPrefab);

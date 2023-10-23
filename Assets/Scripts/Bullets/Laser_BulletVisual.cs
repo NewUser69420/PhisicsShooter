@@ -6,7 +6,6 @@ using FishNet.Component.Prediction;
 using FishNet.Managing.Timing;
 using System.Linq;
 using FishNet.Connection;
-using Unity.VisualScripting;
 
 public class Laser_BulletVisual : NetworkBehaviour
 {
@@ -18,7 +17,7 @@ public class Laser_BulletVisual : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        StartCoroutine(Wait());
+        if(this.IsSpawned) StartCoroutine(Wait());
 
         uint timeToTicks = base.TimeManager.TimeToTicks(0.65f);
 

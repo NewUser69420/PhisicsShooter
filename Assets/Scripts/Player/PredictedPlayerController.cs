@@ -1,14 +1,12 @@
 using FishNet;
 using FishNet.Component.Animating;
 using FishNet.Connection;
-using FishNet.Demo.AdditiveScenes;
+using FishNet.Managing.Scened;
 using FishNet.Object;
 using FishNet.Object.Prediction;
 using FishNet.Transporting;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
-using UnityEngine.InputSystem.HID;
 using static PlayerState;
 
 public class PredictedPlayerController : NetworkBehaviour
@@ -31,13 +29,13 @@ public class PredictedPlayerController : NetworkBehaviour
     [System.NonSerialized] public bool _shootLaser;
     [System.NonSerialized] public Rigidbody _rb;
 
+    private UnityEngine.SceneManagement.Scene currentScene;
     private PlayerControlls _playerControlls;
     private PlayerState _playerState;
     private Animator _animator;
     private NetworkAnimator _netAnimator;
     private WallRunning _wallRunner;
     private LaserShooter _laserShooter;
-    private MainMenu _mainMenu;
     private PlayerAudioManager _playerAudioManager;
     private RaycastHit _hit;
     private Vector3 _dashDirection;
@@ -128,7 +126,6 @@ public class PredictedPlayerController : NetworkBehaviour
         _wallRunner = GetComponent<WallRunning>();
         _laserShooter = GetComponent<LaserShooter>();
         _playerAudioManager = GetComponent<PlayerAudioManager>();
-        if (GameObject.Find("MainMenuUI") != null) _mainMenu = GameObject.Find("MainMenuUI").GetComponent<MainMenu>();
 
         _playerControlls = new PlayerControlls();
         _playerControlls.Enable();
@@ -136,6 +133,11 @@ public class PredictedPlayerController : NetworkBehaviour
 
         InstanceFinder.TimeManager.OnTick += TimeManager_OnTick;
         InstanceFinder.TimeManager.OnPostTick += TimeManager_OnPostTick;
+    }
+
+    public override void OnStartNetwork()
+    {
+        base.SceneManager.OnLoadEnd += _OnSceneLoad;
     }
 
     private void OnDestroy()
@@ -160,6 +162,14 @@ public class PredictedPlayerController : NetworkBehaviour
     {
         if (!base.IsServer)
             AddGravity();
+    }
+
+    private void _OnSceneLoad(SceneLoadEndEventArgs args)
+    {
+        foreach (var scene in args.LoadedScenes)
+        {
+            if (scene.name != "Lobbies") currentScene = scene;
+        }
     }
 
     private void Update()
@@ -200,15 +210,6 @@ public class PredictedPlayerController : NetworkBehaviour
         if (base.IsOwner)
         {
             SyncDataServerRpc(base.ClientManager.Connection, _playerState.aState, _playerState.gState);
-
-            if(_activated)
-            {
-                _mainMenu.gameObject.SetActive(false);
-            }
-            else
-            {
-                _mainMenu.gameObject.SetActive(true);
-            }
         }
 
         //velocityCheck
@@ -297,32 +298,37 @@ public class PredictedPlayerController : NetworkBehaviour
         if(_shootLaser)
         {
             _shootLaser = false;
+            
+            if (_laserShooter.LaserPrefab == null || _laserShooter.LaserPrefabVisual == null) { Debug.Log($"Bullet Prefab is null"); return; }
 
-            if (_laserShooter.LaserPrefab == null || _laserShooter.LaserPrefabVisual == null)
-            {
-                Debug.Log("Prefab is null");
-                return;
-            }
+            //spawn bullet
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
             NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
+            
+            base.Spawn(Bullet, base.Owner);
+            base.Spawn(BulletVisual, base.Owner);
 
             Laser_Bullet predictedBullet = Bullet.GetComponent<Laser_Bullet>();
             Laser_BulletVisual predictedBulletVisual = BulletVisual.GetComponent<Laser_BulletVisual>();
             predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
             predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
 
-            base.Spawn(Bullet, base.Owner);
-            base.Spawn(BulletVisual, base.Owner);
-
             predictedBullet.PlayerConn = NetworkObject.LocalConnection;
-            SetPlayerBulletRpc(Bullet, NetworkObject.LocalConnection);
+            SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection);
         }
     }
 
     [ServerRpc]
-    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkConnection playerConn)
+    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn)
     {
-        obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, gameObject.scene);
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, gameObject.scene);
+
+        obj1.GetComponent<Laser_Bullet>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+        obj2.GetComponent<Laser_BulletVisual>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+
+        if (obj1 != null) obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
     }
 
     private void AddGravity()
@@ -394,14 +400,14 @@ public class PredictedPlayerController : NetworkBehaviour
             _rb.AddForce(Vector3.up * _wallRunner.upwardForce, ForceMode.Force);
 
             ////push to wall force
-            if (md.WallLeft) _rb.AddForce(-_wallNormal * 100, ForceMode.Force);
+            if (md.WallLeft) _rb.AddForce(-md.WallNormal * 100, ForceMode.Force);
 
             ////wallrun jump
             if (md.WallJump)
             {
                 _rb.AddForce(transform.forward * _wallJumpForward, ForceMode.Impulse);
                 _rb.AddForce(transform.up * _wallJumpUp, ForceMode.Impulse);
-                _rb.AddForce(_wallNormal * _wallJumpForce , ForceMode.Impulse);
+                _rb.AddForce(md.WallNormal * _wallJumpForce, ForceMode.Impulse);
                 if (md.aState == ActionState.Jumping)
                 {
                     _playerState.aState = ActionState.Passive;

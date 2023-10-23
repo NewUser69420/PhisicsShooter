@@ -98,6 +98,12 @@ namespace FishNet.Component.Spawning
             Quaternion rotation;
             SetSpawn(_playerPrefab.transform, out position, out rotation);
 
+            //set correct scene to spawn player in
+            for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            {
+                if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.SetActiveScene(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); }
+            }
+            
             NetworkObject nob = _networkManager.GetPooledInstantiated(_playerPrefab, position, rotation, true);
             _networkManager.ServerManager.Spawn(nob, conn);
 

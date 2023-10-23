@@ -5,33 +5,18 @@ using UnityEngine;
 
 public class CameraWorker : NetworkBehaviour
 {
-    [System.NonSerialized] public string sceneName;
+    [System.NonSerialized] public bool isTestPlayer;
     
     private float xRotation;
     private float yRotation;
     [SerializeField] private float sensitivity;
     private PlayerControlls playerControlls;
     [SerializeField] private Transform Player;
-    private bool initialized = false;
-
-    public override void OnStartNetwork()
-    {
-        base.SceneManager.OnLoadEnd += OnInitialize;
-    }
-
-    public void OnInitialize(SceneLoadEndEventArgs args)
-    {
-        foreach(var scene in args.LoadedScenes)
-        {
-            if(scene.name == sceneName)
-            {
-                ButtSex(Owner);
-            }
-        }
-    }
+    [System.NonSerialized] public bool initialized = false;
+    [System.NonSerialized] public bool active;
 
     [TargetRpc]
-    private void ButtSex(NetworkConnection _conn)
+    public void Initialize(NetworkConnection _conn)
     {
         if (Owner.IsLocalClient)
         {
@@ -42,15 +27,19 @@ public class CameraWorker : NetworkBehaviour
             playerControlls = new PlayerControlls();
             playerControlls.Enable();
 
-            GameObject.Find("Lobbies").GetComponent<Canvas>().enabled = false;
+            if(!isTestPlayer)
+            {
+                //GameObject.Find("Lobbies").GetComponent<Canvas>().enabled = false;
 
-            initialized = true;
+                initialized = true;
+                active = true;
+            }
         }
     }
 
     private void Update()
     {
-        if (!initialized) return;
+        if (!initialized || !active) return;
         
         //look
         float mouseX = playerControlls.OnFoot.Look.ReadValue<Vector2>().x;

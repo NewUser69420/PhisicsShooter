@@ -1,22 +1,23 @@
 using FishNet;
+using FishNet.Demo.AdditiveScenes;
+using FishNet.Managing;
+using FishNet.Object;
 using FishNet.Transporting;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class SetupTestPlayer : MonoBehaviour
 {
+    public GameObject Player;
+    [SerializeField] private Vector3 Spawnposition;
+
+
     private void Awake()
     {
-        InstanceFinder.ServerManager.OnServerConnectionState += OnServerChange;
-        InstanceFinder.ServerManager.StartConnection();
-    }
+        transform.Find("SpawnPos").position = Spawnposition;
 
-    private void OnServerChange(ServerConnectionStateArgs args)
-    {
-        if(args.ConnectionState == LocalConnectionState.Started)
-        {
-            InstanceFinder.ClientManager.StartConnection();
-        }
+        Instantiate(Player, Spawnposition, Quaternion.identity);
     }
 }
