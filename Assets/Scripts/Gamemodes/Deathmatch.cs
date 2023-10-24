@@ -1,18 +1,12 @@
 using FishNet;
 using FishNet.Object;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Deathmatch : NetworkBehaviour
+public class Deathmatch : GamemodeBase
 {
-    [SerializeField] private List<NetworkObject> Team1 = new();
-    [SerializeField] private List<NetworkObject> Team2 = new();
-   
-    [SerializeField] private Color Team1Colour;
-    [SerializeField] private Color Team2Colour;
-
-
     private bool addedTeam1;
     private bool switchSides;
 
@@ -39,37 +33,55 @@ public class Deathmatch : NetworkBehaviour
         }
     }
 
-    private void MakeTeams()
+    protected override void MakeTeams()
     {   
         foreach (var pobj in gameObject.scene.GetRootGameObjects())
         {
             if (pobj.CompareTag("Player"))
             {
-                if (!addedTeam1) { Team1.Add(pobj.GetComponent<NetworkObject>()); addedTeam1 = true; }
-                else { Team2.Add(pobj.GetComponent<NetworkObject>()); addedTeam1 = false; }
+                if (!addedTeam1) { Team1.Add(pobj.GetComponent<NetworkObject>()); addedTeam1 = true; pobj.GetComponent<ServerHealthManager>().team = "team1"; }
+                else { Team2.Add(pobj.GetComponent<NetworkObject>()); addedTeam1 = false; pobj.GetComponent<ServerHealthManager>().team = "team2"; }
             }
         }
 
         foreach (var pobj in Team1)
         {
-            DoTeamColours(pobj.OwnerId, Team1Colour);
+            DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team1");
         }
         foreach (var pobj in Team2)
         {
-            DoTeamColours(pobj.OwnerId, Team2Colour);
+            DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team2");
+        }
+       
+        foreach (var pobj in Team1)
+        {
+            pScoreT1.Add(pobj, 0);
+        }
+        foreach (var pobj in Team2)
+        {
+            pScoreT2.Add(pobj, 0);
         }
     }
 
     [ObserversRpc]
-    private void DoTeamColours(int _id, Color _color)
+    private void DoTeamColours(int _id, Color _color1, Color _color2, string _team)
     {
         List<UnityEngine.SceneManagement.Scene> loadedScenes = new();
         for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
         {
             loadedScenes.Add(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i));
-            Debug.Log(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name);
         }
-        
+
+        Color _color = new();
+        switch (_team)
+        {
+            case "team1":
+                _color = _color1;
+                break;
+            case "team2":
+                _color = _color2;
+                break;
+        }
         foreach (UnityEngine.SceneManagement.Scene scene in loadedScenes)
         {
             if (scene.name != "Lobbies")
@@ -82,6 +94,9 @@ public class Deathmatch : NetworkBehaviour
                         {
                             if (item.GetComponent<ScoreBoardItemTracker>().id == _id) item.GetComponent<RawImage>().color = _color;
                         }
+                        Transform score = pobj.transform.Find("UI/Score");
+                        score.transform.Find("T1Image").GetComponent<Image>().color = _color1;
+                        score.transform.Find("T2Image").GetComponent<Image>().color = _color2;
                     }
                 }
             }
@@ -158,6 +173,48 @@ public class Deathmatch : NetworkBehaviour
             }
 
             playersSpawned++;
+        }
+    }
+
+    public override void OnScoreChange()
+    {
+        //calc new score
+        scoreT1 = 0;
+        foreach (var pair in pScoreT1)
+        {
+            scoreT1 += Mathf.RoundToInt(pair.Value);
+        }
+
+        scoreT2 = 0;
+        foreach (var pair in pScoreT2)
+        {
+            scoreT2 += Mathf.RoundToInt(pair.Value);
+        }
+
+        //do scoreboards
+        SyncScore(scoreT1, scoreT2);
+
+        //check for end game
+        if (scoreT1 >= endScore && gameIsRunning) FinishGame("team1");
+        if (scoreT2 >= endScore && gameIsRunning) FinishGame("team2");
+    }
+
+    [ObserversRpc]
+    private void SyncScore(int t1score, int t2score)
+    {
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "Lobbies")
+            {
+                foreach (var obj in UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).GetRootGameObjects())
+                {
+                    if (obj.CompareTag("Player"))
+                    {
+                        obj.transform.Find("UI/Score/T1Value").GetComponent<TMP_Text>().text = t1score.ToString();
+                        obj.transform.Find("UI/Score/T2Value").GetComponent<TMP_Text>().text = t2score.ToString();
+                    }
+                }
+            }
         }
     }
 }

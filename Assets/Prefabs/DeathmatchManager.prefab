@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -8188619237332795717}
   m_Layer: 0
   m_Name: DeathmatchManager
-  m_TagString: Untagged
+  m_TagString: Gamemode
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -85,3 +85,6 @@ MonoBehaviour:
   Team2: []
   Team1Colour: {r: 0, g: 0.30312562, b: 1, a: 1}
   Team2Colour: {r: 0.5377358, g: 0.067852415, b: 0, a: 1}
+  scoreT1: 0
+  scoreT2: 0
+  endScore: 20

@@ -12,9 +12,9 @@ public class ScoreBoardItemTracker : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
 
     [System.NonSerialized] public int kills;
-    [System.NonSerialized ] public int deaths;
+    [System.NonSerialized] public int deaths;
+    [System.NonSerialized] public int score;
     [System.NonSerialized] public string nameValue;
-    [System.NonSerialized] public string team;
 
     public int id = -1;
     
