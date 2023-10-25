@@ -17,6 +17,7 @@ public class KeyValuePair
 public class GameSetup : MonoBehaviour
 {
     public string gamemode;
+    public string lobbyName;
 
     [SerializeField] private GameObject DeathMatch;
 
@@ -71,16 +72,19 @@ public class GameSetup : MonoBehaviour
     {
         UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
         if (!InstanceFinder.IsServer) return;
+
+        GameObject GM = null;
         switch (gamemode)
         {
             case "1v1Deathmatch":
-                GameObject DM = Instantiate(DeathMatch);
-                DM.GetComponent<Deathmatch>().spawnPos = spawnPos;
-                InstanceFinder.ServerManager.Spawn(DM);
+                GM = Instantiate(DeathMatch);
+                GM.GetComponent<Deathmatch>().spawnPos = spawnPos;
                 break;
             default:
                 Debug.Log("No gamemode found");
                 break;
         }
+        GM.GetComponent<GamemodeBase>().lobbyName = lobbyName;
+        InstanceFinder.ServerManager.Spawn(GM);
     }
 }

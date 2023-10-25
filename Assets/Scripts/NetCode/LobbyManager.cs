@@ -113,16 +113,28 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    private void Awake()
+    {
+        FindObjectOfType<MainMenu>(true).gameObject.SetActive(true);
+    }
+
     public override void OnStartNetwork()
-    {     
+    {
+        Cursor.lockState = CursorLockMode.None;
+
         timer = timerMax;
         timerVal.text = Mathf.RoundToInt(timer).ToString();
         if (!base.IsServer)
         {
             conns.Add(LocalConnection);
             SyncCon(gameObject, conns);
-            GameObject.Find("Lobbies").SetActive(false);
+            if(GameObject.Find("Lobbies") != null) GameObject.Find("Lobbies").SetActive(false);
         }
+
+        //if (base.IsClient)
+        //{
+        //    FindObjectOfType<MainMenu>(true).gameObject.SetActive(false);
+        //}
 
         Invoke(nameof(TurnLoadingScreenOff), 1.5f);
         thisLobbyScene = gameObject.scene;
@@ -194,31 +206,11 @@ public class LobbyManager : NetworkBehaviour
                 timerVal.text = Mathf.RoundToInt(timer).ToString();
                 SyncTimerClientRpc(timerVal.gameObject, timer);
             }
-            else if(timer <= 0 && !startedGame)
+            else if(timer <= 0 && !startedGameCancalable)
             {
-                foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
-                {
-                    if (obj.CompareTag("Player") && !connss.Contains(obj.GetComponent<NetworkObject>().Owner))
-                    {
-                        connss.Add(obj.GetComponent<NetworkObject>().Owner);
-                        nobjsToLoad.Add(obj.GetComponent<NetworkObject>());
-                    }
-                }
-
-                EnableLoadingScreen();
-                TurnLoadingScreenOnClient();
-
-                Debug.Log($"started game");
-                SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
-                SceneLoadData sld = new SceneLoadData(lookup);
-                sld.Options.AllowStacking = true;
-                sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
-                sld.MovedNetworkObjects = nobjsToLoad.ToArray();
-                InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
-
-                startedGame = true;
-
-                Invoke(nameof(UnloadLobbyScene), 1f);
+                startedGameCancalable = true;
+                StartGameCancalable();
+                SyncStartedGameClient();
             }
             if (timer > 0 && !lobbyIsFull) { timer = timerMax; SyncTimerClientRpc(timerVal.gameObject, timer); }
 
@@ -288,11 +280,11 @@ public class LobbyManager : NetworkBehaviour
         sld.MovedNetworkObjects = nobjsToLoad.ToArray();
         InstanceFinder.SceneManager.LoadConnectionScenes(connss.ToArray(), sld);
 
-        Invoke(nameof(GiveGamemode), 1f);
+        Invoke(nameof(SetupGameScene), 1f);
         Invoke(nameof(UnloadLobbyScene), 1f);
     }
 
-    private void GiveGamemode()
+    private void SetupGameScene()
     {
         if (!startedGameCancalable) return;
 
@@ -303,7 +295,7 @@ public class LobbyManager : NetworkBehaviour
         }
         foreach (var obj in scene.GetRootGameObjects())
         {
-            if (obj.name == "GameSetup") obj.GetComponent<GameSetup>().gamemode = "1v1Deathmatch";
+            if (obj.name == "GameSetup") { obj.GetComponent<GameSetup>().gamemode = "1v1Deathmatch"; obj.GetComponent<GameSetup>().lobbyName = gameObject.scene.name; }
         }
     }
 

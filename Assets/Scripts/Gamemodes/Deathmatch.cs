@@ -12,6 +12,8 @@ public class Deathmatch : GamemodeBase
 
     public Dictionary<string, Vector3> spawnPos = new();
 
+    [SerializeField] private GameObject playerPrefab;
+
     private void OnEnable()
     {
         if(!InstanceFinder.IsServer) return;
@@ -19,6 +21,16 @@ public class Deathmatch : GamemodeBase
         Invoke(nameof(MoveThis), 2f);
         Invoke(nameof(MakeTeams), 2.5f);
         Invoke(nameof(SpawnPlayers), 3f);
+    }
+
+    public override void OnStartNetwork()
+    {
+        SetPlayerPrefab();
+    }
+
+    protected override void SetPlayerPrefab()
+    {
+        PlayerPrefab = playerPrefab;
     }
 
     private void MoveThis()

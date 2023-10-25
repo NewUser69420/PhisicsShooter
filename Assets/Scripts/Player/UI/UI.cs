@@ -39,6 +39,9 @@ public class UI : NetworkBehaviour
         grappling = GetComponentInParent<Grappling>();
         cam = GetComponentInParent<CameraWorker>();
         dashTimer = playerController._dashReset;
+
+        transform.Find("Score/T1Value").GetComponent<TMP_Text>().text = "0";
+        transform.Find("Score/T2Value").GetComponent<TMP_Text>().text = "0";
     }
 
     private void Update()

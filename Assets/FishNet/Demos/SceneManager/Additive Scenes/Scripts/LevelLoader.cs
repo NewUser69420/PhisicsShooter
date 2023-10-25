@@ -12,7 +12,7 @@ namespace FishNet.Demo.AdditiveScenes
             if (!base.IsServer)
                 return;
 
-            Player player = GetPlayerOwnedObject(other);
+            pobj player = GetPlayerOwnedObject(other);
             if (player == null)
                 return;
 
@@ -46,7 +46,7 @@ namespace FishNet.Demo.AdditiveScenes
             if (!base.IsServer)
                 return;
 
-            Player player = GetPlayerOwnedObject(other);
+            pobj player = GetPlayerOwnedObject(other);
             if (player == null)
                 return;
 
@@ -78,10 +78,10 @@ namespace FishNet.Demo.AdditiveScenes
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        private Player GetPlayerOwnedObject(Collider other)
+        private pobj GetPlayerOwnedObject(Collider other)
         {
             /* When an object exits this trigger unload the level for the client. */
-            Player player = other.GetComponent<Player>();
+            pobj player = other.GetComponent<pobj>();
             //Not the player object.
             if (player == null)
                 return null;

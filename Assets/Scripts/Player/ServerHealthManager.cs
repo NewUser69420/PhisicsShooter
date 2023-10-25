@@ -70,6 +70,7 @@ public class ServerHealthManager : NetworkBehaviour
 
     public void OnHealthChange(int index, float newItem, float oldItem, NetworkConnection shooter)
     {
+        Debug.Log("health changed");
         //check for below 0
         if (newItem < 0) health[index] = 0;
 
@@ -82,6 +83,7 @@ public class ServerHealthManager : NetworkBehaviour
 
     private void DoDeath(NetworkConnection _killedCon, GameObject pobj, NetworkConnection _shooterConn)
     {
+        Debug.Log("Doing death");
         StartCoroutine(Wait());
 
         //make sound

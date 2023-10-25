@@ -28,7 +28,7 @@ public class InitializePlayer : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        Invoke(nameof(DoStartNetwork), 0.5f);
+        Invoke(nameof(DoStartNetwork), 1f);
     }
 
     private void DoStartNetwork()
@@ -44,10 +44,17 @@ public class InitializePlayer : NetworkBehaviour
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
-            playerName = MainMenuUI.GetComponent<MainMenu>().playerName;
+            if (MainMenuUI != null) { playerName = MainMenuUI.GetComponent<MainMenu>().playerName; SyncPlayerName(playerName); }
+
             PlayerName.GetComponent<TMP_Text>().text = playerName;
             SyncNameServer(playerName, PlayerName.gameObject);
         }
+    }
+
+    [ServerRpc]
+    private void SyncPlayerName(string _name)
+    {
+        playerName = _name;
     }
 
     public void OnLoadScene(SceneLoadEndEventArgs args)
@@ -90,7 +97,8 @@ public class InitializePlayer : NetworkBehaviour
     {
         foreach (var _obj in __PlayerItems)
         {
-            Debug.Log($"playeritem id = {_obj.GetComponent<PlayerItem>().ownerId}");
+            if (_obj == null) { Debug.Log("Can't Fix lobby Player Items");  return; }
+                Debug.Log($"playeritem id = {_obj.GetComponent<PlayerItem>().ownerId}");
             foreach (var __obj in gameObject.scene.GetRootGameObjects())
             {
                 if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); _obj.GetComponentInChildren<TMP_Text>().text = __playerName; _obj.GetComponent<PlayerItem>().ownerId = __id; }

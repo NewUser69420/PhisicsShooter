@@ -126,6 +126,10 @@ public class MainMenu : MonoBehaviour
 
     private void GoBackOne(string _layer)
     {
+        for(int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") return;
+        }
         switch(_layer)
         {
             case "home":

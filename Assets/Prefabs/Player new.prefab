@@ -9606,6 +9606,9 @@ MonoBehaviour:
   totalHealth: 0
   maxHealth: 852
   team: 
+  score: 0
+  deaths: 0
+  kills: 0
   spawnPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &6716973120631557576
 MonoBehaviour:
