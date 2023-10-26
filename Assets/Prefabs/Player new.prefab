@@ -9247,6 +9247,7 @@ GameObject:
   - component: {fileID: 3972808476742583625}
   - component: {fileID: 6716973120631557576}
   - component: {fileID: -5220917985001784956}
+  - component: {fileID: -8434983329698014988}
   m_Layer: 7
   m_Name: Player new
   m_TagString: Player
@@ -9430,7 +9431,6 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
   conId: -1
-  MainMenuUI: {fileID: 0}
   UI: {fileID: 3686292687426678077}
   PlayerName: {fileID: 2331428191420037761}
   ScoreboardItemPrefab: {fileID: 8030286040259239346, guid: 14e991bd3436ca3468115d51a5e41b1c,
@@ -9698,6 +9698,21 @@ MonoBehaviour:
   _componentIndexCache: 8
   _addedNetworkObject: {fileID: 1866983901336284639}
   _networkObjectCache: {fileID: 1866983901336284639}
+--- !u!114 &-8434983329698014988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4266674162621430887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 933daa5104dba4c4995451c14cc02aae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wins: 0
+  losses: 0
+  score: 0
 --- !u!1 &4349267897868931464
 GameObject:
   m_ObjectHideFlags: 0

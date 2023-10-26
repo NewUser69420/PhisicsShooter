@@ -14,9 +14,8 @@ public class InitializePlayer : NetworkBehaviour
 {        
     [SerializeField] private int conId = -1;
 
-    [System.NonSerialized]  public string playerName = "playername not set";
+    [System.NonSerialized] public string playerName = "playername not set";
 
-    [SerializeField] private GameObject MainMenuUI;
     [SerializeField] private Transform UI;
     [SerializeField] private Transform PlayerName;
 
@@ -26,15 +25,8 @@ public class InitializePlayer : NetworkBehaviour
     private GameObject obj;
     private List<GameObject> PlayerItems = new List<GameObject>();
 
-    public override void OnStartNetwork()
-    {
-        Invoke(nameof(DoStartNetwork), 1f);
-    }
-
-    private void DoStartNetwork()
-    {
-        MainMenuUI = GameObject.Find("MainMenuUI");
-
+    public void DoStart()
+    {        
         conId = OwnerId;
 
         base.SceneManager.OnLoadEnd += OnLoadScene;
@@ -44,15 +36,15 @@ public class InitializePlayer : NetworkBehaviour
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
-            if (MainMenuUI != null) { playerName = MainMenuUI.GetComponent<MainMenu>().playerName; SyncPlayerName(playerName); }
+            SyncPlayerName(playerName, LocalConnection);
 
             PlayerName.GetComponent<TMP_Text>().text = playerName;
-            SyncNameServer(playerName, PlayerName.gameObject);
+            SyncPlayerHudName(playerName, PlayerName.gameObject);
         }
     }
 
     [ServerRpc]
-    private void SyncPlayerName(string _name)
+    private void SyncPlayerName(string _name, NetworkConnection conn)
     {
         playerName = _name;
     }
@@ -231,7 +223,7 @@ public class InitializePlayer : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void SyncNameServer(String _name, GameObject _obj)
+    private void SyncPlayerHudName(String _name, GameObject _obj)
     {
         _obj.GetComponent<TMP_Text>().text = _name;
     }

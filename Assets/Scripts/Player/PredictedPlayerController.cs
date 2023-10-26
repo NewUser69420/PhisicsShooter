@@ -315,18 +315,21 @@ public class PredictedPlayerController : NetworkBehaviour
             predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
 
             predictedBullet.PlayerConn = NetworkObject.LocalConnection;
-            SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection);
+            SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection, gameObject);
         }
     }
 
     [ServerRpc]
-    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn)
+    private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn, GameObject pobj)
     {
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, gameObject.scene);
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, gameObject.scene);
 
+        obj1.GetComponent<Laser_Bullet>().team = pobj.GetComponent<ServerHealthManager>().team;
+
         obj1.GetComponent<Laser_Bullet>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
         obj2.GetComponent<Laser_BulletVisual>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+
 
         if (obj1 != null) obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
     }

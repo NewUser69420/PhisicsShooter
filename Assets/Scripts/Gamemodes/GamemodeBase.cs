@@ -15,9 +15,10 @@ public class GamemodeBase : NetworkBehaviour
 
     [System.NonSerialized] public Dictionary<NetworkObject, float> pScoreT1 = new();
     [System.NonSerialized] public Dictionary<NetworkObject, float> pScoreT2 = new();
+    public int endScoreTeam1;
+    public int endScoreTeam2;
     public int scoreT1;
     public int scoreT2;
-    public int endScore;
     public string lobbyName;
 
     [System.NonSerialized] public bool gameIsRunning = true;
@@ -47,6 +48,13 @@ public class GamemodeBase : NetworkBehaviour
         gameIsRunning = false;
         Debug.Log($"Team {team} Won!");
 
+        //set score on server
+        foreach (var pobj in Team1)
+        {
+            if(team == "team1") { pobj.GetComponent<ScoreTracker>().OnScoreChange("win"); }
+            else { pobj.GetComponent<ScoreTracker>().OnScoreChange("loose"); }
+        }
+
         DoEndGameScreenClient(team);
 
         Invoke(nameof(StartNewGame), 3f);
@@ -62,6 +70,7 @@ public class GamemodeBase : NetworkBehaviour
                 foreach (var obj in UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).GetRootGameObjects())
                 {
                     if (obj.name == "Canvas") { obj.transform.Find("EndGameScreen").gameObject.SetActive(true); obj.transform.Find("EndGameScreen/ValueText").GetComponent<TMP_Text>().text = _team; }
+                    if (obj.CompareTag("Player")) obj.transform.Find("UI").gameObject.SetActive(false);
                 }
             }
         }

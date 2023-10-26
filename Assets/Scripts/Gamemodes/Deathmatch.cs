@@ -59,19 +59,37 @@ public class Deathmatch : GamemodeBase
         foreach (var pobj in Team1)
         {
             DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team1");
-        }
-        foreach (var pobj in Team2)
-        {
-            DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team2");
-        }
-       
-        foreach (var pobj in Team1)
-        {
             pScoreT1.Add(pobj, 0);
         }
         foreach (var pobj in Team2)
         {
+            DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team2");
             pScoreT2.Add(pobj, 0);
+        }
+
+        switch (Team1.Count)
+        {
+            case 1:
+                endScoreTeam1 = 500;
+                break;
+            case 2:
+                endScoreTeam1 = 1300;
+                break;
+            case 3:
+                endScoreTeam1 = 2500;
+                break;
+        }
+        switch (Team2.Count)
+        {
+            case 1:
+                endScoreTeam2 = 500;
+                break;
+            case 2:
+                endScoreTeam2 = 1300;
+                break;
+            case 3:
+                endScoreTeam2 = 2500;
+                break;
         }
     }
 
@@ -207,8 +225,8 @@ public class Deathmatch : GamemodeBase
         SyncScore(scoreT1, scoreT2);
 
         //check for end game
-        if (scoreT1 >= endScore && gameIsRunning) FinishGame("team1");
-        if (scoreT2 >= endScore && gameIsRunning) FinishGame("team2");
+        if (scoreT1 >= endScoreTeam1 && gameIsRunning) FinishGame("team1");
+        if (scoreT2 >= endScoreTeam2 && gameIsRunning) FinishGame("team2");
     }
 
     [ObserversRpc]

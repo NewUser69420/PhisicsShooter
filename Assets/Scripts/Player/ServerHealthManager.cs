@@ -68,8 +68,10 @@ public class ServerHealthManager : NetworkBehaviour
         health.Insert(19, Mathf.RoundToInt((maxHealth * 0.0023f)));
     }
 
-    public void OnHealthChange(int index, float newItem, float oldItem, NetworkConnection shooter)
+    public void OnHealthChange(int index, float newItem, float oldItem, NetworkConnection shooter, string _team)
     {
+        if (_team == team) { Debug.Log($"Friendly fire"); return; }
+        
         Debug.Log("health changed");
         //check for below 0
         if (newItem < 0) health[index] = 0;

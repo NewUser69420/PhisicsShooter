@@ -29,6 +29,11 @@ public class QuitHandler : MonoBehaviour
             mm.transform.Find("Background").gameObject.SetActive(true);
             mm.transform.Find("ServerSelectionScreen").gameObject.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
+
+            foreach (var obj in FindObjectsOfType<InitializePlayer>())
+            {
+                Destroy(obj.gameObject);
+            }
         }
     }
 

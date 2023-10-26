@@ -157,4 +157,35 @@ public class LobbyButn : NetworkBehaviour
     {
         GameObject.Find("Lobbies").transform.Find("LoadingScreen").gameObject.SetActive(true);
     }
+
+    public void OnPressedBack()
+    {
+        FindObjectOfType<AudioManger>().Play("click2");
+        //LoadingScreen.SetActive(true);
+
+        FindObjectOfType<ServerMenu>(true).gameObject.SetActive(true);
+
+        GameObject Player = null;
+        foreach (var obj in LocalConnection.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "ServerMenu") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
+        }
+
+        GoBackServer(LocalConnection);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void GoBackServer(NetworkConnection conn)
+    {
+        GameObject Player = null;
+        foreach (var obj in conn.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "ServerMenu") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
+        }
+
+        SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
+        base.SceneManager.UnloadConnectionScenes(conn, sud);
+    }
 }

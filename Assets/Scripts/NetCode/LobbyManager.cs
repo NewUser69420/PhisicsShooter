@@ -259,6 +259,9 @@ public class LobbyManager : NetworkBehaviour
     {
         if (!startedGameCancalable) return;
 
+        //set ServerMenu inactive on the client
+        TurnServMenuOffClient();
+
         //get players to load
         foreach (GameObject obj in gameObject.scene.GetRootGameObjects())
         {
@@ -342,5 +345,11 @@ public class LobbyManager : NetworkBehaviour
 
             base.ServerManager.OnRemoteConnectionState -= OnConnectionChange;
         }
+    }
+
+    [ObserversRpc]
+    private void TurnServMenuOffClient()
+    {
+        FindObjectOfType<ServerMenu>().gameObject.SetActive(false);
     }
 }

@@ -12,7 +12,7 @@ public class SceneManager : NetworkBehaviour
     {
         if(base.IsServer)
         {
-            SceneLookupData lookup = new SceneLookupData(0, "Lobbies");
+            SceneLookupData lookup = new SceneLookupData(0, "ServerMenu");
             SceneLoadData sld = new SceneLoadData(lookup);
             sld.Options.AllowStacking = false;
             //sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;

@@ -38,10 +38,7 @@ public class MainMenu : MonoBehaviour
     public Transform LoadingScreen;
     [SerializeField]
     private Transform DedicatedServerScreen;
-    [SerializeField]
-    private Transform NameErrorTransform;
 
-    private TMP_Text NameErrorMessage;
     private bool triedConnect;
     private bool connecting;
 
@@ -88,8 +85,6 @@ public class MainMenu : MonoBehaviour
                 StartServer(serverHostPort);
             }
         }
-
-        NameErrorMessage = NameErrorTransform.Find("Error Text").GetComponent<TMP_Text>();
     }
 
     private void Start()
@@ -149,43 +144,27 @@ public class MainMenu : MonoBehaviour
 
     public void Server1Click()
     {
-        if(playerName.Length >= 4)
-        {
-            //activate loading screen
-            ServerSelectionScreen.gameObject.SetActive(false);
-            LoadingScreen.gameObject.SetActive(true);
-            FindObjectOfType<ClientManager>()._port = 7777;
-            FindObjectOfType<ClientManager>().triedConnect = false;
+        //activate loading screen
+        ServerSelectionScreen.gameObject.SetActive(false);
+        LoadingScreen.gameObject.SetActive(true);
+        FindObjectOfType<ClientManager>()._port = 7777;
+        FindObjectOfType<ClientManager>().triedConnect = false;
 
-            ConnectClient(ip, 7777);
-            Debug.Log("Connecting with: " + ip + ":7777");
-            FindAnyObjectByType<AudioManger>().Play("click1");
-        }
-        else
-        {
-            NameErrorTransform.gameObject.SetActive(true);
-            StartCoroutine(Wait2());
-        }
+        ConnectClient(ip, 7777);
+        Debug.Log("Connecting with: " + ip + ":7777");
+        FindAnyObjectByType<AudioManger>().Play("click1");
     }
     public void Server2Click()
     {
-        if(playerName.Length >= 4)
-        {
-            //activate loading screen
-            ServerSelectionScreen.gameObject.SetActive(false);
-            LoadingScreen.gameObject.SetActive(true);
-            FindObjectOfType<ClientManager>()._port = 7779;
-            FindObjectOfType<ClientManager>().triedConnect = false;
+        //activate loading screen
+        ServerSelectionScreen.gameObject.SetActive(false);
+        LoadingScreen.gameObject.SetActive(true);
+        FindObjectOfType<ClientManager>()._port = 7779;
+        FindObjectOfType<ClientManager>().triedConnect = false;
 
-            ConnectClient(ip, 7779);
-            Debug.Log("Connecting with: " + ip + ":7779");
-            FindAnyObjectByType<AudioManger>().Play("click1");
-        }
-        else
-        {
-            NameErrorTransform.gameObject.SetActive(true);
-            StartCoroutine(Wait2());
-        }
+        ConnectClient(ip, 7779);
+        Debug.Log("Connecting with: " + ip + ":7779");
+        FindAnyObjectByType<AudioManger>().Play("click1");
     }
 
     public void OnSceneLoaded(SceneLoadEndEventArgs args)
@@ -247,11 +226,5 @@ public class MainMenu : MonoBehaviour
     public void TestServerSolution()
     {
         StartServer(serverHostPort);
-    }
-
-    IEnumerator Wait2()
-    {
-        yield return new WaitForSeconds(1f);
-        NameErrorTransform.gameObject.SetActive(false);
     }
 }
