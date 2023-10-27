@@ -294,7 +294,7 @@ public class LobbyManager : NetworkBehaviour
         UnityEngine.SceneManagement.Scene scene = new();
         foreach (var pair in base.SceneManager.SceneConnections)
         {
-            if (pair.Value.Contains(conns[0]) && !(pair.Key.name == "1v1Lobby" || pair.Key.name == "2v2Lobby" || pair.Key.name == "3v3Lobby" || pair.Key.name == "Lobbies")) { scene = pair.Key; Debug.Log($"found scene with name: {scene.name}"); }
+            if (pair.Value.Contains(conns[0]) && !(pair.Key.name == "1v1Lobby" || pair.Key.name == "2v2Lobby" || pair.Key.name == "3v3Lobby" || pair.Key.name == "Lobbies" || pair.Key.name == "ServerMenu")) { scene = pair.Key; Debug.Log($"found scene with name: {scene.name}"); }
         }
         foreach (var obj in scene.GetRootGameObjects())
         {
@@ -350,6 +350,6 @@ public class LobbyManager : NetworkBehaviour
     [ObserversRpc]
     private void TurnServMenuOffClient()
     {
-        FindObjectOfType<ServerMenu>().gameObject.SetActive(false);
+        FindObjectOfType<ServerMenu>(true).gameObject.SetActive(false);
     }
 }

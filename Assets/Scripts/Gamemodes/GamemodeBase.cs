@@ -51,7 +51,14 @@ public class GamemodeBase : NetworkBehaviour
         //set score on server
         foreach (var pobj in Team1)
         {
+            pobj.GetComponent<ScoreTracker>().Setup();
             if(team == "team1") { pobj.GetComponent<ScoreTracker>().OnScoreChange("win"); }
+            else { pobj.GetComponent<ScoreTracker>().OnScoreChange("loose"); }
+        }
+        foreach (var pobj in Team2)
+        {
+            pobj.GetComponent<ScoreTracker>().Setup();
+            if (team == "team2") { pobj.GetComponent<ScoreTracker>().OnScoreChange("win"); }
             else { pobj.GetComponent<ScoreTracker>().OnScoreChange("loose"); }
         }
 
@@ -65,7 +72,7 @@ public class GamemodeBase : NetworkBehaviour
     {
         for(int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
         {
-            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "Lobbies")
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "Lobbies" && UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "ServerMenu")
             {
                 foreach (var obj in UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).GetRootGameObjects())
                 {
@@ -130,7 +137,7 @@ public class GamemodeBase : NetworkBehaviour
     {
         for(int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
         {
-            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "Lobbies") { foreach (var obj in UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).GetRootGameObjects()) { if (obj.name == "Canvas") obj.transform.Find("LoadingScreen").gameObject.SetActive(true); } }
+            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "Lobbies" && UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "ServerMenu") { foreach (var obj in UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).GetRootGameObjects()) { if (obj.name == "Canvas") obj.transform.Find("LoadingScreen").gameObject.SetActive(true); } }
         }
     }
 

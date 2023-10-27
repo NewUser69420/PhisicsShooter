@@ -36,6 +36,7 @@ public class InitializePlayer : NetworkBehaviour
         {
             SetGameLayerRecursive(this.gameObject, 6);
 
+            if (playerName == "playername not set") Debug.Log("Playername not set");
             SyncPlayerName(playerName, LocalConnection);
 
             PlayerName.GetComponent<TMP_Text>().text = playerName;
@@ -47,6 +48,7 @@ public class InitializePlayer : NetworkBehaviour
     private void SyncPlayerName(string _name, NetworkConnection conn)
     {
         playerName = _name;
+        GetComponent<ScoreTracker>().playerName = _name;
     }
 
     public void OnLoadScene(SceneLoadEndEventArgs args)

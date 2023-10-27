@@ -7,9 +7,16 @@ using UnityEngine;
 public class ScoreTracker : MonoBehaviour
 {
     public string playerName;
-    public int wins;
-    public int losses;
-    public int score;
+    public int wins = -1;
+    public int losses = -1;
+    public float score = -1;
+
+    public void Setup()
+    {
+        PlayerData pData = SaveGame.Load<PlayerData>(playerName);
+        wins = pData.wins;
+        losses = pData.losses;
+    }
 
     public void OnScoreChange(string matchState)
     {
@@ -24,14 +31,17 @@ public class ScoreTracker : MonoBehaviour
         }
 
         //calc score
-        score = wins / losses;
+        if (losses != 0) score = (float) wins / (float) losses;
+        else score = wins;
 
         //save new score
-        PlayerData pData = SaveGame.Load<PlayerData>(playerName, SerializerDropdown.Singleton.ActiveSerializer);
+        PlayerData pData = SaveGame.Load<PlayerData>(playerName);
         pData.wins = wins;
         pData.losses = losses;
         pData.score = score;
 
         SaveGame.Save<PlayerData>(playerName, pData);
+
+        Debug.Log($"{playerName}, wins: {wins}, losses: {losses}, score: {score}");
     }
 }

@@ -4,21 +4,22 @@ using FishNet.Object;
 using BayatGames.SaveGameFree;
 using FishNet.Connection;
 using FishNet.Object.Synchronizing;
-using UnityEditor.Searcher;
 using BayatGames.SaveGameFree.Examples;
 using FishNet.Managing.Scened;
 using System.Collections.Generic;
 using UnityEngine.ProBuilder.Shapes;
 using FishNet.Example.Scened;
 using FishNet.Managing.Client;
+using System;
 
 public class ServerMenu : NetworkBehaviour
 {
     [SerializeField] private GameObject LoginScreen;
     [SerializeField] private GameObject MenuScreen;
+    [SerializeField] private GameObject ScoreScreen;
 
     public string playerName = "not set";
-    public int score = -1;
+    public float score = -1;
 
     public void OnLoginClick()
     {
@@ -33,7 +34,26 @@ public class ServerMenu : NetworkBehaviour
     public void OnClickPlay()
     {
         FindObjectOfType<AudioManger>().Play("click2");
+
+        foreach (var obj in LocalConnection.Objects)
+        {
+            if (obj.CompareTag("Player")) obj.GetComponent<InitializePlayer>().DoStart();
+        }
+
         AskServerToGoLobby(LocalConnection);
+    }
+
+    public void OnClickScore()
+    {
+        ScoreScreen.SetActive(true);
+        MenuScreen.SetActive(false);
+        ScoreScreen.transform.Find("ScoreVal").GetComponent<TMP_Text>().text = Math.Round(SaveGame.Load<PlayerData>(playerName).score, 2).ToString();
+    }
+
+    public void OnClickScoreBack()
+    {
+        ScoreScreen.SetActive(false);
+        MenuScreen.SetActive(true);
     }
 
     public void OnClickMainMenu()
@@ -90,7 +110,6 @@ public class ServerMenu : NetworkBehaviour
                 playerScore.score = pData.score;
                 playerScore.wins = pData.wins;
                 playerScore.losses = pData.losses;
-                player.DoStart();
                 LoginClient(conn, pData.name, pData.score, pData.wins, pData.losses, player);
                 Debug.Log("Logged in");
             }
@@ -123,7 +142,6 @@ public class ServerMenu : NetworkBehaviour
             playerScore.score = pData.score;
             playerScore.wins = pData.wins;
             playerScore.losses = pData.losses;
-            player.DoStart();
             LoginClient(conn, pData.name, pData.score, pData.wins, pData.losses, player);
             Debug.Log("Created Acc");
         }
@@ -136,7 +154,7 @@ public class ServerMenu : NetworkBehaviour
     }
 
     [TargetRpc]
-    private void LoginClient(NetworkConnection conn, string _name, int _score, int _wins, int _losses, InitializePlayer _pobj)
+    private void LoginClient(NetworkConnection conn, string _name, float _score, int _wins, int _losses, InitializePlayer _pobj)
     {
         playerName = _name;
         score = _score;
@@ -146,8 +164,6 @@ public class ServerMenu : NetworkBehaviour
         _pobj.GetComponent<ScoreTracker>().wins = _wins;
         _pobj.GetComponent<ScoreTracker>().losses = _losses;
 
-        _pobj.DoStart();
-
         LoginScreen.SetActive(false);
         MenuScreen.SetActive(true);
     }
@@ -155,6 +171,11 @@ public class ServerMenu : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void AskServerToGoLobby(NetworkConnection conn)
     {
+        foreach (var obj in conn.Objects)
+        {
+            if (obj.CompareTag("Player")) obj.GetComponent<InitializePlayer>().DoStart();
+        }
+
         List<NetworkObject> objs = new();
         foreach(var obj in conn.Objects) if(obj.CompareTag("Player")) objs.Add(obj);
         
@@ -172,7 +193,7 @@ public class PlayerData
 {
     public string password = null;
     public string name = null;
-    public int score = -1;
+    public float score = -1;
     public int wins = -1;
     public int losses = -1;
 }

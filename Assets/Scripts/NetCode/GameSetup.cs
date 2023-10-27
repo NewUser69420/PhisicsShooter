@@ -48,6 +48,11 @@ public class GameSetup : MonoBehaviour
 
     private void InitializePlayer()
     {
+        foreach (var obj in gameObject.scene.GetRootGameObjects())
+        {
+            if(obj.CompareTag("Player")) obj.GetComponent<InitializePlayer>().DoStart();
+        }
+
         if (!InstanceFinder.IsServer) return;
         //initialize player (move this as needed)
         foreach (var obj in gameObject.scene.GetRootGameObjects())
