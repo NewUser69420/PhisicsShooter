@@ -2722,7 +2722,6 @@ MonoBehaviour:
   Background: {fileID: 1497355908}
   LoadingScreen: {fileID: 1331623978}
   DedicatedServerScreen: {fileID: 1494765809}
-  NameErrorTransform: {fileID: 1155737921}
 --- !u!114 &1658850399
 MonoBehaviour:
   m_ObjectHideFlags: 0
