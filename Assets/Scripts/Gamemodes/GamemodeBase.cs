@@ -13,6 +13,8 @@ public class GamemodeBase : NetworkBehaviour
     public Color Team1Colour;
     public Color Team2Colour;
 
+    public Dictionary<int, List<NetworkObject>> parties = new();
+
     [System.NonSerialized] public Dictionary<NetworkObject, float> pScoreT1 = new();
     [System.NonSerialized] public Dictionary<NetworkObject, float> pScoreT2 = new();
     public int endScoreTeam1;

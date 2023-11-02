@@ -80,6 +80,7 @@ public class PartyInviteManager : NetworkBehaviour
         {
             GiveParty(party, butn);
         }
+        FindObjectOfType<Party>().party = party;
     }
 
     [ServerRpc]

@@ -79,6 +79,7 @@ public class LobbyButn : NetworkBehaviour
 
         List<NetworkObject> objsToKeep = new();
         objsToKeep = party;
+        objsToKeep.Add(FindObjectOfType<Party>().NetworkObject);
         
         //set playermax
         int playerMax = 0;
@@ -86,25 +87,15 @@ public class LobbyButn : NetworkBehaviour
         {
             case "1v1Lobby":
                 playerMax = 2;
+                if (party.Count > 2) return;
                 break;
             case "2v2Lobby":
                 playerMax = 4;
+                if (party.Count > 2) return;
                 break;
             case "3v3Lobby":
                 playerMax = 6;
-                break;
-        }
-
-        switch (playerMax)
-        {
-            case 2:
-                if (party.Count > 2) return;
-                break;
-            case 3:
-                if(party.Count > 3) return; 
-                break;
-            case 4:
-                if(party.Count > 4) return;
+                if (party.Count > 3) return;
                 break;
         }
 

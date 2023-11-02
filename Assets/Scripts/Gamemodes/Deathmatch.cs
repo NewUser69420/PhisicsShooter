@@ -1,4 +1,5 @@
 using FishNet;
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Object;
 using System.Collections.Generic;
 using TMPro;
@@ -46,14 +47,55 @@ public class Deathmatch : GamemodeBase
     }
 
     protected override void MakeTeams()
-    {   
+    {
+        List<GameObject> needAdd = new();
+
         foreach (var pobj in gameObject.scene.GetRootGameObjects())
         {
-            if (pobj.CompareTag("Player"))
+            if(pobj.CompareTag("Player")) needAdd.Add(pobj);
+        }
+
+        foreach (var party in parties)
+        {
+            switch(needAdd.Count) 
             {
-                if (!addedTeam1) { Team1.Add(pobj.GetComponent<NetworkObject>()); addedTeam1 = true; pobj.GetComponent<ServerHealthManager>().team = "team1"; }
-                else { Team2.Add(pobj.GetComponent<NetworkObject>()); addedTeam1 = false; pobj.GetComponent<ServerHealthManager>().team = "team2"; }
+                case 3:
+                    if (party.Value.Count == 2)
+                    {
+                        if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
+                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                    }
+                    break;
+                case 4:
+                    if (party.Value.Count == 2)
+                    {
+                        if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
+                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                    }
+                    break;
+                case 5:
+                    if(party.Value.Count == 3 || party.Value.Count == 2)
+                    {
+                        if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
+                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                    }
+                    break;
+                case 6:
+                    if(party.Value.Count == 3 || party.Value.Count == 2)
+                    {
+                        if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
+                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                    }
+                    break;
+                default: break;
             }
+        }
+
+        foreach(var pobj in needAdd)
+        {
+            //fill in the teams
+            if (Team1.Count < Team2.Count) Team1.Add(pobj.GetComponent<NetworkObject>());
+            else Team2.Add(pobj.GetComponent<NetworkObject>());
         }
 
         foreach (var pobj in Team1)

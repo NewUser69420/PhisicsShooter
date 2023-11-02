@@ -19,6 +19,8 @@ public class GameSetup : MonoBehaviour
     public string gamemode;
     public string lobbyName;
 
+    public Dictionary<int, List<NetworkObject>> parties = new();
+
     [SerializeField] private GameObject DeathMatch;
 
     [SerializeField] private List<KeyValuePair> SpawnPositions = new();
@@ -83,6 +85,7 @@ public class GameSetup : MonoBehaviour
         {
             case "1v1Deathmatch":
                 GM = Instantiate(DeathMatch);
+                GM.GetComponent<Deathmatch>().parties = parties;
                 GM.GetComponent<Deathmatch>().spawnPos = spawnPos;
                 break;
             default:
