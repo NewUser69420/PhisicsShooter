@@ -9,6 +9,8 @@ public class LobbyButn : NetworkBehaviour
 {
     private NetworkObject Player;
 
+    [System.NonSerialized] public List<NetworkObject> party = new();
+
     [SerializeField] private GameObject LoadingScreen;
 
     public override void OnStartNetwork()
@@ -73,9 +75,10 @@ public class LobbyButn : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void JoinLobby(string _lobbyName, NetworkObject _Player)
     {
-        List<NetworkObject> objsToKeep = new();
-        objsToKeep.Add(_Player);
         List<int> checklist = new();
+
+        List<NetworkObject> objsToKeep = new();
+        objsToKeep = party;
         
         //set playermax
         int playerMax = 0;
@@ -91,7 +94,20 @@ public class LobbyButn : NetworkBehaviour
                 playerMax = 6;
                 break;
         }
-        
+
+        switch (playerMax)
+        {
+            case 2:
+                if (party.Count > 2) return;
+                break;
+            case 3:
+                if(party.Count > 3) return; 
+                break;
+            case 4:
+                if(party.Count > 4) return;
+                break;
+        }
+
         foreach (var pair in base.SceneManager.SceneConnections)
         {
             if (pair.Key.name != _lobbyName)
@@ -102,7 +118,7 @@ public class LobbyButn : NetworkBehaviour
             {
                 checklist.Add(0);
                 //join scene if not full
-                if (pair.Value.Count < playerMax)
+                if (pair.Value.Count < playerMax && (playerMax - pair.Value.Count >= party.Count))
                 {
                     //join this scene
                     SceneLookupData lookup = new SceneLookupData(pair.Key.handle, _lobbyName);

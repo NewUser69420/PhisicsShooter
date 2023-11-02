@@ -25,13 +25,14 @@ public class PartyInviteManager : NetworkBehaviour
                 if (obj.CompareTag("Player")) Player = obj;
             }
             party.Add(Player);
+            OnPartyChange();
         }
     }
 
     public void SendInvite()
     {
         invitedName = nameVal.text;
-        InviteWithName(invitedName, Player);
+        if(party.Count < 4) InviteWithName(invitedName, Player);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -70,5 +71,20 @@ public class PartyInviteManager : NetworkBehaviour
     private void SendYes(NetworkConnection conn, NetworkObject ___pobj)
     {
         party.Add(___pobj);
+        OnPartyChange();
+    }
+
+    public void OnPartyChange()
+    {
+        foreach (var butn in FindObjectsOfType<LobbyButn>())
+        {
+            GiveParty(party, butn);
+        }
+    }
+
+    [ServerRpc]
+    private void GiveParty(List<NetworkObject> _party, LobbyButn _butn)
+    {
+        _butn.party = _party;   
     }
 }
