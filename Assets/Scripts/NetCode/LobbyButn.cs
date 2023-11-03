@@ -9,7 +9,7 @@ public class LobbyButn : NetworkBehaviour
 {
     private NetworkObject Player;
 
-    [System.NonSerialized] public List<NetworkObject> party = new();
+    [System.NonSerialized] public Dictionary<int, List<NetworkObject>> party = new();
 
     [SerializeField] private GameObject LoadingScreen;
 
@@ -78,8 +78,15 @@ public class LobbyButn : NetworkBehaviour
         List<int> checklist = new();
 
         List<NetworkObject> objsToKeep = new();
-        objsToKeep = party;
-        objsToKeep.Add(FindObjectOfType<Party>().NetworkObject);
+        List<NetworkConnection> clientsToSend = new();
+        foreach (var pair in party)
+        {
+            if(pair.Key == _Player.OwnerId) objsToKeep = pair.Value;
+        }
+        foreach (NetworkObject obj in objsToKeep)
+        {
+            clientsToSend.Add(obj.Owner);
+        }
         
         //set playermax
         int playerMax = 0;
@@ -87,15 +94,15 @@ public class LobbyButn : NetworkBehaviour
         {
             case "1v1Lobby":
                 playerMax = 2;
-                if (party.Count > 2) return;
+                if (clientsToSend.Count > 2) return;
                 break;
             case "2v2Lobby":
                 playerMax = 4;
-                if (party.Count > 2) return;
+                if (clientsToSend.Count > 2) return;
                 break;
             case "3v3Lobby":
                 playerMax = 6;
-                if (party.Count > 3) return;
+                if (clientsToSend.Count > 3) return;
                 break;
         }
 
@@ -117,7 +124,7 @@ public class LobbyButn : NetworkBehaviour
                     sld.Options.AllowStacking = false;
                     sld.MovedNetworkObjects = objsToKeep.ToArray();
                     //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-                    base.SceneManager.LoadConnectionScenes(_Player.Owner, sld);
+                    base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sld);
                     DoLoadingScreenClientRpc(_Player.Owner);
                     Debug.Log($"Joining lobby");
                     return;
@@ -141,7 +148,7 @@ public class LobbyButn : NetworkBehaviour
             sld.Options.AllowStacking = true;
             sld.MovedNetworkObjects = objsToKeep.ToArray();
             //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-            base.SceneManager.LoadConnectionScenes(_Player.Owner, sld);
+            base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sld);
             DoLoadingScreenClientRpc(_Player.Owner);
             Debug.Log($"No lobby exists, Making own");
             return;
@@ -153,7 +160,7 @@ public class LobbyButn : NetworkBehaviour
         sldd.Options.AllowStacking = true;
         sldd.MovedNetworkObjects = objsToKeep.ToArray();
         //sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
-        base.SceneManager.LoadConnectionScenes(_Player.Owner, sldd);
+        base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sldd);
         DoLoadingScreenClientRpc(_Player.Owner);
         Debug.Log($"Lobbies full, Making own");
         return;

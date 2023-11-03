@@ -100,13 +100,15 @@ public class Deathmatch : GamemodeBase
 
         foreach (var pobj in Team1)
         {
-            DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team1");
-            pScoreT1.Add(pobj, 0);
+            DoTeamColours(pobj.GetComponent<NetworkObject>().OwnerId, Team1Colour, Team2Colour, "team1");
+            pScoreT1.Add(pobj.GetComponent<NetworkObject>(), 0);
+            pobj.GetComponent<ServerHealthManager>().team = "team1";
         }
         foreach (var pobj in Team2)
         {
-            DoTeamColours(pobj.OwnerId, Team1Colour, Team2Colour, "team2");
-            pScoreT2.Add(pobj, 0);
+            DoTeamColours(pobj.GetComponent<NetworkObject>().OwnerId, Team1Colour, Team2Colour, "team2");
+            pScoreT2.Add(pobj.GetComponent<NetworkObject>(), 0);
+            pobj.GetComponent<ServerHealthManager>().team = "team2";
         }
 
         switch (Team1.Count)

@@ -1,24 +1,21 @@
 using FishNet.Managing.Scened;
 using FishNet.Object;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 public class Party : NetworkBehaviour
 {
     public List<string> scenesToExclude = new();
     public List<NetworkObject> party = new();
 
-    private void OnEnable()
+    public override void OnStartNetwork()
     {
         base.SceneManager.OnLoadEnd += OnSceneLoaded;
     }
 
-    private void OnDisable()
-    {
-        base.SceneManager.OnLoadEnd -= OnSceneLoaded;
-    }
+    //private void OnDisable()
+    //{
+    //    base.SceneManager.OnLoadEnd -= OnSceneLoaded;
+    //}
 
     private void OnSceneLoaded(SceneLoadEndEventArgs args)
     {
@@ -34,7 +31,7 @@ public class Party : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void SendPartyToGameSetup(List<NetworkObject> _party, UnityEngine.SceneManagement.Scene _scene)
     {
         foreach (var obj in _scene.GetRootGameObjects())

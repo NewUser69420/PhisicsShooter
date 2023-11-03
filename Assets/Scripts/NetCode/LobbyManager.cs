@@ -271,7 +271,6 @@ public class LobbyManager : NetworkBehaviour
                 nobjsToLoad.Add(obj.GetComponent<NetworkObject>());
             }
         }
-        nobjsToLoad.Add(FindObjectOfType<Party>().NetworkObject);
 
         EnableLoadingScreen();
         TurnLoadingScreenOnClient();

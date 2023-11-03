@@ -9248,6 +9248,7 @@ GameObject:
   - component: {fileID: 6716973120631557576}
   - component: {fileID: -5220917985001784956}
   - component: {fileID: -8434983329698014988}
+  - component: {fileID: 9129875896009429833}
   m_Layer: 7
   m_Name: Player new
   m_TagString: Player
@@ -9710,9 +9711,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 933daa5104dba4c4995451c14cc02aae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerName: 
   wins: 0
   losses: 0
   score: 0
+--- !u!114 &9129875896009429833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4266674162621430887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a11105e5713dcb44a846163b971d23c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 1866983901336284639}
+  _networkObjectCache: {fileID: 0}
+  scenesToExclude:
+  - MainMenu
+  - Lobbies
+  - ServerMenu
+  - 1v1Lobby
+  - 2v2Lobby
+  - 3v3Lobby
+  party: []
 --- !u!1 &4349267897868931464
 GameObject:
   m_ObjectHideFlags: 0

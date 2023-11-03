@@ -78,14 +78,14 @@ public class PartyInviteManager : NetworkBehaviour
     {
         foreach (var butn in FindObjectsOfType<LobbyButn>())
         {
-            GiveParty(party, butn);
+            GiveParty(party, butn, LocalConnection.ClientId);
         }
-        FindObjectOfType<Party>().party = party;
+        foreach(var obj in LocalConnection.Objects) { if(obj.CompareTag("Player")) obj.GetComponent<Party>().party = party; }
     }
 
-    [ServerRpc]
-    private void GiveParty(List<NetworkObject> _party, LobbyButn _butn)
+    [ServerRpc(RequireOwnership = false)]
+    private void GiveParty(List<NetworkObject> _party, LobbyButn _butn, int _id)
     {
-        _butn.party = _party;   
+        if (!_butn.party.TryAdd(_id, _party)) { _butn.party.Remove(_id); _butn.party.Add(_id, _party); }
     }
 }
