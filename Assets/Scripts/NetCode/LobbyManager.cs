@@ -38,8 +38,6 @@ public class LobbyManager : NetworkBehaviour
     private int minPlayerCount = -1;
     private int maxPlayerCount = -1;
 
-    
-
     public void PressedReady()
     {
         isReady = !isReady;
@@ -113,18 +111,15 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
-    private void Awake()
-    {
-        FindObjectOfType<MainMenu>(true).gameObject.SetActive(true);
-    }
-
     public override void OnStartNetwork()
     {
+        FindObjectOfType<MainMenu>(true).gameObject.SetActive(true);
+
         Cursor.lockState = CursorLockMode.None;
 
         timer = timerMax;
         timerVal.text = Mathf.RoundToInt(timer).ToString();
-        if (!base.IsServer)
+        if (!base.IsServerStarted)
         {
             conns.Add(LocalConnection);
             SyncCon(gameObject, conns);
@@ -179,8 +174,15 @@ public class LobbyManager : NetworkBehaviour
 
     private void Update()
     {
-        if(base.IsServer)
+        if(base.IsServerStarted)
         {
+            //int thing = 0;
+            //foreach (var pair in base.SceneManager.SceneConnections)
+            //{
+            //    if(pair.Key == gameObject.scene) foreach(var conn in pair.Value) thing++;
+            //}
+            //Debug.Log($"connections amount: {thing}");
+            
             if (cancleTimer > 0 && startedGameCancalable)
             {
                 cancleTimer -= Time.deltaTime;
@@ -204,7 +206,7 @@ public class LobbyManager : NetworkBehaviour
             {
                 timer -= Time.deltaTime;
                 timerVal.text = Mathf.RoundToInt(timer).ToString();
-                SyncTimerClientRpc(timerVal.gameObject, timer);
+                SyncTimerClientRpc(timer);
             }
             else if(timer <= 0 && !startedGameCancalable)
             {
@@ -212,7 +214,7 @@ public class LobbyManager : NetworkBehaviour
                 StartGameCancalable();
                 SyncStartedGameClient();
             }
-            if (timer > 0 && !lobbyIsFull) { timer = timerMax; SyncTimerClientRpc(timerVal.gameObject, timer); }
+            if (timer > 0 && !lobbyIsFull) { timer = timerMax; SyncTimerClientRpc(timer); }
 
             if (readyStatus.Count == maxPlayerCount && !readyStatus.ContainsValue(false) && !startedGameCancalable)
             {
@@ -317,9 +319,9 @@ public class LobbyManager : NetworkBehaviour
     }
 
     [ObserversRpc]
-    private void SyncTimerClientRpc(GameObject _timerVal, float _timer)
+    private void SyncTimerClientRpc(float _timer)
     {
-        _timerVal.GetComponent<TMP_Text>().text = Mathf.RoundToInt(_timer).ToString();
+        GameObject.Find("LobbyManager/Timer/TimerValue").GetComponent<TMP_Text>().text = Mathf.RoundToInt(_timer).ToString();
     }
 
     private void EnableLoadingScreen()
@@ -330,7 +332,7 @@ public class LobbyManager : NetworkBehaviour
     private void OnConnectionChange(NetworkConnection conn, RemoteConnectionStateArgs args)
     {
         if (!this.isActiveAndEnabled) return;
-        if(args.ConnectionState == RemoteConnectionState.Stopped && base.IsServer)
+        if(args.ConnectionState == RemoteConnectionState.Stopped && base.IsServerStarted)
         {
             foreach(Transform child in gameObject.transform.Find("PlayerHolder"))
             {

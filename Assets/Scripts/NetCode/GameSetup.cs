@@ -55,7 +55,7 @@ public class GameSetup : MonoBehaviour
             if(obj.CompareTag("Player")) obj.GetComponent<InitializePlayer>().DoStart();
         }
 
-        if (!InstanceFinder.IsServer) return;
+        if (!InstanceFinder.IsServerStarted) return;
         //initialize player (move this as needed)
         foreach (var obj in gameObject.scene.GetRootGameObjects())
         {
@@ -78,7 +78,7 @@ public class GameSetup : MonoBehaviour
     private void AddGamemode()
     {
         UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
-        if (!InstanceFinder.IsServer) return;
+        if (!InstanceFinder.IsServerStarted) return;
 
         GameObject GM = null;
         switch (gamemode)

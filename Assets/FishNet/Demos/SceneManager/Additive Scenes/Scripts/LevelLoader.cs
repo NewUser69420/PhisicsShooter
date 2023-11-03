@@ -9,10 +9,10 @@ namespace FishNet.Demo.AdditiveScenes
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!base.IsServer)
+            if (!base.IsServerStarted)
                 return;
 
-            pobj player = GetPlayerOwnedObject(other);
+            Player player = GetPlayerOwnedObject(other);
             if (player == null)
                 return;
 
@@ -43,10 +43,10 @@ namespace FishNet.Demo.AdditiveScenes
 
         private void OnTriggerExit(Collider other)
         {
-            if (!base.IsServer)
+            if (!base.IsServerStarted)
                 return;
 
-            pobj player = GetPlayerOwnedObject(other);
+            Player player = GetPlayerOwnedObject(other);
             if (player == null)
                 return;
 
@@ -78,10 +78,10 @@ namespace FishNet.Demo.AdditiveScenes
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        private pobj GetPlayerOwnedObject(Collider other)
+        private Player GetPlayerOwnedObject(Collider other)
         {
             /* When an object exits this trigger unload the level for the client. */
-            pobj player = other.GetComponent<pobj>();
+            Player player = other.GetComponent<Player>();
             //Not the player object.
             if (player == null)
                 return null;

@@ -31,7 +31,7 @@ public class Spawner : NetworkBehaviour
 
     private void Spawn()
     {
-        if (base.IsServer)
+        if (base.IsServerStarted)
         {   
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
             NetworkObject Killer = Instantiate(KillerPrefab);

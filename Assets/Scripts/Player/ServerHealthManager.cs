@@ -29,7 +29,7 @@ public class ServerHealthManager : NetworkBehaviour
             GiveLocalConn(base.LocalConnection);
         }
         
-        if (!IsServer) { return; }
+        if (!IsServerStarted) { return; }
 
         totalHealth = maxHealth;
 

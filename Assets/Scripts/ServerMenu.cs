@@ -58,7 +58,7 @@ public class ServerMenu : NetworkBehaviour
 
     public void OnClickMainMenu()
     {
-        if (base.IsServer) return;
+        if (base.IsServerStarted) return;
         Debug.Log("Going Back To MainMenu");
         FindObjectOfType<AudioManger>().Play("click2");
 

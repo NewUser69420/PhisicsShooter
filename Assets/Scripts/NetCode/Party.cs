@@ -19,7 +19,7 @@ public class Party : NetworkBehaviour
 
     private void OnSceneLoaded(SceneLoadEndEventArgs args)
     {
-        if (base.IsClient)
+        if (base.IsClientInitialized)
         {
             foreach (var scene in args.LoadedScenes)
             {

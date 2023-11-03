@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class LobbyButn : NetworkBehaviour
 {
-    private NetworkObject Player;
+    private NetworkConnection Player;
 
     [System.NonSerialized] public Dictionary<int, List<NetworkObject>> party = new();
 
@@ -17,24 +17,21 @@ public class LobbyButn : NetworkBehaviour
     {
         GameObject.Find("Lobbies").transform.Find("LoadingScreen").gameObject.SetActive(false);
         
-        if (base.IsServer) return;
+        if (base.IsServerStarted) return;
         StartCoroutine(Wait());
     }
 
     IEnumerator Wait()
     {
         yield return new WaitForSeconds(0.5f);
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
-        {
-            if (obj.GetComponent<NetworkObject>().OwnerId == base.LocalConnection.ClientId) { Player = obj.GetComponent<NetworkObject>(); Debug.Log($"player id = {Player.OwnerId}"); }
-        }
-        if (Player == null) Debug.Log($"error, cant find player object with id: {base.LocalConnection.ClientId}");
+        Player = LocalConnection;
+        Debug.Log(Player.ClientId);
     }
 
     public void OnButnClick()
     {
         FindObjectOfType<AudioManger>().Play("click1");
-        if (base.IsServer) return;
+        if (base.IsServerStarted) return;
         switch (gameObject.name)
         {
             case "B1v1":
@@ -73,15 +70,15 @@ public class LobbyButn : NetworkBehaviour
     //}
 
     [ServerRpc(RequireOwnership = false)]
-    private void JoinLobby(string _lobbyName, NetworkObject _Player)
+    private void JoinLobby(string _lobbyName, NetworkConnection _Player)
     {
         List<int> checklist = new();
 
         List<NetworkObject> objsToKeep = new();
         List<NetworkConnection> clientsToSend = new();
-        foreach (var pair in party)
+        foreach (var player in party[_Player.ClientId])
         {
-            if(pair.Key == _Player.OwnerId) objsToKeep = pair.Value;
+            objsToKeep.Add(player);
         }
         foreach (NetworkObject obj in objsToKeep)
         {
@@ -94,15 +91,15 @@ public class LobbyButn : NetworkBehaviour
         {
             case "1v1Lobby":
                 playerMax = 2;
-                if (clientsToSend.Count > 2) return;
+                if (clientsToSend.Count > 2) { SayError(_Player); return; }
                 break;
             case "2v2Lobby":
                 playerMax = 4;
-                if (clientsToSend.Count > 2) return;
+                if (clientsToSend.Count > 2) { SayError(_Player); return; }
                 break;
             case "3v3Lobby":
                 playerMax = 6;
-                if (clientsToSend.Count > 3) return;
+                if (clientsToSend.Count > 3) { SayError(_Player); return; }
                 break;
         }
 
@@ -116,7 +113,7 @@ public class LobbyButn : NetworkBehaviour
             {
                 checklist.Add(0);
                 //join scene if not full
-                if (pair.Value.Count < playerMax && (playerMax - pair.Value.Count >= party.Count))
+                if (pair.Value.Count < playerMax && (playerMax - pair.Value.Count >= party[_Player.ClientId].Count))
                 {
                     //join this scene
                     SceneLookupData lookup = new SceneLookupData(pair.Key.handle, _lobbyName);
@@ -125,7 +122,7 @@ public class LobbyButn : NetworkBehaviour
                     sld.MovedNetworkObjects = objsToKeep.ToArray();
                     //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
                     base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sld);
-                    DoLoadingScreenClientRpc(_Player.Owner);
+                    DoLoadingScreenClientRpc(_Player);
                     Debug.Log($"Joining lobby");
                     return;
 
@@ -149,7 +146,7 @@ public class LobbyButn : NetworkBehaviour
             sld.MovedNetworkObjects = objsToKeep.ToArray();
             //sld.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
             base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sld);
-            DoLoadingScreenClientRpc(_Player.Owner);
+            DoLoadingScreenClientRpc(_Player);
             Debug.Log($"No lobby exists, Making own");
             return;
         }
@@ -161,9 +158,21 @@ public class LobbyButn : NetworkBehaviour
         sldd.MovedNetworkObjects = objsToKeep.ToArray();
         //sldd.Options.LocalPhysics = LocalPhysicsMode.Physics3D; //be carefull, might cause bugs. do more research
         base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sldd);
-        DoLoadingScreenClientRpc(_Player.Owner);
+        DoLoadingScreenClientRpc(_Player);
         Debug.Log($"Lobbies full, Making own");
         return;
+    }
+
+    [TargetRpc]
+    private void SayError(NetworkConnection conn)
+    {
+        GameObject.Find("Lobbies/Party/ToManyFriendsError").SetActive(true);
+        Invoke(nameof(Wait34), 2f);
+    }
+
+    private void Wait34()
+    {
+        GameObject.Find("Lobbies/Party/ToManyFriendsError").SetActive(false);
     }
 
     [TargetRpc]

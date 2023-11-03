@@ -2,25 +2,27 @@ using FishNet;
 using FishNet.Object;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-public class NameRotator : MonoBehaviour
+public class NameRotator : NetworkBehaviour
 {
-    private Camera Cam;
+    private Transform Cam;
 
-    private void Start()
-    {
-        if (InstanceFinder.IsServer) return;
-        foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
+    public override void OnStartNetwork()
+    {   
+        if (base.IsClientInitialized)
         {
-            if (player.GetComponent<NetworkObject>().Owner.IsLocalClient) Cam = player.GetComponentInChildren<Camera>();
+            foreach (var obj in LocalConnection.Objects)
+            {
+                if (obj.CompareTag("Player")) Cam = obj.transform.Find("Cam");
+            }
         }
     }
 
     private void Update()
     {
-        if (InstanceFinder.IsServer) return;
-        transform.rotation = Quaternion.LookRotation(transform.position - Cam.transform.position);
+        if (base.IsClientInitialized && Cam != null) transform.rotation = Quaternion.LookRotation(transform.position - Cam.transform.position);
     }
 }

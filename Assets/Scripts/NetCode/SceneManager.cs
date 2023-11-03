@@ -10,7 +10,7 @@ public class SceneManager : NetworkBehaviour
 {
     public override void OnStartNetwork()
     {
-        if(base.IsServer)
+        if(base.IsServerStarted)
         {
             SceneLookupData lookup = new SceneLookupData(0, "ServerMenu");
             SceneLoadData sld = new SceneLoadData(lookup);

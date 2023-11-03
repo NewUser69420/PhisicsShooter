@@ -8,7 +8,7 @@ using FishNet.Object.Helping;
 using FishNet.Serializing;
 using FishNet.Utility.Extension;
 using FishNet.Utility.Performance;
-using GameKit.Utilities;
+using GameKit.Dependencies.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -296,10 +296,27 @@ namespace FishNet.Managing.Client
 
                         /* Apply transform changes but only if not host.
                          * These would have already been applied server side. */
-                        if (!_networkManager.IsHost && cnob.NetworkObject != null)
+                        if (!_networkManager.IsHostStarted && cnob.NetworkObject != null)
                         {
                             Transform t = cnob.NetworkObject.transform;
                             _clientObjects.GetTransformProperties(cnob.LocalPosition, cnob.LocalRotation, cnob.LocalScale, t, out Vector3 pos, out Quaternion rot, out Vector3 scale);
+                            //Apply runtime parent if needed.
+                            if (cnob.HasParent)
+                            {
+                                if (_networkManager.ClientManager.Objects.Spawned.TryGetValueIL2CPP(cnob.ParentObjectId.Value, out NetworkObject parentNob))
+                                {
+                                    //If parented to the NOB directly.
+                                    if (!cnob.ParentComponentIndex.HasValue)
+                                        cnob.NetworkObject.SetParent(parentNob);
+                                    //Parented to a NB.
+                                    else
+                                        cnob.NetworkObject.SetParent(parentNob.NetworkBehaviours[cnob.ParentComponentIndex.Value]);
+                                }
+                                else
+                                {
+                                    _networkManager.Log($"Parent NetworkObject Id {cnob.ParentObjectId} could not be found in spawned. NetworkObject {cnob.NetworkObject} will not have it's parent set.");
+                                }
+                            }
                             t.SetLocalPositionRotationAndScale(pos, rot, scale);
                         }
                     }
@@ -308,7 +325,7 @@ namespace FishNet.Managing.Client
                         cnob.NetworkObject = _clientObjects.GetSpawnedNetworkObject(cnob);
                         /* Do not log unless not nested. Nested nobs sometimes
                          * could be destroyed if parent was first. */
-                        if (!_networkManager.IsHost && cnob.NetworkObject == null && !cnob.IsNested)
+                        if (!_networkManager.IsHostStarted && cnob.NetworkObject == null && !cnob.IsNested)
                             _networkManager.Log($"NetworkObject for ObjectId of {cnob.ObjectId} was found null. Unable to despawn object. This may occur if a nested NetworkObject had it's parent object unexpectedly destroyed. This incident is often safe to ignore.");
                     }
                     NetworkObject nob = cnob.NetworkObject;
@@ -321,7 +338,7 @@ namespace FishNet.Managing.Client
                         NetworkConnection owner;
                         int objectId;
                         //If not server then initialize by using lookups.
-                        if (!_networkManager.IsServer)
+                        if (!_networkManager.IsServerStarted)
                         {
                             objectId = cnob.ObjectId;
                             int ownerId = cnob.OwnerId;
@@ -365,7 +382,7 @@ namespace FishNet.Managing.Client
                         * as InitializeOrder settings. There is no need
                         * to perform this action if server because server
                         * would have already spawned in order. */
-                        if (!_networkManager.IsServer && cnob.NetworkObject != null)
+                        if (!_networkManager.IsServerStarted && cnob.NetworkObject != null)
                             cnob.NetworkObject.gameObject.SetActive(true);
                     }
                     else
@@ -421,12 +438,8 @@ namespace FishNet.Managing.Client
                         foreach (NetworkBehaviour nb in cnob.NetworkObject.NetworkBehaviours)
                         {
                             PooledReader reader = cnob.SyncValuesReader;
-                            //SyncVars.
                             int length = reader.ReadInt32();
-                            nb.OnSyncType(reader, length, false);
-                            //SyncObjects
-                            length = reader.ReadInt32();
-                            nb.OnSyncType(reader, length, true);
+                            nb.OnSyncType(reader, length);
                         }
 
                         /* Only continue with the initialization if it wasn't initialized
@@ -487,7 +500,7 @@ namespace FishNet.Managing.Client
             //If not found in Spawning then check Spawned.
             if (!IteratedSpawningObjects.TryGetValue(objectId, out result))
             {
-                Dictionary<int, NetworkObject> spawned = (_networkManager.IsHost) ?
+                Dictionary<int, NetworkObject> spawned = (_networkManager.IsHostStarted) ?
                     _networkManager.ServerManager.Objects.Spawned
                     : _networkManager.ClientManager.Objects.Spawned;
                 spawned.TryGetValue(objectId, out result);

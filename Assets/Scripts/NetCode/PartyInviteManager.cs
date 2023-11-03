@@ -18,7 +18,7 @@ public class PartyInviteManager : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
-        if (base.IsClient)
+        if (base.IsClientInitialized)
         {
             foreach (var obj in LocalConnection.Objects)
             {
@@ -32,7 +32,13 @@ public class PartyInviteManager : NetworkBehaviour
     public void SendInvite()
     {
         invitedName = nameVal.text;
-        if(party.Count < 4) InviteWithName(invitedName, Player);
+        if (party.Count < 3 && nameVal.text != playerName) InviteWithName(invitedName, Player);
+        else { GameObject.Find("Lobbies/Party/ToManyFriendsError").SetActive(true); Invoke(nameof(TurnOffError), 2f); }
+    }
+
+    private void TurnOffError()
+    {
+        GameObject.Find("Lobbies/Party/ToManyFriendsError").SetActive(false);
     }
 
     [ServerRpc(RequireOwnership = false)]

@@ -11,7 +11,7 @@ using FishNet.Serializing;
 using FishNet.Transporting;
 using FishNet.Utility.Extension;
 using FishNet.Utility.Performance;
-using GameKit.Utilities;
+using GameKit.Dependencies.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,15 +62,6 @@ namespace FishNet.Managing.Server
 
         #region Serialized.
         /// <summary>
-        /// Authenticator for this ServerManager. May be null if not using authentication.
-        /// </summary>
-        [Obsolete("Use GetAuthenticator and SetAuthenticator.")] //Remove on 2023/06/01
-        public Authenticator Authenticator
-        {
-            get => GetAuthenticator();
-            set => SetAuthenticator(value);
-        }
-        /// <summary>
         /// Gets the Authenticator for this manager.
         /// </summary>
         /// <returns></returns>
@@ -115,7 +106,7 @@ namespace FishNet.Managing.Server
         /// SyncTypeRate cannot yet be changed at runtime because this would require recalculating rates on SyncBase, which is not yet implemented.
         /// </summary>
         /// <returns></returns>
-        internal float GetSynctypeRate() => _syncTypeRate;
+        internal float GetSyncTypeRate() => _syncTypeRate;
         [Tooltip("Default send rate for SyncTypes. A value of 0f will send changed values every tick.")]
         [Range(0f, 60f)]
         [SerializeField]
@@ -702,7 +693,7 @@ namespace FishNet.Managing.Server
                  * Force an immediate disconnect. */
                 if (!Clients.TryGetValueIL2CPP(args.ConnectionId, out conn))
                 {
-                    Kick(args.ConnectionId, KickReason.UnexpectedProblem, LoggingType.Error, $"ConnectionId {conn.ClientId} not found within Clients. Connection will be kicked immediately.");
+                    Kick(args.ConnectionId, KickReason.UnexpectedProblem, LoggingType.Error, $"ConnectionId {args.ConnectionId} not found within Clients. Connection will be kicked immediately.");
                     return;
                 }
                 conn.PacketTick.Update(NetworkManager.TimeManager, tick, Timing.EstimatedTick.OldTickOption.SetLastRemoteTick);

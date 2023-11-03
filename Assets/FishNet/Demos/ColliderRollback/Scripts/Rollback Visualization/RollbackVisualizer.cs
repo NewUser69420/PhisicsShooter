@@ -3,9 +3,9 @@ using FishNet.Object;
 using System;
 using UnityEngine;
 
-namespace FishNet.Component.ColliderRollback.Demo
-{
 
+namespace FishNet.Example.ColliderRollbacks
+{
     /// <summary>
     /// DEMO. CODE IS NOT OPTIMIZED.
     /// Shows where an object was when client hit it, and where it was after server rolled it back.
@@ -39,7 +39,7 @@ namespace FishNet.Component.ColliderRollback.Demo
             Instantiate(_rollbackPrefab, rollback, transform.rotation);
 
             float difference = Vector3.Distance(original, rollback);
-            string accuracyText = (base.IsServer) ?
+            string accuracyText = (base.IsServerStarted) ?
                 $"Accuracy will not show properly when as clientHost.{Environment.NewLine}Use a separate client and server for testing."
                 : $"Accuracy is within {difference} units.";
 

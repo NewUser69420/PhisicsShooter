@@ -39,7 +39,7 @@ public class QuitHandler : MonoBehaviour
 
     private void OnServerConnectionChange(NetworkConnection conn, RemoteConnectionStateArgs args)
     {
-        if (args.ConnectionState == RemoteConnectionState.Stopped && InstanceFinder.IsServer)
+        if (args.ConnectionState == RemoteConnectionState.Stopped && InstanceFinder.IsServerStarted)
         {
             StartCoroutine(Wait1(conn));
         }

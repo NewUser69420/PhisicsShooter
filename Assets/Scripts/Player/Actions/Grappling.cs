@@ -27,7 +27,7 @@ public class Grappling : NetworkBehaviour
     [System.NonSerialized] public bool grappling;
     [System.NonSerialized] public float grapplingValue;
 
-    public void Awake()
+    public override void OnStartNetwork()
     {
         moveScript = GetComponent<PredictedPlayerController>();
         playerState = GetComponent<PlayerState>();
@@ -40,7 +40,7 @@ public class Grappling : NetworkBehaviour
 
     private void Update()
     {
-        if(base.Owner.IsLocalClient || base.IsServer)
+        if(base.Owner.IsLocalClient || base.IsServerStarted)
         {
             if (grapplingValue < grapplingValueMax)
             {

@@ -20,7 +20,7 @@ public class JetPackActivator : NetworkBehaviour
 
     private void Update()
     {
-        if(base.IsServer || base.Owner.IsLocalClient)
+        if(base.IsServerStarted || base.Owner.IsLocalClient)
         {
             switch (playerState.aState)
             {
@@ -49,12 +49,12 @@ public class JetPackActivator : NetworkBehaviour
             {
                 buffer -= Time.deltaTime;
                 em.enabled = true;
-                if (base.IsClient) AskServerToDo(this.gameObject, true);
+                if (base.IsClientInitialized) AskServerToDo(this.gameObject, true);
             }
             else
             {
                 em.enabled = false;
-                if (base.IsClient) AskServerToDo(this.gameObject, false);
+                if (base.IsClientInitialized) AskServerToDo(this.gameObject, false);
             }
         }
     }

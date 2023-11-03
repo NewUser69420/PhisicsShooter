@@ -29,11 +29,12 @@ public class InitializePlayer : NetworkBehaviour
     {        
         conId = OwnerId;
 
-        base.SceneManager.OnLoadEnd += OnLoadScene;
         
 
         if (base.Owner.IsLocalClient)
         {
+            base.SceneManager.OnLoadEnd += OnLoadScene;
+            
             SetGameLayerRecursive(this.gameObject, 6);
 
             if (playerName == "playername not set") Debug.Log("Playername not set");
@@ -59,7 +60,7 @@ public class InitializePlayer : NetworkBehaviour
             {
                 if (Owner.IsLocalClient) StartCoroutine(Wait3());
             }
-            if (_scene.name != "Lobbies" && base.IsClient) UnityEngine.SceneManagement.SceneManager.SetActiveScene(_scene);
+            if (_scene.name != "Lobbies" && base.IsClientInitialized) UnityEngine.SceneManagement.SceneManager.SetActiveScene(_scene);
         }
     }
 
@@ -67,7 +68,7 @@ public class InitializePlayer : NetworkBehaviour
     {
         yield return new WaitForSeconds(1f);
 
-        SyncPlayerItemServer(OwnerId, PlayerItemPrefab, playerName);
+        SyncPlayerItemServer(LocalConnection.ClientId, PlayerItemPrefab, playerName);
     }
 
     [ServerRpc]
@@ -92,11 +93,13 @@ public class InitializePlayer : NetworkBehaviour
         foreach (var _obj in __PlayerItems)
         {
             if (_obj == null) { Debug.Log("Can't Fix lobby Player Items");  return; }
-                Debug.Log($"playeritem id = {_obj.GetComponent<PlayerItem>().ownerId}");
-            foreach (var __obj in gameObject.scene.GetRootGameObjects())
-            {
-                if (__obj.name == "LobbyManager") { _obj.transform.SetParent(__obj.transform.Find("PlayerHolder")); _obj.GetComponentInChildren<TMP_Text>().text = __playerName; _obj.GetComponent<PlayerItem>().ownerId = __id; }
-            }
+            
+            Debug.Log($"playeritem id = {_obj.GetComponent<PlayerItem>().ownerId}");
+
+            Transform Parent = GameObject.Find("LobbyManager/PlayerHolder").transform;
+            _obj.transform.SetParent(Parent);
+            _obj.GetComponentInChildren<TMP_Text>().text = __playerName;
+            _obj.GetComponent<PlayerItem>().ownerId = __id;
         }
     }
 

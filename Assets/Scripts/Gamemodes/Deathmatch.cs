@@ -17,7 +17,7 @@ public class Deathmatch : GamemodeBase
 
     private void OnEnable()
     {
-        if(!InstanceFinder.IsServer) return;
+        if(!InstanceFinder.IsServerStarted) return;
 
         Invoke(nameof(MoveThis), 2f);
         Invoke(nameof(MakeTeams), 2.5f);
@@ -36,7 +36,7 @@ public class Deathmatch : GamemodeBase
 
     private void MoveThis()
     {
-        if (base.IsServer) return;
+        if (base.IsServerStarted) return;
 
         Debug.Log("test0");
         foreach (var pair in base.SceneManager.SceneConnections)

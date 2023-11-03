@@ -117,7 +117,7 @@ public class PredictedPlayerController : NetworkBehaviour
         public void SetTick(uint value) => _tick = value;
     }
 
-    private void Awake()
+    public override void OnStartNetwork()
     {
         _rb = GetComponent<Rigidbody>();
         _animator = GetComponentInChildren<Animator>();
@@ -133,10 +133,7 @@ public class PredictedPlayerController : NetworkBehaviour
 
         InstanceFinder.TimeManager.OnTick += TimeManager_OnTick;
         InstanceFinder.TimeManager.OnPostTick += TimeManager_OnPostTick;
-    }
 
-    public override void OnStartNetwork()
-    {
         base.SceneManager.OnLoadEnd += _OnSceneLoad;
     }
 
@@ -160,7 +157,7 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void PredictionManager_OnPreReplicateReplay(uint arg1, PhysicsScene arg2, PhysicsScene2D arg3)
     {
-        if (!base.IsServer)
+        if (!base.IsServerStarted)
             AddGravity();
     }
 
@@ -261,7 +258,7 @@ public class PredictedPlayerController : NetworkBehaviour
 
             TrySpawnBullet();
         }
-        if (base.IsServer)
+        if (base.IsServerStarted)
         {
             Move(default, true);
         }
@@ -270,7 +267,7 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void TimeManager_OnPostTick()
     {
-        if (base.IsServer)
+        if (base.IsServerStarted)
         {
             ReconcileData rd = new ReconcileData(transform.position, transform.rotation, _rb.velocity, _rb.angularVelocity);
             Reconciliation(rd, true);
@@ -364,7 +361,7 @@ public class PredictedPlayerController : NetworkBehaviour
                 _playerState.aState = ActionState.Passive;
             }
             _playerAudioManager.Play("JetpackBurst");
-            if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
+            if (base.IsServerStarted) SyncSoundRpc(gameObject, "JetpackBurst");
         }
 
         //dash
@@ -372,9 +369,9 @@ public class PredictedPlayerController : NetworkBehaviour
         {
             _rb.AddForce(md.DashDirection * _dashForce, ForceMode.Impulse);
             _playerAudioManager.Play("DashWhoosh");
-            if (base.IsServer) SyncSoundRpc(gameObject, "DashWhoosh");
+            if (base.IsServerStarted) SyncSoundRpc(gameObject, "DashWhoosh");
             _playerAudioManager.Play("JetpackBurst");
-            if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
+            if (base.IsServerStarted) SyncSoundRpc(gameObject, "JetpackBurst");
             _allowDash = false;
         }
 
@@ -416,7 +413,7 @@ public class PredictedPlayerController : NetworkBehaviour
                     _playerState.aState = ActionState.Passive;
                 }
                 _playerAudioManager.Play("JetpackBurst");
-                if (base.IsServer) SyncSoundRpc(gameObject, "JetpackBurst");
+                if (base.IsServerStarted) SyncSoundRpc(gameObject, "JetpackBurst");
             }
         }
     }
