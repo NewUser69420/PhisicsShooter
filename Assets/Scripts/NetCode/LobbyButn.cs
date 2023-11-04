@@ -25,7 +25,6 @@ public class LobbyButn : NetworkBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         Player = LocalConnection;
-        Debug.Log(Player.ClientId);
     }
 
     public void OnButnClick()

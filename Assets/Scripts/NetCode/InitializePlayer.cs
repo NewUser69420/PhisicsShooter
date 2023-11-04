@@ -23,18 +23,18 @@ public class InitializePlayer : NetworkBehaviour
     [SerializeField] private GameObject PlayerItemPrefab;
 
     private GameObject obj;
-    private List<GameObject> PlayerItems = new List<GameObject>();
+
+    public override void OnStartNetwork()
+    {
+        base.SceneManager.OnLoadEnd += OnLoadScene;
+    }
 
     public void DoStart()
     {        
         conId = OwnerId;
 
-        
-
         if (base.Owner.IsLocalClient)
         {
-            base.SceneManager.OnLoadEnd += OnLoadScene;
-            
             SetGameLayerRecursive(this.gameObject, 6);
 
             if (playerName == "playername not set") Debug.Log("Playername not set");
@@ -58,7 +58,7 @@ public class InitializePlayer : NetworkBehaviour
         {
             if (_scene.name == "1v1Lobby" || _scene.name == "2v2Lobby" || _scene.name == "3v3Lobby")
             {
-                if (Owner.IsLocalClient) StartCoroutine(Wait3());
+                if(IsOwner) StartCoroutine(Wait3());
             }
             if (_scene.name != "Lobbies" && base.IsClientInitialized) UnityEngine.SceneManagement.SceneManager.SetActiveScene(_scene);
         }
@@ -79,28 +79,24 @@ public class InitializePlayer : NetworkBehaviour
         {
             if (obj.name == "LobbyManager") Parent = obj.transform.Find("PlayerHolder");
         }
+
         GameObject _PlayerItem = Instantiate(prefab, Parent);
         _PlayerItem.GetComponentInChildren<TMP_Text>().text = _playerName;
         _PlayerItem.GetComponent<PlayerItem>().ownerId = _id;
-        PlayerItems.Add(_PlayerItem);
         base.Spawn(_PlayerItem);
-        SyncPlayerItemClient(_id, PlayerItems, _playerName);
+
+        foreach (Transform item in Parent)
+        {
+            SyncPlayerItemClient(item, item.GetComponentInChildren<TMP_Text>().text, item.GetComponent<PlayerItem>().ownerId);
+        }
     }
 
     [ObserversRpc]
-    private void SyncPlayerItemClient(int __id, List<GameObject> __PlayerItems, string __playerName)
+    private void SyncPlayerItemClient(Transform _item, string _name, int _id)
     {
-        foreach (var _obj in __PlayerItems)
-        {
-            if (_obj == null) { Debug.Log("Can't Fix lobby Player Items");  return; }
-            
-            Debug.Log($"playeritem id = {_obj.GetComponent<PlayerItem>().ownerId}");
-
-            Transform Parent = GameObject.Find("LobbyManager/PlayerHolder").transform;
-            _obj.transform.SetParent(Parent);
-            _obj.GetComponentInChildren<TMP_Text>().text = __playerName;
-            _obj.GetComponent<PlayerItem>().ownerId = __id;
-        }
+        _item.SetParent(GameObject.Find("LobbyManager/PlayerHolder").transform);
+        _item.GetComponentInChildren<TMP_Text>().text = _name;
+        _item.GetComponent<PlayerItem>().ownerId = _id;
     }
 
     [TargetRpc]

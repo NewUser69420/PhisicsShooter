@@ -25,16 +25,16 @@ public class Party : NetworkBehaviour
             {
                 if (!scenesToExclude.Contains(scene.name))
                 {
-                    SendPartyToGameSetup(party, scene);
+                    SendPartyToGameSetup(party);
                 }
             }
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SendPartyToGameSetup(List<NetworkObject> _party, UnityEngine.SceneManagement.Scene _scene)
+    private void SendPartyToGameSetup(List<NetworkObject> _party)
     {
-        foreach (var obj in _scene.GetRootGameObjects())
+        foreach (var obj in gameObject.scene.GetRootGameObjects())
         {
             if (obj.name == "GameSetup") { GameSetup gm = obj.GetComponent<GameSetup>(); gm.parties.Add(gm.parties.Count, _party); }
         }
