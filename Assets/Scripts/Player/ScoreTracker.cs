@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ScoreTracker : MonoBehaviour
 {
-    public string playerName;
+    public string playerName = "player name not set";
     public int wins = -1;
     public int losses = -1;
     public float score = -1;
@@ -20,6 +20,8 @@ public class ScoreTracker : MonoBehaviour
 
     public void OnScoreChange(string matchState)
     {
+        Setup();
+        
         switch (matchState)
         {
             case "win":

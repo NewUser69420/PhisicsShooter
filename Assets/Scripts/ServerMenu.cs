@@ -11,12 +11,14 @@ using UnityEngine.ProBuilder.Shapes;
 using FishNet.Example.Scened;
 using FishNet.Managing.Client;
 using System;
+using System.Collections;
 
 public class ServerMenu : NetworkBehaviour
 {
     [SerializeField] private GameObject LoginScreen;
     [SerializeField] private GameObject MenuScreen;
     [SerializeField] private GameObject ScoreScreen;
+    [SerializeField] private GameObject PlayerPrefab;
 
     public string playerName = "not set";
     public float score = -1;
@@ -186,6 +188,27 @@ public class ServerMenu : NetworkBehaviour
         //sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;
         sld.ReplaceScenes = ReplaceOption.None;
         base.SceneManager.LoadConnectionScenes(conn, sld);
+    }
+
+    public void StartPlayerReset(string name, NetworkConnection conn)
+    {
+        StartCoroutine(ResetPlayer(name, conn));
+    }
+    
+    IEnumerator ResetPlayer(string _name, NetworkConnection playerConn)
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        GameObject Player = Instantiate(PlayerPrefab);
+        base.ServerManager.Spawn(Player, playerConn, gameObject.scene);
+
+        FixName(Player.GetComponent<NetworkObject>().Owner, Player, _name);
+    }
+
+    [TargetRpc]
+    private void FixName(NetworkConnection conn, GameObject pobj, string _name)
+    {
+        pobj.GetComponent<InitializePlayer>().playerName = _name;
     }
 }
 

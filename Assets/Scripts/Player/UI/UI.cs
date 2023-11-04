@@ -1,7 +1,9 @@
 using FishNet.Connection;
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing.Client;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using System.Collections;
 using TMPro;
 using TMPro.Examples;
 using UnityEngine;
@@ -116,27 +118,12 @@ public class UI : NetworkBehaviour
 
     public void GoBackToMM()
     {
-        //deinitialize the player
-        GetComponentInParent<PredictedPlayerController>()._activated = false;
-        GetComponentInParent<CameraWorker>().initialized = false;
-        transform.parent.GetComponentInChildren<Camera>().enabled = false;
-        transform.parent.GetComponentInChildren<AudioListener>().enabled = false;
-
-        FindObjectOfType<MainMenu>(true).gameObject.SetActive(true);
-
         //going back
-        Debug.Log("Going Back To Lobbies");
+        Debug.Log("Going Back To Main Menu");
         FindObjectOfType<AudioManger>().Play("click2");
 
-        GameObject LB = FindObjectOfType<LobbyButn>(true).transform.parent.parent.gameObject;
-        LB.SetActive(true);
-        LB.transform.Find("LoadingScreen").gameObject.SetActive(false);
-        GameObject Player = null;
-        foreach (var obj in LocalConnection.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
-        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        {
-            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
-        }
+        FindObjectOfType<ServerMenu>(true).gameObject.SetActive(true);
+        FindObjectOfType<MainMenu>(true).gameObject.SetActive(true);
 
         GoBackToLobbiesServer(LocalConnection);
     }
@@ -144,18 +131,12 @@ public class UI : NetworkBehaviour
     [ServerRpc]
     private void GoBackToLobbiesServer(NetworkConnection conn)
     {
-        GetComponentInParent<PredictedPlayerController>()._activated = false;
-
-        UnityEngine.SceneManagement.Scene scene = gameObject.scene;
-        
         GameObject Player = null;
         foreach (var obj in conn.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
-        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        {
-            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
-        }
 
-        SceneUnloadData sud = new SceneUnloadData(scene);
+        FindObjectOfType<ServerMenu>().StartPlayerReset(Player.GetComponent<ScoreTracker>().playerName, conn);
+
+        SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
         base.SceneManager.UnloadConnectionScenes(conn, sud);
     }
 

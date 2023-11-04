@@ -1,7 +1,10 @@
 using FishNet.Connection;
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -91,7 +94,7 @@ public class GamemodeBase : NetworkBehaviour
     {
         foreach (var obj in gameObject.scene.GetRootGameObjects())
         {
-            if (obj.CompareTag("Player")) { DeInitializePlayer(obj); DeInitializePlayerClient(obj.GetComponent<NetworkObject>().Owner); }
+            if (obj.CompareTag("Player")) { DeInitializePlayer(obj, obj.GetComponent<NetworkObject>().Owner); DeInitializePlayerClient(obj.GetComponent<NetworkObject>().Owner); }
         }
 
         Invoke(nameof(NewLobby), 1f);
@@ -117,21 +120,47 @@ public class GamemodeBase : NetworkBehaviour
         base.SceneManager.UnloadConnectionScenes(playerconns.ToArray(), sud);
     }
 
-    private void DeInitializePlayer(GameObject pobj)
-    {
+    private void DeInitializePlayer(GameObject pobj, NetworkConnection playerConn)
+    {        
         UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
 
         string name = pobj.GetComponent<InitializePlayer>().playerName;
+        List<int> partyIDs = new List<int>();
+        for(int i = 0; i < pobj.GetComponent<Party>().party.Count; i++)
+        {
+            if(pobj.GetComponent<Party>().party[i].OwnerId != pobj.GetComponent<NetworkObject>().OwnerId) partyIDs.Add(pobj.GetComponent<Party>().party[i].OwnerId);
+            Debug.Log($"party owner: {pobj.GetComponent<NetworkObject>().OwnerId}, party item: {pobj.GetComponent<Party>().party[i].OwnerId}");
+        }
 
         base.ServerManager.Despawn(pobj);
 
         GameObject Player = Instantiate(PlayerPrefab);
-        base.ServerManager.Spawn(Player, pobj.GetComponent<NetworkObject>().Owner);
+        base.ServerManager.Spawn(Player, playerConn);
 
         playerobjs.Add(Player.GetComponent<NetworkObject>());
         playerconns.Add(Player.GetComponent<NetworkObject>().Owner);
 
         FixName(Player.GetComponent<NetworkObject>().Owner, Player, name);
+        StartCoroutine(Wait(partyIDs, Player));
+    }
+
+    IEnumerator Wait(List<int> _partyIDs, GameObject _Player)
+    {
+        yield return new WaitForSeconds(0.5f);
+        
+        foreach (var id in _partyIDs)
+        {
+            foreach (var client in base.ServerManager.Clients)
+            {
+                if (client.Value.ClientId == id)
+                {
+                    foreach (var obj in client.Value.Objects)
+                    {
+                        if (obj.CompareTag("Player")) _Player.GetComponent<Party>().party.Add(obj);
+                    }
+                }
+            }
+        }
     }
 
     [TargetRpc]

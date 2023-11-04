@@ -1,28 +1,31 @@
+using FishNet;
 using FishNet.Connection;
 using FishNet.Object;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FriendInviteReceiver : MonoBehaviour
+public class FriendInviteReceiver : NetworkBehaviour
 {
     [System.NonSerialized] public NetworkObject inviteSender;
-    private NetworkObject Player;
-
-    private void Awake()
-    {
-        DontDestroyOnLoad(this);
-
-        Player = GameObject.FindGameObjectWithTag("Player").GetComponent<NetworkObject>();
-
-        gameObject.SetActive(false);
-    }
 
     public void AcceptInvite()
     {
         FindObjectOfType<AudioManger>().Play("click1");
-        FindObjectOfType<PartyInviteManager>().AskToSendYes(inviteSender, Player);
+        NetworkObject pobj = null;
+        foreach (var obj in LocalConnection.Objects)
+        {
+            if(obj.CompareTag("Player")) pobj = obj;
+        }
+        FindObjectOfType<PartyInviteManager>().AskToSendYes(inviteSender, pobj);
+        DisablePartyLeader(pobj);
         gameObject.SetActive(false);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void DisablePartyLeader(NetworkObject _pobj)
+    {
+        _pobj.GetComponent<Party>().isPartyLeader = false;
     }
 
     public void DeclineInvite()

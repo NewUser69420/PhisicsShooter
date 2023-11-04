@@ -4,6 +4,7 @@ using FishNet.Object;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.ProBuilder.Shapes;
 
 public class LobbyButn : NetworkBehaviour
 {
@@ -123,6 +124,12 @@ public class LobbyButn : NetworkBehaviour
                     base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sld);
                     DoLoadingScreenClientRpc(_Player);
                     Debug.Log($"Joining lobby");
+                    foreach (var client in clientsToSend)
+                    {
+                        SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
+                        base.SceneManager.UnloadConnectionScenes(client, sud);
+                        Debug.Log("Unloading Lobby Scene");
+                    }
                     return;
 
                     ////old
@@ -147,6 +154,12 @@ public class LobbyButn : NetworkBehaviour
             base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sld);
             DoLoadingScreenClientRpc(_Player);
             Debug.Log($"No lobby exists, Making own");
+            foreach (var client in clientsToSend)
+            {
+                SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
+                base.SceneManager.UnloadConnectionScenes(client, sud);
+                Debug.Log("Unloading Lobby Scene");
+            }
             return;
         }
 
@@ -159,6 +172,12 @@ public class LobbyButn : NetworkBehaviour
         base.SceneManager.LoadConnectionScenes(clientsToSend.ToArray(), sldd);
         DoLoadingScreenClientRpc(_Player);
         Debug.Log($"Lobbies full, Making own");
+        foreach (var client in clientsToSend)
+        {
+            SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
+            base.SceneManager.UnloadConnectionScenes(client, sud);
+            Debug.Log("Unloading Lobby Scene");
+        }
         return;
     }
 
@@ -187,12 +206,12 @@ public class LobbyButn : NetworkBehaviour
 
         FindObjectOfType<ServerMenu>(true).gameObject.SetActive(true);
 
-        GameObject Player = null;
-        foreach (var obj in LocalConnection.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
-        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        {
-            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "ServerMenu") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
-        }
+        //GameObject Player = null;
+        //foreach (var obj in LocalConnection.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
+        //for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        //{
+        //    if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "ServerMenu") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
+        //}
 
         GoBackServer(LocalConnection);
     }
@@ -200,12 +219,12 @@ public class LobbyButn : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void GoBackServer(NetworkConnection conn)
     {
-        GameObject Player = null;
-        foreach (var obj in conn.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
-        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        {
-            if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "ServerMenu") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
-        }
+        //GameObject Player = null;
+        //foreach (var obj in conn.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
+        //for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        //{
+        //    if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "ServerMenu") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
+        //}
 
         SceneUnloadData sud = new SceneUnloadData(gameObject.scene);
         base.SceneManager.UnloadConnectionScenes(conn, sud);

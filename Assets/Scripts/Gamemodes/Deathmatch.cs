@@ -15,18 +15,20 @@ public class Deathmatch : GamemodeBase
 
     [SerializeField] private GameObject playerPrefab;
 
-    private void OnEnable()
-    {
-        if(!InstanceFinder.IsServerStarted) return;
-
-        Invoke(nameof(MoveThis), 2f);
-        Invoke(nameof(MakeTeams), 2.5f);
-        Invoke(nameof(SpawnPlayers), 3f);
-    }
-
     public override void OnStartNetwork()
     {
         SetPlayerPrefab();
+
+        if (base.IsServerStarted)
+        {
+            Invoke(nameof(MakeTeams), 2.5f);
+            Invoke(nameof(SpawnPlayers), 3f);
+        }
+        if (base.IsClientStarted)
+        {
+            //maybe unnecesary with fishnetv4 (adjust the spawn command to spawn in certain scene)
+            Invoke(nameof(MoveThis), 2f);
+        }
     }
 
     protected override void SetPlayerPrefab()
@@ -36,18 +38,14 @@ public class Deathmatch : GamemodeBase
 
     private void MoveThis()
     {
-        if (base.IsServerStarted) return;
-
-        Debug.Log("test0");
         foreach (var pair in base.SceneManager.SceneConnections)
         {
-            Debug.Log("test1");
-            if (pair.Key.name != "Lobbies") UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(gameObject, pair.Key);
+            if (pair.Key.name != "ServerMenu") UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(gameObject, pair.Key);
         }
     }
 
     protected override void MakeTeams()
-    {
+    {        
         List<GameObject> needAdd = new();
 
         foreach (var pobj in gameObject.scene.GetRootGameObjects())
@@ -57,34 +55,37 @@ public class Deathmatch : GamemodeBase
 
         foreach (var party in parties)
         {
+            Debug.Log("test00");
             switch(needAdd.Count) 
             {
                 case 3:
+                    Debug.Log($"test0 {party.Value.Count}");
                     if (party.Value.Count == 2)
                     {
-                        if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
-                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                        Debug.Log("test1");
+                        if (!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); Debug.Log("test2"); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
+                        else { foreach (var obj in party.Value) { Team2.Add(obj); Debug.Log("test2"); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
                     }
                     break;
                 case 4:
                     if (party.Value.Count == 2)
                     {
                         if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
-                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                        else { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
                     }
                     break;
                 case 5:
                     if(party.Value.Count == 3 || party.Value.Count == 2)
                     {
                         if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
-                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                        else { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
                     }
                     break;
                 case 6:
                     if(party.Value.Count == 3 || party.Value.Count == 2)
                     {
                         if(!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
-                        if (addedTeam1) { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
+                        else { foreach (var obj in party.Value) { Team2.Add(obj); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
                     }
                     break;
                 default: break;

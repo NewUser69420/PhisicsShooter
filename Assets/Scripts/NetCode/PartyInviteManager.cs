@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
-using FishNet.Object;
 using FishNet.Connection;
+using FishNet.Object;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
 
 public class PartyInviteManager : NetworkBehaviour
 {
@@ -12,27 +11,18 @@ public class PartyInviteManager : NetworkBehaviour
     [System.NonSerialized] public string playerName = "playerName not set";
     [System.NonSerialized] public NetworkObject Player;
 
-    public List<NetworkObject> party = new();
-
     private string invitedName;
-
-    public override void OnStartNetwork()
-    {
-        if (base.IsClientInitialized)
-        {
-            foreach (var obj in LocalConnection.Objects)
-            {
-                if (obj.CompareTag("Player")) Player = obj;
-            }
-            party.Add(Player);
-            OnPartyChange();
-        }
-    }
 
     public void SendInvite()
     {
+        NetworkObject pobj = null;
+        foreach (var obj in LocalConnection.Objects)
+        {
+            if (obj.CompareTag("Player")) pobj = obj;
+        }
+
         invitedName = nameVal.text;
-        if (party.Count < 3 && nameVal.text != playerName) InviteWithName(invitedName, Player);
+        if (pobj.GetComponent<Party>().party.Count < 3 && nameVal.text != playerName) InviteWithName(invitedName, LocalConnection);
         else { GameObject.Find("Lobbies/Party/ToManyFriendsError").SetActive(true); Invoke(nameof(TurnOffError), 2f); }
     }
 
@@ -42,8 +32,10 @@ public class PartyInviteManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void InviteWithName(string _name, NetworkObject _Player)
+    private void InviteWithName(string _name, NetworkConnection senderConn)
     {
+        NetworkObject _Player = null;
+        foreach(var obj in senderConn.Objects) { Debug.Log(obj.name); if (obj.CompareTag("Player")) _Player = obj; }
         foreach (var p in FindObjectsOfType<ScoreTracker>())
         {
             if (p.playerName == _name)
@@ -57,41 +49,39 @@ public class PartyInviteManager : NetworkBehaviour
     private void Invite(NetworkConnection conn, NetworkObject __Player)
     {
         GameObject receiver = FindObjectOfType<FriendInviteReceiver>(true).gameObject;
-        receiver.SetActive(true);
-        receiver.transform.Find("InviteText").GetComponent<TMP_Text>().text = __Player.GetComponent<ScoreTracker>().playerName + "has invited you to a party";
+        receiver.transform.Find("Object").gameObject.SetActive(true);
+        receiver.transform.Find("Object/InviteText").GetComponent<TMP_Text>().text = __Player.GetComponent<ScoreTracker>().playerName + "has invited you to a party";
         receiver.GetComponent<FriendInviteReceiver>().inviteSender = __Player;
     }
 
-    public void AskToSendYes(NetworkObject _sobj, NetworkObject _pobj)
+    public void AskToSendYes(NetworkObject _sobj, NetworkObject pobj)
     {
-        AskToSendYesServer(_sobj, _pobj);
+        AskToSendYesServer(_sobj, pobj);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void AskToSendYesServer(NetworkObject __sobj, NetworkObject __pobj)
+    private void AskToSendYesServer(NetworkObject __sobj, NetworkObject _pobj)
     {
-        SendYes(__sobj.Owner, __pobj);
-    }
-
-    [TargetRpc]
-    private void SendYes(NetworkConnection conn, NetworkObject ___pobj)
-    {
-        party.Add(___pobj);
-        OnPartyChange();
-    }
-
-    public void OnPartyChange()
-    {
-        foreach (var butn in FindObjectsOfType<LobbyButn>())
+        foreach (var obj in __sobj.Owner.Objects)
         {
-            GiveParty(party, butn, LocalConnection.ClientId);
+            if (obj.CompareTag("Player")) 
+            { 
+                obj.GetComponent<Party>().party.Add(_pobj);
+
+
+                foreach (var butn in FindObjectsOfType<LobbyButn>(true))
+                {
+                    GiveParty(obj.GetComponent<Party>().party, butn, obj.OwnerId);
+                }
+            }
         }
-        foreach(var obj in LocalConnection.Objects) { if(obj.CompareTag("Player")) obj.GetComponent<Party>().party = party; }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void GiveParty(List<NetworkObject> _party, LobbyButn _butn, int _id)
+    public void GiveParty(List<NetworkObject> _party, LobbyButn _butn, int _id)
     {
-        if (!_butn.party.TryAdd(_id, _party)) { _butn.party.Remove(_id); _butn.party.Add(_id, _party); }
+        //if (!_butn.party.TryAdd(_id, _party)) { _butn.party.Remove(_id); _butn.party.Add(_id, _party); }
+        if (!_butn.party.ContainsKey(_id)) _butn.party.Add(_id, _party);
+        else _butn.party[_id] = _party;
+        Debug.Log("Setting party");
     }
 }

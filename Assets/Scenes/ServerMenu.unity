@@ -662,6 +662,8 @@ MonoBehaviour:
   LoginScreen: {fileID: 1696104457}
   MenuScreen: {fileID: 771195063}
   ScoreScreen: {fileID: 1001954429}
+  PlayerPrefab: {fileID: 4266674162621430887, guid: fc7c0071286c3bc46aa016bde5524903,
+    type: 3}
   playerName: 
   score: 0
 --- !u!114 &64050786
@@ -681,8 +683,8 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   _networkBehaviours:
   - {fileID: 64050785}
-  <ParentNetworkObject>k__BackingField: {fileID: 0}
-  <ChildNetworkObjects>k__BackingField: []
+  <SerializedRootNetworkBehaviour>k__BackingField: {fileID: 0}
+  <NestedRootNetworkBehaviours>k__BackingField: []
   SerializedTransformProperties:
     Position: {x: 960, y: 540, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}

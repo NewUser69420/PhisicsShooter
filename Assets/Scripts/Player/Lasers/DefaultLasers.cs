@@ -10,6 +10,6 @@ public class DefaultLasers : LaserShooter
         LaserPrefabVisual = Resources.Load("LaserDefaultVisual", typeof(NetworkObject)) as NetworkObject;
 
         resetTime = 0.05f;
-        laserSpeed = 100;
+        laserSpeed = 130;
     }
 }

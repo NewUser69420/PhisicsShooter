@@ -12,28 +12,28 @@ public class Spawner : NetworkBehaviour
     public NetworkObject PhysicsBallPrefab;
     public List<string> scenesToIgnore = new List<string>();
 
-    private bool hasDone;
+    //private bool hasDone;
 
     public override void OnStartNetwork()
     {
-        base.SceneManager.OnLoadEnd += OnSceneLoaded;
+        //base.SceneManager.OnLoadEnd += OnSceneLoaded;
         Invoke(nameof(Spawn), 3f);
         Invoke(nameof(SyncSpawn), 4f);
     }
 
-    private void OnSceneLoaded(SceneLoadEndEventArgs args)
-    {
-        foreach(var scene in args.LoadedScenes)
-        {
-            if(!scenesToIgnore.Contains(scene.name) && !hasDone) { currentScene = scene; hasDone = true; }
-        }
-    }
+    //private void OnSceneLoaded(SceneLoadEndEventArgs args)
+    //{
+    //    foreach(var scene in args.LoadedScenes)
+    //    {
+    //        if(!scenesToIgnore.Contains(scene.name) && !hasDone) { currentScene = scene; hasDone = true; }
+    //    }
+    //}
 
     private void Spawn()
     {
         if (base.IsServerStarted)
         {   
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(currentScene);
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
             NetworkObject Killer = Instantiate(KillerPrefab);
             NetworkObject PhysicsBall = Instantiate(PhysicsBallPrefab);
 
