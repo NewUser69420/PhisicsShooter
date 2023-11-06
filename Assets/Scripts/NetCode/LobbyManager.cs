@@ -6,8 +6,7 @@ using TMPro;
 using UnityEngine;
 using FishNet;
 using FishNet.Transporting;
-using UnityEngine.ProBuilder.Shapes;
-using System.Collections;
+using UnityEngine.UI;
 
 public class LobbyManager : NetworkBehaviour
 {
@@ -21,6 +20,11 @@ public class LobbyManager : NetworkBehaviour
     [SerializeField] private GameObject LoadingScreen;
 
     [SerializeField] private GameObject CancleTimerVal;
+
+    [SerializeField] private GameObject ReadyButn;
+
+    [SerializeField] private Color readyColour;
+    [SerializeField] private Color unReadyColour;
 
     private UnityEngine.SceneManagement.Scene thisLobbyScene;
 
@@ -44,6 +48,9 @@ public class LobbyManager : NetworkBehaviour
     {
         isReady = !isReady;
 
+        if (isReady) ReadyButn.GetComponent<Image>().color = readyColour;
+        else ReadyButn.GetComponent<Image>().color = unReadyColour;
+
         if(startedGameCancalable)
         {
             //cancle game
@@ -58,16 +65,6 @@ public class LobbyManager : NetworkBehaviour
     public void PressedBackToMM()
     {
         FindObjectOfType<AudioManger>().Play("click2");
-        //GameObject LB = FindObjectOfType<LobbyButn>(true).transform.parent.parent.gameObject;
-        //LB.SetActive(true);
-        //LB.transform.Find("LoadingScreen").gameObject.SetActive(false);
-        
-        //GameObject Player = null;
-        //foreach (var obj in LocalConnection.Objects) if (obj.CompareTag("Player")) Player = obj.gameObject;
-        //for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        //{
-        //    if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
-        //}
 
         BackToMMServer(LocalConnection);
     }
@@ -75,12 +72,15 @@ public class LobbyManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void BackToMMServer(NetworkConnection conn)
     {
+        //remove lobby player item
+        foreach (Transform child in transform.Find("PlayerHolder"))
+        {
+            if (child.GetComponent<PlayerItem>().ownerId == conn.ClientId) { base.ServerManager.Despawn(child.GetComponent<NetworkObject>()); Destroy(child); }
+        }
+
+        //go to sm scene
         NetworkObject Player = null;
         foreach (var obj in conn.Objects) if (obj.CompareTag("Player")) Player = obj;
-        //for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        //{
-        //    if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name == "Lobbies") { UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(Player.gameObject, UnityEngine.SceneManagement.SceneManager.GetSceneAt(i)); Debug.Log($"Moving player"); }
-        //}
 
         SceneLoadData sld = new SceneLoadData("Lobbies");
         sld.Options.AllowStacking = false;
@@ -124,6 +124,8 @@ public class LobbyManager : NetworkBehaviour
         FindObjectOfType<MainMenu>(true).gameObject.SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
+
+        ReadyButn.GetComponent<Image>().color = unReadyColour;
 
         timer = timerMax;
         timerVal.text = Mathf.RoundToInt(timer).ToString();

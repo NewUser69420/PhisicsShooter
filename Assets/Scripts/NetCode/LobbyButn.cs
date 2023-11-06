@@ -10,6 +10,8 @@ public class LobbyButn : NetworkBehaviour
 {
     private NetworkConnection Player;
 
+    [System.NonSerialized] public bool isPartyLeader = true;
+
     [System.NonSerialized] public Dictionary<int, List<NetworkObject>> party = new();
 
     [SerializeField] private GameObject LoadingScreen;
@@ -30,6 +32,8 @@ public class LobbyButn : NetworkBehaviour
 
     public void OnButnClick()
     {
+        if(!isPartyLeader) return;
+        
         FindObjectOfType<AudioManger>().Play("click1");
         if (base.IsServerStarted) return;
         switch (gameObject.name)

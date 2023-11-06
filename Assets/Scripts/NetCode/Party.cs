@@ -2,6 +2,7 @@ using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Object;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Party : NetworkBehaviour
@@ -13,11 +14,11 @@ public class Party : NetworkBehaviour
 
     public override void OnStartNetwork()
     {
+        base.SceneManager.OnLoadEnd += OnSceneLoaded;
+        
         if (base.IsServerStarted)
         {
             party.Add(GetComponent<NetworkObject>());
-
-            base.SceneManager.OnLoadEnd += OnSceneLoaded;
         }
 
         if (Owner.IsLocalClient)
@@ -42,20 +43,36 @@ public class Party : NetworkBehaviour
     {
         foreach (var scene in args.LoadedScenes)
         {
-            if (!scenesToExclude.Contains(scene.name))
+            if (base.IsServerStarted)
             {
-                SendPartyToGameSetup(party, id);
-            }
-            else if (scene.name == "Lobbies")
-            {
-                foreach (var butn in FindObjectsOfType<LobbyButn>())
+                if (!scenesToExclude.Contains(scene.name))
                 {
-                    Debug.Log("Setting party");
-                    if (!butn.party.ContainsKey(OwnerId)) butn.party.Add(OwnerId, party);
-                    else butn.party[OwnerId] = party;
+                    SendPartyToGameSetup(party, id);
+                }
+                else if (scene.name == "Lobbies")
+                {
+                    foreach (var butn in FindObjectsOfType<LobbyButn>())
+                    {
+                        Debug.Log("Setting party");
+                        if (!butn.party.ContainsKey(OwnerId)) butn.party.Add(OwnerId, party);
+                        else butn.party[OwnerId] = party;
+                    }
+                }
+            }
+
+            if (base.IsClientStarted)
+            {
+                if (scene.name == "Lobbies")
+                {
+                    Invoke(nameof(Wait), 0.7f);
                 }
             }
         }
+    }
+
+    private void Wait()
+    {
+        FindObjectOfType<PartyInviteManager>(true).SpawnPartyItem(GetComponent<InitializePlayer>().playerName);
     }
 
     private void SendPartyToGameSetup(List<NetworkObject> _party, int _id)

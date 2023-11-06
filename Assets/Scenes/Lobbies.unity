@@ -866,7 +866,8 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 102835527}
   _networkObjectCache: {fileID: 102835527}
   nameVal: {fileID: 1193281085}
-  party: []
+  PartyItemPrefab: {fileID: 1655016182092218578, guid: a09bcb2d1672c9c4780e4f0b042a451a,
+    type: 3}
 --- !u!1 &469737840
 GameObject:
   m_ObjectHideFlags: 0

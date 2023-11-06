@@ -1302,8 +1302,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -260, y: -240}
-  m_SizeDelta: {x: 400, y: 250}
+  m_AnchoredPosition: {x: -260, y: -540}
+  m_SizeDelta: {x: 400, y: 850}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1454922286
 MonoBehaviour:
@@ -1897,7 +1897,6 @@ MonoBehaviour:
   <SerializedRootNetworkBehaviour>k__BackingField: {fileID: 0}
   <NestedRootNetworkBehaviours>k__BackingField:
   - {fileID: 1786972073}
-  - {fileID: 0}
   SerializedTransformProperties:
     Position: {x: 960, y: 540, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
@@ -1930,6 +1929,9 @@ MonoBehaviour:
   timerVal: {fileID: 1705375804}
   LoadingScreen: {fileID: 1304717870}
   CancleTimerVal: {fileID: 1786972069}
+  ReadyButn: {fileID: 685947640}
+  readyColour: {r: 0.5754717, g: 0.09500711, b: 0.09500711, a: 1}
+  unReadyColour: {r: 0.5764706, g: 0.09411766, b: 0.09411766, a: 0.36078432}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

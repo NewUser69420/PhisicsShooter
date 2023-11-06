@@ -1,12 +1,15 @@
 using FishNet.Connection;
 using FishNet.Object;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 
 public class PartyInviteManager : NetworkBehaviour
 {
     [SerializeField] private TMP_InputField nameVal;
+
+    [SerializeField] private GameObject PartyItemPrefab;
 
     [System.NonSerialized] public string playerName = "playerName not set";
     [System.NonSerialized] public NetworkObject Player;
@@ -68,6 +71,13 @@ public class PartyInviteManager : NetworkBehaviour
             { 
                 obj.GetComponent<Party>().party.Add(_pobj);
 
+                foreach (var player in obj.GetComponent<Party>().party)
+                {
+                    foreach (var pobj in obj.GetComponent<Party>().party)
+                    {
+                        SyncPartyItem(player.Owner, pobj.GetComponent<ScoreTracker>().playerName);
+                    }
+                }
 
                 foreach (var butn in FindObjectsOfType<LobbyButn>(true))
                 {
@@ -77,11 +87,89 @@ public class PartyInviteManager : NetworkBehaviour
         }
     }
 
+    [TargetRpc]
+    private void SyncPartyItem(NetworkConnection conn, string _pname)
+    {
+        List<string> pitems = new();
+        foreach (Transform child in transform.Find("Holder")) { pitems.Add(child.GetComponentInChildren<TMP_Text>().text); }
+
+        if(!pitems.Contains(_pname)) SpawnPartyItem(_pname);
+    }
+
     public void GiveParty(List<NetworkObject> _party, LobbyButn _butn, int _id)
     {
-        //if (!_butn.party.TryAdd(_id, _party)) { _butn.party.Remove(_id); _butn.party.Add(_id, _party); }
         if (!_butn.party.ContainsKey(_id)) _butn.party.Add(_id, _party);
         else _butn.party[_id] = _party;
         Debug.Log("Setting party");
+    }
+
+    public void SpawnPartyItem(string pname)
+    {
+        if (pname == "playername not set") return;
+        GameObject PartyItem = Instantiate(PartyItemPrefab, GameObject.Find("Lobbies/Party/Holder").transform);
+        PartyItem.GetComponentInChildren<TMP_Text>().text = pname;
+        
+        foreach(var obj in LocalConnection.Objects) 
+        {
+            if (obj.CompareTag("Player"))
+            {
+                if (obj.GetComponent<ScoreTracker>().playerName == pname || !obj.GetComponent<Party>().isPartyLeader) PartyItem.transform.Find("KickButn").gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void AskToKickPlayer(string _name)
+    {
+        foreach (var obj in LocalConnection.Objects)
+        {
+            if(obj.CompareTag("Player")) KickPlayer(_name, obj);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void KickPlayer(string __name, NetworkObject pobj)
+    {
+        NetworkObject objtoremove = null;
+        foreach (var player in pobj.GetComponent<Party>().party)
+        {
+            if (player.GetComponent<InitializePlayer>().playerName == __name) objtoremove = player;
+
+            if (player.GetComponent<InitializePlayer>().playerName == __name) { DestroyParty(player.Owner, __name); player.GetComponent<Party>().isPartyLeader = true; }
+            else DestroyPartyItem(player.Owner, __name);
+        }
+
+        pobj.GetComponent<Party>().party.Remove(objtoremove);
+
+        foreach (var butn in FindObjectsOfType<LobbyButn>(true))
+        {
+            GiveParty(pobj.GetComponent<Party>().party, butn, pobj.OwnerId);
+        }
+    }
+
+    [TargetRpc]
+    private void DestroyPartyItem(NetworkConnection conn, string oof)
+    {
+        foreach (Transform child in GameObject.Find("Lobbies/Party/Holder").transform)
+        {
+            if (child.GetComponentInChildren<TMP_Text>().text == oof) Kill(child.gameObject);
+        }
+    }
+
+    [TargetRpc]
+    private void DestroyParty(NetworkConnection conn, string weebName)
+    {
+        foreach (Transform child in GameObject.Find("Lobbies/Party/Holder").transform)
+        {
+            if(child.GetComponentInChildren<TMP_Text>().text != weebName) Kill(child.gameObject);
+        }
+        foreach (var butn in FindObjectsOfType<LobbyButn>())
+        {
+            butn.GetComponent<LobbyButn>().isPartyLeader = true;
+        }
+    }
+
+    private void Kill(GameObject weeb)
+    {
+        Destroy(weeb);
     }
 }

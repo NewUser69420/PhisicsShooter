@@ -19,6 +19,8 @@ public class FriendInviteReceiver : NetworkBehaviour
         }
         FindObjectOfType<PartyInviteManager>().AskToSendYes(inviteSender, pobj);
         DisablePartyLeader(pobj);
+        pobj.GetComponent<Party>().isPartyLeader = false;
+        foreach(var thing in FindObjectsOfType<LobbyButn>()) thing.isPartyLeader = false;
         gameObject.SetActive(false);
     }
 
