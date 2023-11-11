@@ -75,7 +75,9 @@ public class GamemodeBase : NetworkBehaviour
     [ObserversRpc]
     private void DoEndGameScreenClient(string _team)
     {
-        for(int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        FindObjectOfType<MainMenu>(true).transform.Find("ServerSelectionScreen").gameObject.SetActive(false);
+
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
         {
             if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "Lobbies" && UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).name != "ServerMenu")
             {
@@ -86,8 +88,6 @@ public class GamemodeBase : NetworkBehaviour
                 }
             }
         }
-        
-        
     }
 
     private void StartNewGame()

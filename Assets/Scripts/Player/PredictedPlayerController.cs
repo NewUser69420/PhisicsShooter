@@ -29,13 +29,14 @@ public class PredictedPlayerController : NetworkBehaviour
     [System.NonSerialized] public bool _shootLaser;
     [System.NonSerialized] public Rigidbody _rb;
 
+    public LaserShooter _laserShooter;
+
     private UnityEngine.SceneManagement.Scene currentScene;
     private PlayerControlls _playerControlls;
     private PlayerState _playerState;
     private Animator _animator;
     private NetworkAnimator _netAnimator;
     private WallRunning _wallRunner;
-    private LaserShooter _laserShooter;
     private PlayerAudioManager _playerAudioManager;
     private RaycastHit _hit;
     private Vector3 _dashDirection;
@@ -124,7 +125,6 @@ public class PredictedPlayerController : NetworkBehaviour
         _netAnimator = GetComponentInChildren<NetworkAnimator>();
         _playerState = GetComponent<PlayerState>();
         _wallRunner = GetComponent<WallRunning>();
-        _laserShooter = GetComponent<LaserShooter>();
         _playerAudioManager = GetComponent<PlayerAudioManager>();
 
         _playerControlls = new PlayerControlls();
@@ -339,7 +339,7 @@ public class PredictedPlayerController : NetworkBehaviour
         }
         else
         {
-            _rb.AddForce(Physics.gravity * 50f);
+            _rb.AddForce(Physics.gravity * 85f);
         }
     }
 

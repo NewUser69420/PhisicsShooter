@@ -39,6 +39,7 @@ public class OfflinePlayerMovement : MonoBehaviour
     private float _velTimer;
     private float _velTimerMax = 0.3f;
     private bool _allowDash = true;
+    private bool _allowWallJump = true;
     private bool _wallLeft;
     private bool _speedLimitDisabled;
 
@@ -73,7 +74,7 @@ public class OfflinePlayerMovement : MonoBehaviour
         }
 
         //prepare walljump
-        if (_playerControlls.OnFoot.Jump.WasPressedThisFrame() && _playerState.gState != GroundedState.Grounded)
+        if (_playerControlls.OnFoot.Jump.IsPressed())
         {
             _didWallJump = true;
         }
@@ -135,6 +136,7 @@ public class OfflinePlayerMovement : MonoBehaviour
         {
             _rb.AddForce(_dashDirection * _dashForce, ForceMode.Impulse);
             _allowDash = false;
+            GetComponentInChildren<OffUI>().dashTimer = 0;
         }
 
         //grapple
@@ -165,7 +167,7 @@ public class OfflinePlayerMovement : MonoBehaviour
             if (_wallLeft) _rb.AddForce(-_wallNormal * 100, ForceMode.Force);
 
             ////wallrun jump
-            if (_didWallJump)
+            if (_didWallJump && _allowWallJump)
             {
                 _rb.AddForce(transform.forward * _wallJumpForward, ForceMode.Impulse);
                 _rb.AddForce(transform.up * _wallJumpUp, ForceMode.Impulse);
@@ -174,6 +176,7 @@ public class OfflinePlayerMovement : MonoBehaviour
                 {
                     _playerState.aState = ActionState.Passive;
                 }
+                StartCoroutine(Wait());
             }
         }
 
@@ -184,8 +187,15 @@ public class OfflinePlayerMovement : MonoBehaviour
         }
         else
         {
-            _rb.AddForce(Physics.gravity * 50f);
+            _rb.AddForce(Physics.gravity * 85f);
         }
+    }
+
+    IEnumerator Wait()
+    {
+        _allowWallJump = false;
+        yield return new WaitForSeconds(0.2f);
+        _allowWallJump = true;
     }
 
     private void OnCollisionStay(Collision collision)

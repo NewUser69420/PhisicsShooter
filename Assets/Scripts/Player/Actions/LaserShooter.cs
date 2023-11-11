@@ -5,28 +5,32 @@ using UnityEngine;
 
 public class LaserShooter : NetworkBehaviour
 {
-    public Transform Cam;
-    public Transform Eye;
-    public Transform Muzzle;
+    private PlayerControlls playerControlls;
+    private PredictedPlayerController playerController;
 
-    [System.NonSerialized] public NetworkObject LaserPrefab;
+    [System.NonSerialized] public Transform Cam;
+    [System.NonSerialized] public Transform Eye;
+    [System.NonSerialized] public Transform Muzzle;
+    public NetworkObject LaserPrefab;
     [System.NonSerialized] public NetworkObject LaserPrefabVisual;
 
     [System.NonSerialized] public float resetTime;
     [System.NonSerialized] public float laserSpeed;
 
-    private PlayerControlls playerControlls;
-    private PredictedPlayerController playerController;
-
     private bool justShot;
-    
-    public override void OnStartNetwork()
+
+    public void DoStart()
     {
         playerControlls = new PlayerControlls();
         playerControlls.Enable();
 
         playerController = GetComponent<PredictedPlayerController>();
-        
+        playerController._laserShooter = this;
+
+        Cam = transform.Find("Cam");
+        Eye = transform.Find("Eye");
+        Muzzle = transform.Find("Cam/FPItems/FPGun/Muzzle");
+
         LaserType();
     }
 
@@ -37,6 +41,7 @@ public class LaserShooter : NetworkBehaviour
 
     private void Update()
     {
+        if(playerControlls == null || playerController == null) return;
         if(playerControlls.OnFoot.Fire.WasPressedThisFrame() && playerController._activated)
         {
             ShootLaser();
@@ -48,8 +53,6 @@ public class LaserShooter : NetworkBehaviour
         if(!justShot)
         {
             justShot = true;
-
-            //FindObjectOfType<AduioManager>().Play("Laser1");
 
             playerController._shootLaser = true;
 

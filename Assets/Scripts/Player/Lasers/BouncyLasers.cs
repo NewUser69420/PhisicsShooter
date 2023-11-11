@@ -1,6 +1,4 @@
 using FishNet.Object;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BouncyLasers : LaserShooter
@@ -12,5 +10,10 @@ public class BouncyLasers : LaserShooter
 
         resetTime = 0.05f;
         laserSpeed = 100;
+    }
+
+    private void Awake()
+    {
+        DoStart();
     }
 }

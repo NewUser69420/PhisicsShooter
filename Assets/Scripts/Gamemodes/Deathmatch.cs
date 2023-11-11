@@ -55,14 +55,11 @@ public class Deathmatch : GamemodeBase
 
         foreach (var party in parties)
         {
-            Debug.Log("test00");
             switch(needAdd.Count) 
             {
                 case 3:
-                    Debug.Log($"test0 {party.Value.Count}");
                     if (party.Value.Count == 2)
                     {
-                        Debug.Log("test1");
                         if (!addedTeam1) { foreach (var obj in party.Value) { Team1.Add(obj); Debug.Log("test2"); needAdd.Remove(obj.gameObject); } addedTeam1 = true; }
                         else { foreach (var obj in party.Value) { Team2.Add(obj); Debug.Log("test2"); needAdd.Remove(obj.gameObject); } addedTeam1 = false; }
                     }
