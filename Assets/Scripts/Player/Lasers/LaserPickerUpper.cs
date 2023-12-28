@@ -21,14 +21,15 @@ public class LaserPickerUpper : MonoBehaviour
         if (!isEnabled) return;
         Debug.Log($"Picking up {laserType}");
 
+        Transform Parent = other.transform.root;
+
         var laserTypes = Enum.GetValues(typeof(LaserType));
         foreach(var type in laserTypes)
         {
-            Debug.Log(type.ToString());
-            Destroy(other.GetComponent(type.ToString()));
+            Destroy(Parent.GetComponent(type.ToString()));
         }
 
-        other.gameObject.AddComponent(System.Type.GetType(laserType.ToString() + ",Assembly-CSharp"));
+        Parent.gameObject.AddComponent(System.Type.GetType(laserType.ToString() + ",Assembly-CSharp"));
 
         isEnabled = false;
         transform.Find("Sphere").gameObject.SetActive(false);

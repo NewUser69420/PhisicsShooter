@@ -10,6 +10,7 @@ using FishNet.Connection;
 public class Laser_Bullet : NetworkBehaviour
 {
     private ServerHealthManager SHealth;
+    private Rigidbody rb;
 
     [System.NonSerialized] public NetworkConnection PlayerConn;
 
@@ -17,6 +18,8 @@ public class Laser_Bullet : NetworkBehaviour
     public GameObject SoundObjectPrefab;
 
     public int damage = 50;
+    public bool invincible;
+    public int bounceAmount = 0;
     public string team;
     private bool canDoDamage = true;
 
@@ -28,6 +31,7 @@ public class Laser_Bullet : NetworkBehaviour
     private void Awake()
     {
         _startingForce.OnChange += _startingForce_OnChange;
+        rb = GetComponent<Rigidbody>();
     }
 
     public void SetStartingForce(Vector3 value)
@@ -133,8 +137,9 @@ public class Laser_Bullet : NetworkBehaviour
         if(this.IsSpawned) DespawnBullet();
     }
 
-    void OnTriggerEnter(Collider collider){
-        if(base.IsOwner)
+    void OnTriggerEnter(Collider collider)
+    {
+        if(base.IsOwner && collider.gameObject.layer == 7)
         {
             FindObjectOfType<AudioManger>().Play("HitMarker");
         }
@@ -237,17 +242,20 @@ public class Laser_Bullet : NetworkBehaviour
                     SHealth.health[19] -= damage;
                     break;
             }
-
-            if (this.IsSpawned) DespawnBullet();
+            if (invincible) return;
+            if (this.IsSpawned && bounceAmount == 0) DespawnBullet();
+            else if (bounceAmount > 0) Bounce(collider.transform);
         }
-        
-        
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(base.IsServerStarted) if (this.IsSpawned) { Invoke(nameof(DespawnBullet), 0.01f); }
-        if(base.IsClientInitialized) if (this.IsSpawned) { Invoke(nameof(TurnOffBullet), 0.01f); }
+        if (invincible) return;
+
+        if (base.IsServerStarted) if (this.IsSpawned && bounceAmount <= 0) { Invoke(nameof(DespawnBullet), 0.01f); }
+            else if (bounceAmount > 0) Bounce(collision.transform);
+        if (base.IsClientInitialized) if (this.IsSpawned && bounceAmount <= 0) { Invoke(nameof(TurnOffBullet), 0.01f); }
+            else if (bounceAmount > 0) { bounceAmount--; }
     }
 
     private void DespawnBullet(){
@@ -259,5 +267,19 @@ public class Laser_Bullet : NetworkBehaviour
     private void TurnOffBullet()
     {
         transform.Find("CapsuleUnused").gameObject.SetActive(false);
+    }
+
+    private void Bounce(Transform thing)
+    {
+        Debug.Log("Bounce");
+        bounceAmount--;
+
+        invincible = true;
+        Invoke(nameof(Vincible), 0.5f);
+    }
+
+    private void Vincible()
+    {
+        invincible = false;
     }
 }

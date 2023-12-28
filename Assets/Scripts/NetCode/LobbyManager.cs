@@ -288,7 +288,7 @@ public class LobbyManager : NetworkBehaviour
         TurnLoadingScreenOnClient();
 
         Debug.Log($"started game");
-        SceneLookupData lookup = new SceneLookupData(0, "SampleScene");
+        SceneLookupData lookup = new SceneLookupData(0, "MapV1_1");
         SceneLoadData sld = new SceneLoadData(lookup);
         sld.Options.AllowStacking = true;
         sld.Options.LocalPhysics = UnityEngine.SceneManagement.LocalPhysicsMode.Physics3D;

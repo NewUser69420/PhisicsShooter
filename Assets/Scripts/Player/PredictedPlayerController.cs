@@ -23,13 +23,16 @@ public class PredictedPlayerController : NetworkBehaviour
     [SerializeField] private float _wallJumpForward;
     
     public bool _activated;
+    public float _dashReset;
+    public bool _laserBounce;
     
     [System.NonSerialized] public bool _didWallJump;
     [System.NonSerialized] public bool _canDashOnWallJump;
     [System.NonSerialized] public bool _shootLaser;
+    [System.NonSerialized] public bool _throwGrenade;
     [System.NonSerialized] public Rigidbody _rb;
-
-    public LaserShooter _laserShooter;
+    [System.NonSerialized] public LaserShooter _laserShooter;
+    [System.NonSerialized] public GrenadeThrower _grenadeThrower;
 
     private UnityEngine.SceneManagement.Scene currentScene;
     private PlayerControlls _playerControlls;
@@ -56,9 +59,6 @@ public class PredictedPlayerController : NetworkBehaviour
     private bool _wallLeft;
     private bool _speedLimitDisabled;
     private bool _impactDelay = true;
-
-    public float _dashReset;
-
 
     public struct MoveData : IReplicateData
     {
@@ -257,6 +257,7 @@ public class PredictedPlayerController : NetworkBehaviour
             Move(md, false);
 
             TrySpawnBullet();
+            TrySpawnGrenade();
         }
         if (base.IsServerStarted)
         {
@@ -292,43 +293,77 @@ public class PredictedPlayerController : NetworkBehaviour
 
     private void TrySpawnBullet()
     {
-        if(_shootLaser)
+        if (_shootLaser)
         {
             _shootLaser = false;
-            
+
             if (_laserShooter.LaserPrefab == null || _laserShooter.LaserPrefabVisual == null) { Debug.Log($"Bullet Prefab is null"); return; }
 
             //spawn bullet
             UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
             NetworkObject Bullet = Instantiate(_laserShooter.LaserPrefab, _laserShooter.Eye.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
             NetworkObject BulletVisual = Instantiate(_laserShooter.LaserPrefabVisual, _laserShooter.Muzzle.position + (_laserShooter.Cam.forward * 1f), Quaternion.Euler(_laserShooter.Cam.transform.eulerAngles.x + 90, _laserShooter.Cam.transform.eulerAngles.y, _laserShooter.Cam.transform.eulerAngles.z));
-            
-            base.Spawn(Bullet, base.Owner);
-            base.Spawn(BulletVisual, base.Owner);
 
             Laser_Bullet predictedBullet = Bullet.GetComponent<Laser_Bullet>();
             Laser_BulletVisual predictedBulletVisual = BulletVisual.GetComponent<Laser_BulletVisual>();
             predictedBullet.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
             predictedBulletVisual.SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
 
+            base.Spawn(Bullet, base.Owner);
+            base.Spawn(BulletVisual, base.Owner);
+
             predictedBullet.PlayerConn = NetworkObject.LocalConnection;
             SetPlayerBulletRpc(Bullet, BulletVisual, NetworkObject.LocalConnection, gameObject);
+        }
+    }
+
+    private void TrySpawnGrenade()
+    {
+        if(_throwGrenade)
+        {
+            _throwGrenade = false;
+
+            if (_grenadeThrower.GrenadePrefab == null || _grenadeThrower.GrenadePrefabVisual == null) { Debug.Log($"Grenade Prefab is null"); return; }
+
+            //spawn grenade
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(gameObject.scene);
+            NetworkObject Grenade = Instantiate(_grenadeThrower.GrenadePrefab, _grenadeThrower.Muzzle.position + (_grenadeThrower.Cam.forward * 1f), Quaternion.identity);
+            NetworkObject GrenadeVisual = Instantiate(_grenadeThrower.GrenadePrefabVisual, _grenadeThrower.Muzzle.position + (_grenadeThrower.Cam.forward * 1f), Quaternion.identity);
+
+            Grenade_Bullet predictedGrenade = Grenade.GetComponent<Grenade_Bullet>();
+            Grenade_Bullet_Visual predictedGrenadeVisual = GrenadeVisual.GetComponent<Grenade_Bullet_Visual>();
+            predictedGrenade.SetStartingForce(_grenadeThrower.Cam.forward * _grenadeThrower.throwSpeed);
+            predictedGrenadeVisual.SetStartingForce(_grenadeThrower.Cam.forward * _grenadeThrower.throwSpeed);
+
+            base.Spawn(Grenade, base.Owner);
+            base.Spawn(GrenadeVisual, base.Owner);
+
+            SetPlayerGrenadeRpc(Grenade, GrenadeVisual, gameObject);
         }
     }
 
     [ServerRpc]
     private void SetPlayerBulletRpc(NetworkObject obj1, NetworkObject obj2, NetworkConnection playerConn, GameObject pobj)
     {
-        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, gameObject.scene);
-        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, gameObject.scene);
+        //UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, gameObject.scene);
+        //UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, gameObject.scene);
 
         obj1.GetComponent<Laser_Bullet>().team = pobj.GetComponent<ServerHealthManager>().team;
 
-        obj1.GetComponent<Laser_Bullet>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-        obj2.GetComponent<Laser_BulletVisual>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
-
+        //obj1.GetComponent<Laser_Bullet>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
+        //obj2.GetComponent<Laser_BulletVisual>().SetStartingForce(_laserShooter.Cam.forward * _laserShooter.laserSpeed);
 
         if (obj1 != null) obj1.GetComponent<Laser_Bullet>().PlayerConn = playerConn;
+    }
+
+    [ServerRpc]
+    private void SetPlayerGrenadeRpc(NetworkObject obj1, NetworkObject obj2, GameObject pobj)
+    {
+        //UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj1.gameObject, gameObject.scene);
+        //UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj2.gameObject, gameObject.scene);
+
+        //obj1.GetComponent<Grenade_Bullet>().SetStartingForce(_grenadeThrower.Cam.forward * _grenadeThrower.throwSpeed);
+        //obj2.GetComponent<Grenade_Bullet_Visual>().SetStartingForce(_grenadeThrower.Cam.forward * _grenadeThrower.throwSpeed);
     }
 
     private void AddGravity()

@@ -619,7 +619,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 130984
+    m_Bits: 262056
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -1599,10 +1599,10 @@ MonoBehaviour:
   _whatIsGround:
     serializedVersion: 2
     m_Bits: 1280
-  _wallJumpForce: 700
-  _wallJumpUp: 500
-  _wallJumpForward: 550
-  _dashReset: 1.5
+  _wallJumpForce: 350
+  _wallJumpUp: 750
+  _wallJumpForward: 950
+  _dashReset: 1
 --- !u!114 &7780754167300586657
 MonoBehaviour:
   m_ObjectHideFlags: 0

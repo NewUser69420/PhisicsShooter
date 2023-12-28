@@ -90,7 +90,7 @@ namespace FishNet.Component.Transforming
             public bool Y;
             public bool Z;
         }
-        private enum ChangedDelta
+        private enum ChangedDelta : uint
         {
             Unset = 0,
             PositionX = 1,
@@ -101,7 +101,8 @@ namespace FishNet.Component.Transforming
             ScaleX = 32,
             ScaleY = 64,
             ScaleZ = 128,
-            Nested = 256
+            Childed = 256,
+            All = ~0u,
         }
         private enum ChangedFull
         {
@@ -109,7 +110,7 @@ namespace FishNet.Component.Transforming
             Position = 1,
             Rotation = 2,
             Scale = 4,
-            Nested = 8
+            Childed = 8
         }
 
         private enum UpdateFlagA : byte
@@ -133,7 +134,7 @@ namespace FishNet.Component.Transforming
             Y4 = 8,
             Z2 = 16,
             Z4 = 32,
-            Nested = 64
+            Child = 64
         }
         public class GoalData : IResettable
         {
@@ -230,13 +231,44 @@ namespace FishNet.Component.Transforming
                 Available = 1,
                 Active = 2
             }
+
+            /// <summary>
+            /// True if default state. This becomes false during an update and true when resetting state.
+            /// </summary>
+            public bool IsDefault { get; private set; } = true;
+            /// <summary>
+            /// Tick this data was received or created.
+            /// </summary>
             public uint Tick;
-            public bool Snapped;
+            /// <summary>
+            /// True if this data has already been checked for snapping.
+            /// Snapping calls may occur multiple times when data is received, depending why or how it came in.
+            /// This check prevents excessive work.
+            /// </summary>
+            public bool SnappingChecked;
+            /// <summary>
+            /// Local position in the data.
+            /// </summary>
             public Vector3 Position;
+            /// <summary>
+            /// Local rotation in the data.
+            /// </summary>
             public Quaternion Rotation;
+            /// <summary>
+            /// Local scale in the data.
+            /// </summary>
             public Vector3 Scale;
+            /// <summary>
+            /// Position to extrapolate towards.
+            /// </summary>
             public Vector3 ExtrapolatedPosition;
+            /// <summary>
+            /// Current state of extrapolation.
+            /// </summary>
             public ExtrapolateState ExtrapolationState;
+            /// <summary>
+            /// NetworkBehaviour which is the parent of this object for Tick.
+            /// </summary>
             public NetworkBehaviour ParentBehaviour;
             public TransformData() { }
 
@@ -246,6 +278,7 @@ namespace FishNet.Component.Transforming
             }
             internal void Update(uint tick, Vector3 position, Quaternion rotation, Vector3 scale, Vector3 extrapolatedPosition, NetworkBehaviour parentBehaviour)
             {
+                IsDefault = false;
                 Tick = tick;
                 Position = position;
                 Rotation = rotation;
@@ -256,8 +289,9 @@ namespace FishNet.Component.Transforming
 
             public void ResetState()
             {
+                IsDefault = true;
                 Tick = 0;
-                Snapped = false;
+                SnappingChecked = false;
                 Position = Vector3.zero;
                 Rotation = Quaternion.identity;
                 Scale = Vector3.zero;
@@ -546,6 +580,14 @@ namespace FishNet.Component.Transforming
         /// Writers for changed data for each level of detail.
         /// </summary>
         private List<PooledWriter> _toClientChangedWriters;
+        /// <summary>
+        /// If not unset a force send will occur on or after this tick.
+        /// </summary>
+        private uint _forceSendTick = FishNet.Managing.Timing.TimeManager.UNSET_TICK;
+        /// <summary>
+        /// Returns all properties as changed.
+        /// </summary>
+        private ChangedDelta _fullChanged => ChangedDelta.All;
         #endregion
 
         #region Const.
@@ -595,8 +637,7 @@ namespace FishNet.Component.Transforming
             {
                 //Send latest.
                 PooledWriter writer = WriterPool.Retrieve();
-                ChangedDelta fullTransform = (ChangedDelta.PositionX | ChangedDelta.PositionY | ChangedDelta.PositionZ | ChangedDelta.Extended | ChangedDelta.ScaleX | ChangedDelta.ScaleY | ChangedDelta.ScaleZ | ChangedDelta.Rotation);
-                SerializeChanged(fullTransform, writer, 0);
+                SerializeChanged(_fullChanged, writer, 0);
                 TargetUpdateTransform(connection, writer.GetArraySegment(), Channel.Reliable);
                 writer.Store();
             }
@@ -821,6 +862,13 @@ namespace FishNet.Component.Transforming
         /// </summary>
         private void TimeManager_OnPostTick()
         {
+            //If to force send via tick delay do so and reset force send tick.
+            if (_forceSendTick != FishNet.Managing.Timing.TimeManager.UNSET_TICK && base.TimeManager.LocalTick > _forceSendTick)
+            {
+                _forceSendTick = FishNet.Managing.Timing.TimeManager.UNSET_TICK;
+                ForceSend();
+            }
+
             UpdateParentBehaviour();
 
             /* Intervals remaining is only used when the interval value
@@ -917,6 +965,17 @@ namespace FishNet.Component.Transforming
             _sendToOwner = value;
         }
 
+        /// <summary>
+        /// Resets last sent information to force a resend of current values after a number of ticks.
+        /// </summary>
+        public void ForceSend(uint ticks)
+        {
+            /* If there is a pending delayed force send then queue it
+             * immediately and set a new delay tick. */
+            if (_forceSendTick != FishNet.Managing.Timing.TimeManager.UNSET_TICK)
+                ForceSend();
+            _forceSendTick = base.TimeManager.LocalTick + ticks;
+        }
         /// <summary>
         /// Resets last sent information to force a resend of current values.
         /// </summary>
@@ -1034,7 +1093,7 @@ namespace FishNet.Component.Transforming
         /// </summary>
         private void LogInvalidParent()
         {
-            Debug.LogWarning($"{gameObject.name} [Id {base.ObjectId}] is nested but the parent {transform.parent.name} does not contain a NetworkBehaviour component. To synchronize parents the parent object must have a NetworkBehaviour component, even if empty.");
+            Debug.LogWarning($"{gameObject.name} [Id {base.ObjectId}] is childed but the parent {transform.parent.name} does not contain a NetworkBehaviour component. To synchronize parents the parent object must have a NetworkBehaviour component, even if empty.");
         }
 
         /// <summary>
@@ -1046,10 +1105,10 @@ namespace FishNet.Component.Transforming
         {
             UpdateFlagA flagsA = UpdateFlagA.Unset;
             UpdateFlagB flagsB = UpdateFlagB.Unset;
-            /* Do not use compression when nested. Depending
+            /* Do not use compression when childed. Depending
              * on the scale of the parent compression may
              * not be accurate enough. */
-            TransformPackingData packing = ChangedContains(changed, ChangedDelta.Nested) ? _unpacked : _packing;
+            TransformPackingData packing = ChangedContains(changed, ChangedDelta.Childed) ? _unpacked : _packing;
 
             /* If using LOD then write the current LOD value.
              * While the clients would have a local setting for
@@ -1135,7 +1194,7 @@ namespace FishNet.Component.Transforming
                 {
                     flagsA |= UpdateFlagA.Rotation;
                     /* Rotation can always use pack settings even
-                     * if nested. Unsual transform scale shouldn't affect rotation. */
+                     * if childed. Unsual transform scale shouldn't affect rotation. */
                     writer.WriteQuaternion(t.localRotation, _packing.Rotation);
                 }
             }
@@ -1200,10 +1259,10 @@ namespace FishNet.Component.Transforming
                     }
                 }
 
-                //Nested.
-                if (ChangedContains(changed, ChangedDelta.Nested) && _parentBehaviour != null)
+                //Childed.
+                if (ChangedContains(changed, ChangedDelta.Childed) && _parentBehaviour != null)
                 {
-                    flagsB |= UpdateFlagB.Nested;
+                    flagsB |= UpdateFlagB.Child;
                     writer.WriteNetworkBehaviour(_parentBehaviour);
                 }
 
@@ -1263,7 +1322,7 @@ namespace FishNet.Component.Transforming
             //Rotation.
             if (UpdateFlagAContains(flagsA, UpdateFlagA.Rotation))
             {
-                //Always use _packing value even if nested.
+                //Always use _packing value even if childed.
                 nextTransformData.Rotation = reader.ReadQuaternion(_packing.Rotation);
                 changedFull |= ChangedFull.Rotation;
             }
@@ -1305,10 +1364,10 @@ namespace FishNet.Component.Transforming
                 else
                     nextTransformData.Scale = prevTransformData.Scale;
 
-                if (UpdateFlagBContains(flagsB, UpdateFlagB.Nested))
+                if (UpdateFlagBContains(flagsB, UpdateFlagB.Child))
                 {
                     nextTransformData.ParentBehaviour = reader.ReadNetworkBehaviour();
-                    changedFull |= ChangedFull.Nested;
+                    changedFull |= ChangedFull.Childed;
                 }
                 else
                 {
@@ -1725,7 +1784,7 @@ namespace FishNet.Component.Transforming
             if (a.ParentBehaviour != b.ParentBehaviour)
             {
                 hasChanged = true;
-                changedFull |= ChangedFull.Nested;
+                changedFull |= ChangedFull.Childed;
             }
 
             return hasChanged;
@@ -1736,12 +1795,16 @@ namespace FishNet.Component.Transforming
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ChangedDelta GetChanged(TransformData transformData)
         {
-            /* If parent behaviour exist.
-            * Parent isn't sent as a delta so
-            * if it exist always send regardless
-            * of the previously sent transform
-            * data. */
-            return GetChanged(ref transformData.Position, ref transformData.Rotation, ref transformData.Scale, transformData.ParentBehaviour);
+            //If default return full changed.
+            if (transformData.IsDefault)
+                return _fullChanged;
+            else
+                /* If parent behaviour exist.
+                * Parent isn't sent as a delta so
+                * if it exist always send regardless
+                * of the previously sent transform
+                * data. */
+                return GetChanged(ref transformData.Position, ref transformData.Rotation, ref transformData.Scale, transformData.ParentBehaviour);
         }
         /// <summary>
         /// Gets transform values that have changed against specified proprties.
@@ -1777,9 +1840,9 @@ namespace FishNet.Component.Transforming
 
             //if (lastParentBehaviour != _parentBehaviour)
             if (_parentBehaviour != null)
-                changed |= ChangedDelta.Nested;
+                changed |= ChangedDelta.Childed;
 
-            //If added scale or nested then also add extended.
+            //If added scale or childed then also add extended.
             if (startChanged != changed)
                 changed |= ChangedDelta.Extended;
 
@@ -1794,10 +1857,10 @@ namespace FishNet.Component.Transforming
         private void SnapProperties(TransformData transformData, bool force = false)
         {
             //Already snapped.
-            if (transformData.Snapped)
+            if (transformData.SnappingChecked)
                 return;
 
-            transformData.Snapped = true;
+            transformData.SnappingChecked = true;
             Transform t = transform;
 
             //Position.
@@ -2175,10 +2238,10 @@ namespace FishNet.Component.Transforming
 
             _lastReceiveReliable = (channel == Channel.Reliable);
             /* If channel is reliable then this is a settled packet.
-             * Reset last received tick so next starting move eases
-             * in. */
+             * Set tick to UNSET. When this occurs time calculations
+             * assume only 1 tick has passed. */
             if (channel == Channel.Reliable)
-                nextTd.Tick = 0;
+                nextTd.Tick = FishNet.Managing.Timing.TimeManager.UNSET_TICK;
 
             prevTd.Update(nextTd);
             prevRd.Update(nextGd.Rates);

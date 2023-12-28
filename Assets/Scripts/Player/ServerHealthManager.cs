@@ -1,9 +1,11 @@
 using FishNet.Connection;
 using FishNet.Object;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static LaserPickerUpper;
 
 public class ServerHealthManager : NetworkBehaviour
 {
@@ -21,6 +23,11 @@ public class ServerHealthManager : NetworkBehaviour
     private NetworkConnection Conn;
     private bool invinceble;
 
+    public enum LaserType
+    {
+        DefaultLasers,
+        BouncyLasers
+    }
 
     public override void OnStartNetwork()
     {
@@ -80,11 +87,13 @@ public class ServerHealthManager : NetworkBehaviour
         totalHealth += (newItem - oldItem);
 
         //check for death
-        if (newItem <= 0 && !invinceble) DoDeath(Conn, this.gameObject, shooter);
+        if (newItem <= 0) DoDeath(Conn, this.gameObject, shooter);
     }
 
-    private void DoDeath(NetworkConnection _killedCon, GameObject pobj, NetworkConnection _shooterConn)
+    public void DoDeath(NetworkConnection _killedCon, GameObject pobj, NetworkConnection _shooterConn)
     {
+        if (invinceble) return;
+        
         Debug.Log("Doing death");
         StartCoroutine(Wait());
 
@@ -101,6 +110,8 @@ public class ServerHealthManager : NetworkBehaviour
 
         //add deathcounter on client
         GameObject _shooterObj = null;
+        bool serverKill = false;
+        if (_killedCon == _shooterConn) serverKill = true;
         foreach (NetworkObject obj in _shooterConn.Objects)
         {
             if (obj.tag == "Player") _shooterObj = obj.gameObject;
@@ -108,19 +119,28 @@ public class ServerHealthManager : NetworkBehaviour
         FindObjectOfType<Killer>().DoDeathCounterRpc(_killedCon, pobj);
 
         //add killcounter on client
-        FindObjectOfType<Killer>().DoKillCounterRpc(_shooterConn, _shooterObj);
+        if(!serverKill) FindObjectOfType<Killer>().DoKillCounterRpc(_shooterConn, _shooterObj);
 
         //add deathcounter on all instances of pobj's scoreboard
         AddDeathCounterToScoreboard(pobj.GetComponent<NetworkObject>().OwnerId);
 
         //add killcounter on all instances of shooter's scoreobard
-        AddKillCounterToScoreboard(_shooterObj.GetComponent<NetworkObject>().OwnerId);
+        if (!serverKill) AddKillCounterToScoreboard(_shooterObj.GetComponent<NetworkObject>().OwnerId);
 
         //set kill/death counter on server
-        _shooterObj.GetComponent<ServerHealthManager>().kills++;
-        _shooterObj.GetComponent<ServerHealthManager>().OnKDChange("kill");
+        if (!serverKill) _shooterObj.GetComponent<ServerHealthManager>().kills++;
+        if (!serverKill) _shooterObj.GetComponent<ServerHealthManager>().OnKDChange("kill");
         deaths++;
         OnKDChange("death");
+
+        //ResetGun
+        var laserTypes = Enum.GetValues(typeof(LaserType));
+        foreach (var type in laserTypes)
+        {
+            Destroy(pobj.GetComponent(type.ToString()));
+        }
+
+        pobj.gameObject.AddComponent(System.Type.GetType("DefaultLasers" + ", Assembly-CSharp"));
     }
 
     [ObserversRpc]

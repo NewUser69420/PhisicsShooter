@@ -7,7 +7,10 @@ using UnityEngine;
 public class Spawner : NetworkBehaviour
 {
     private UnityEngine.SceneManagement.Scene currentScene;
-    
+
+    [SerializeField] private bool SpawnKiller;
+    [SerializeField] private bool SpawnBall;
+
     public NetworkObject KillerPrefab;
     public NetworkObject PhysicsBallPrefab;
     public List<string> scenesToIgnore = new List<string>();
@@ -37,15 +40,15 @@ public class Spawner : NetworkBehaviour
             NetworkObject Killer = Instantiate(KillerPrefab);
             NetworkObject PhysicsBall = Instantiate(PhysicsBallPrefab);
 
-            base.ServerManager.Spawn(Killer);
-            base.ServerManager.Spawn(PhysicsBall);
+            if(SpawnKiller) base.ServerManager.Spawn(Killer);
+            if(SpawnBall) base.ServerManager.Spawn(PhysicsBall);
         }
     }
 
     [ObserversRpc]
     private void SyncSpawn()
     {
-        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("PhisicsBall(Clone)"), gameObject.scene);
-        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("Killer(Clone)"), gameObject.scene);
+        if(SpawnBall) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("PhisicsBall(Clone)"), gameObject.scene);
+        if(SpawnKiller) UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(GameObject.Find("Killer(Clone)"), gameObject.scene);
     }
 }

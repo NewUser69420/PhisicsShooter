@@ -12,7 +12,7 @@ public class DefaultLasers : LaserShooter
         laserSpeed = 130;
     }
 
-    private void Awake()
+    private void Start()
     {
         DoStart();
     }

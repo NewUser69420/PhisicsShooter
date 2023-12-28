@@ -9,10 +9,10 @@ public class BouncyLasers : LaserShooter
         LaserPrefabVisual = Resources.Load("LaserBouncyVisual", typeof(NetworkObject)) as NetworkObject;
 
         resetTime = 0.05f;
-        laserSpeed = 100;
+        laserSpeed = 70;
     }
 
-    private void Awake()
+    private void Start()
     {
         DoStart();
     }

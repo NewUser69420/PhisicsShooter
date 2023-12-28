@@ -14,9 +14,15 @@ public class Laser_BulletVisual : NetworkBehaviour
     //Tick to set rb to kinematic.
     private uint _stopTick = TimeManager.UNSET_TICK;
 
+    private Rigidbody rb;
+
+    public int bounceAmount = 0;
+    private bool invincible;
+
     private void Awake()
     {
         _startingForce.OnChange += _startingForce_OnChange;
+        rb = GetComponent<Rigidbody>();
     }
 
     public void SetStartingForce(Vector3 value)
@@ -120,8 +126,10 @@ public class Laser_BulletVisual : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (base.IsServerStarted) if (this.IsSpawned) { Invoke(nameof(DespawnBullet), 0.01f); }
-        if (base.IsClientStarted) if (this.IsSpawned) { Invoke(nameof(TurnOffBullet), 0.01f); }
+        if (base.IsServerStarted) if (this.IsSpawned && bounceAmount <= 0) { Invoke(nameof(DespawnBullet), 0.01f); }
+            else if (bounceAmount > 0) Bounce(collision.transform);
+        if (base.IsClientStarted) if (this.IsSpawned && bounceAmount <= 0) { Invoke(nameof(TurnOffBullet), 0.01f); }
+            else if (bounceAmount > 0) bounceAmount--;
     }
 
     private void DespawnBullet()
@@ -134,5 +142,19 @@ public class Laser_BulletVisual : NetworkBehaviour
     private void TurnOffBullet()
     {
         transform.Find("Capsule").gameObject.SetActive(false);
+    }
+
+    private void Bounce(Transform thing)
+    {
+        Debug.Log("Bounce");
+        bounceAmount--;
+
+        invincible = true;
+        Invoke(nameof(Vincible), 0.5f);
+    }
+
+    private void Vincible()
+    {
+        invincible = false;
     }
 }

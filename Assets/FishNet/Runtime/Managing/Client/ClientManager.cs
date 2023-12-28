@@ -1,6 +1,7 @@
 ﻿using FishNet.Connection;
 using FishNet.Managing.Debugging;
 using FishNet.Managing.Logging;
+using FishNet.Managing.Scened;
 using FishNet.Managing.Server;
 using FishNet.Managing.Timing;
 using FishNet.Managing.Transporting;
@@ -26,6 +27,11 @@ namespace FishNet.Managing.Client
         /// Called after local client has authenticated.
         /// </summary>
         public event Action OnAuthenticated;
+        /// <summary>
+        /// Called when the local client connection to the server has timed out.
+        /// This is called immediately before disconnecting.
+        /// </summary>
+        public event Action OnClientTimeOut;
         /// <summary>
         /// Called after the local client connection state changes.
         /// </summary>
@@ -113,11 +119,12 @@ namespace FishNet.Managing.Client
         /// </summary>
         private float _lastPacketTime;
         /// <summary>
-        /// Updates lastPacketTime to Time.unscaledTime.
+        /// Updates information about the last packet received.
         /// </summary>
-        private void UpdateLastPacketTime()
+        private void UpdateLastPacketDatas()
         {
             _lastPacketTime = Time.unscaledTime;
+            LastPacketLocalTick = NetworkManager.TimeManager.LocalTick;
         }
         /// <summary>
         /// Used to read splits.
@@ -131,9 +138,9 @@ namespace FishNet.Managing.Client
 #endif
         #endregion
 
-        [System.NonSerialized] public ushort _port;
-        [System.NonSerialized] public bool triedConnect;
-        [System.NonSerialized] public bool loadingMM;
+        public ushort _port;
+        public bool triedConnect;
+        public bool loadingMM;
 
         private void OnDestroy()
         {
@@ -303,29 +310,35 @@ namespace FishNet.Managing.Client
             }
             else
             {
-                UpdateLastPacketTime();
+                UpdateLastPacketDatas();
             }
 
             if (NetworkManager.CanLog(LoggingType.Common))
             {
                 Transport t = NetworkManager.TransportManager.GetTransport(args.TransportIndex);
                 string tName = (t == null) ? "Unknown" : t.GetType().Name;
-                Debug.Log($"Local client is {state.ToString().ToLower()} for {tName}.");
+                string socketInformation = string.Empty;
+                if (state == LocalConnectionState.Starting)
+                    socketInformation = $" Server IP is {t.GetClientAddress()}, port is {t.GetPort()}.";
+                Debug.Log($"Local client is {state.ToString().ToLower()} for {tName}.{socketInformation}");
+            }
+
+            if(!loadingMM)
+            {
+                if (args.ConnectionState == LocalConnectionState.Stopped && !triedConnect)
+                {
+                    StartConnection("86.83.234.112", _port);
+                    triedConnect = true;
+                }
+                else if (args.ConnectionState == LocalConnectionState.Stopped && triedConnect)
+                {
+                    //load mm
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                }
             }
 
             NetworkManager.UpdateFramerate();
             OnClientConnectionState?.Invoke(args);
-
-            //try connect with serverpc
-            if (args.ConnectionState == LocalConnectionState.Stopped)
-            {
-                if (!triedConnect && !loadingMM)
-                {
-                    StartConnection("86.83.234.112", _port);
-                    triedConnect = true;
-                    Debug.Log($"Try Connect with ip:86.83.234.112 and port:{_port}");
-                }
-            }
         }
 
         /// <summary>
@@ -360,7 +373,7 @@ namespace FishNet.Managing.Client
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _parseLogger.Reset();
 #endif
-            UpdateLastPacketTime();
+            UpdateLastPacketDatas();
 
             ArraySegment<byte> segment = args.Data;
             NetworkManager.StatisticsManager.NetworkTraffic.LocalClientReceivedData((ulong)segment.Count);
@@ -607,7 +620,8 @@ namespace FishNet.Managing.Client
              * This still doesn't account for latency but
              * it's the best we can do until the client gets
              * a ping response. */
-            networkManager.TimeManager.Tick = networkManager.TimeManager.LastPacketTick;
+            if (!networkManager.IsServerStarted)
+                networkManager.TimeManager.Tick = networkManager.TimeManager.LastPacketTick;
 
             //Mark as authenticated.
             Connection.ConnectionAuthenticated();
@@ -660,6 +674,7 @@ namespace FishNet.Managing.Client
              * since it's simple math. */
             if (Time.unscaledTime - _lastPacketTime > _remoteServerTimeoutDuration)
             {
+                OnClientTimeOut?.Invoke();
                 NetworkManager.Log($"Server has timed out. You can modify this feature on the ClientManager component.");
                 StopConnection();
             }

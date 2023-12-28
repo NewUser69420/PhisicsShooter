@@ -25,6 +25,7 @@ public class OfflinePlayerMovement : MonoBehaviour
     private PlayerState _playerState;
     private OffWallrunning _wallRunner;
     private LaserShooter _laserShooter;
+    private Transform _Cam;
     private RaycastHit _hit;
     private Vector3 _dashDirection;
     private Vector3 _wallNormal;
@@ -53,6 +54,8 @@ public class OfflinePlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _playerState = GetComponent<PlayerState>();
         _wallRunner = GetComponent<OffWallrunning>();
+
+        _Cam = transform.Find("Cam");
     }
 
     private void Update()
@@ -157,19 +160,19 @@ public class OfflinePlayerMovement : MonoBehaviour
                 _wallForward -= _wallForward;
             }
 
-            ////forward force
+            //forward force
             _rb.AddForce(_wallForward * _wallRunner.wallRunForce, ForceMode.Force);
 
-            ////upward force
+            //upward force
             _rb.AddForce(Vector3.up * _wallRunner.upwardForce, ForceMode.Force);
 
-            ////push to wall force
+            //push to wall force
             if (_wallLeft) _rb.AddForce(-_wallNormal * 100, ForceMode.Force);
 
-            ////wallrun jump
+            //wallrun jump
             if (_didWallJump && _allowWallJump)
             {
-                _rb.AddForce(transform.forward * _wallJumpForward, ForceMode.Impulse);
+                _rb.AddForce(_Cam.forward * _wallJumpForward, ForceMode.Impulse);
                 _rb.AddForce(transform.up * _wallJumpUp, ForceMode.Impulse);
                 _rb.AddForce(_wallNormal * _wallJumpForce, ForceMode.Impulse);
                 if (_playerState.aState == ActionState.Jumping)

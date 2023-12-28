@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: da43c9911b0e7444dbdedf629486cd06, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -202,7 +202,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.005, y: 0.15, z: 0.005}
+  m_LocalScale: {x: 0.03, y: 0.15, z: 0.03}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5044313732431977938}
@@ -215,7 +215,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8422177648136145546}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 8309c402295767c46af2e9fe4cc6618e, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -253,7 +253,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -288,7 +288,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 9
+  <PrefabId>k__BackingField: 3
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
@@ -371,4 +371,6 @@ MonoBehaviour:
   SoundObjectPrefab: {fileID: 2429989336855710736, guid: c1ce1a7824fde7344badde88aec127e1,
     type: 3}
   damage: 7
+  invincible: 0
+  bounceAmount: 5
   team: 
