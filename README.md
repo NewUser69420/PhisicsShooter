@@ -1,7 +1,5 @@
 # PhisicsShooter
-pewpew wobble wobble
+a titanfall inspired movement shooter as a personal learning project.
 
-
-download link for build 0.01
-
-https://drive.google.com/file/d/14O-HdQoU-lFfXFdyZTRhnASR2VJqYNgn/view?usp=sharing
+phisics based smooth fast paced movement combined with powerups and other use items
+multiplayer with fishnet and hosting own dedicated server
